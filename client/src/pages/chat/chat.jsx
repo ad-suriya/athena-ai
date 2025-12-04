@@ -31,6 +31,7 @@ import {
   Globe,
   Search,
   BookOpen,
+  Heart, Anchor, Sparkles
 } from 'lucide-react';
 import './chat.css';
 import VoiceRecordingAnimation from '../../components/VoiceRecordingAnimation.jsx';
@@ -323,32 +324,69 @@ const Chat = ({ setIsAuthenticated }) => {
   const modelDropdownRef = useRef(null);
 
   const categories = [
-    { id: 'write', label: 'Write', icon: Pencil },
-    { id: 'learn', label: 'Learn', icon: GraduationCap },
-    { id: 'code', label: 'Code', icon: Code },
+    { id: 'mood', label: 'Mood Check-In', icon: Heart },
+    { id: 'calm', label: 'Calming Tools', icon: Anchor },
+    { id: 'learn', label: 'Learn Skills', icon: Brain },
+    { id: 'lifestuff', label: 'Daily Support', icon: Coffee },
+    { id: 'choice', label: "AI's Suggestion", icon: Sparkles },
   ];
 
-  const categoryOptions = {
-    write: [
-      'Create presentation scripts',
-      'Help me identify my writing weaknesses',
-      'Help me develop a unique voice for an audience',
-      'Compare my writing style to famous authors',
-    ],
-    learn: [
-      'Explain a complex concept',
-      'Create study materials',
-      'Practice questions and quizzes',
-      'Summarize research papers',
-    ],
-    code: [
-      'Debug my code',
-      'API integration help',
-      'Database design assistance',
-      'Database design assistance',
-    ],
-  };
+   const moodOptions = [
+    'Guide me through a mood check-in',
+    'Help me understand how I’m feeling',
+    'Ask me reflective questions',
+    'Help me identify emotional patterns',
+    'Give me grounding questions',
+  ];
 
+  const calmingOptions = [
+    'Guide me through a breathing exercise',
+    'Walk me through grounding',
+    'Help me calm anxiety',
+    'Lead a short mindfulness exercise',
+    'Help me regulate after stress',
+  ];
+
+  const learnOptions = [
+    'Teach me a CBT technique',
+    'Help me reframe a negative thought',
+    'Explain a mental health concept',
+    'Teach me emotional regulation skills',
+    'Guide me through a self-compassion exercise',
+  ];
+
+  const lifeOptions = [
+    'Help me plan my day with wellbeing in mind',
+    'Give me a gentle productivity tip',
+    'Suggest a self-care activity',
+    'Help me set daily intentions',
+    'Check in on my energy and offer guidance',
+  ];
+
+  const choiceOptions = [
+    'Suggest what I may need right now',
+    'Give me a random wellness exercise',
+    'Share an uplifting message',
+    'Give me a journaling prompt',
+    'Provide a small grounding activity',
+  ];
+
+  const getOptions = (categoryId) => {
+    switch (categoryId) {
+      case 'mood':
+        return moodOptions;
+      case 'calm':
+        return calmingOptions;
+      case 'learn':
+        return learnOptions;
+      case 'lifestuff':
+        return lifeOptions;
+      case 'choice':
+        return choiceOptions;
+      default:
+        return [];
+    }
+  };
   const searchOptions = [
     { id: 'web', label: 'Web', icon: Search, description: 'Search across the entire Internet' },
     { id: 'academic', label: 'Academic', icon: BookOpen, description: 'Search academic papers' },

@@ -20,7 +20,7 @@ import {
   Monitor,
   ChevronRight,
   Square,
-  FileText // Added for PDF icon
+  FileText
 } from 'lucide-react';
 
 // Voice recording animation component for the header
@@ -29,18 +29,18 @@ const VoiceRecordingHeaderIndicator = ({ audioLevel, transcript }) => {
   
   return (
     <div className="flex items-center gap-2">
-      <div className="flex items-center justify-center space-x-0.5 h-6 px-2 bg-red-100 rounded-md border border-red-200">
+      <div className="flex items-center justify-center space-x-0.5 h-6 px-2 bg-[#F5D9D1] rounded-md border border-[#E65C52]/30">
         {bars.map((baseHeight, i) => (
           <div 
             key={i}
-            className="w-0.5 bg-red-500 rounded-full transition-all duration-100"
+            className="w-0.5 bg-gradient-to-t from-[#E65C52] to-[#E14C42] rounded-full transition-all duration-100"
             style={{
               height: `${baseHeight * (audioLevel / 100)}px`,
             }}
           />
         ))}
       </div>
-      <span className="text-xs font-medium text-red-600">Recording</span>
+      <span className="text-xs font-medium text-[#E14C42]">Recording</span>
       {transcript && (
         <span className="text-xs text-gray-500 truncate max-w-xs" title={transcript}>
           {transcript.length > 30 ? transcript.substring(0, 30) + '...' : transcript}
@@ -69,9 +69,9 @@ const PDFExportUtils = {
         keywords: 'notes, export, document',
       });
 
-      // Add header
+      // Add header with theme colors
       doc.setFontSize(20);
-      doc.setTextColor(40, 40, 40);
+      doc.setTextColor(230, 92, 82); // #E65C52
       doc.text(title, 105, 20, { align: 'center' });
       
       // Add metadata
@@ -105,6 +105,11 @@ const PDFExportUtils = {
         doc.text(line, margin, yPosition);
         yPosition += 7;
       });
+
+      // Add footer with theme color
+      doc.setFontSize(10);
+      doc.setTextColor(230, 92, 82);
+      doc.text('Exported from Athena AI', 105, pageHeight - 10, { align: 'center' });
 
       // Generate filename with timestamp
       const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
@@ -466,13 +471,13 @@ const DropdownMenu = ({
       <div 
         className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
           checked 
-            ? 'bg-blue-600' 
+            ? 'bg-gradient-to-r from-[#E65C52] to-[#E14C42]' 
             : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
         }`}
         onClick={onChange}
       >
         <div 
-          className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+          className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform shadow-md ${
             checked ? 'translate-x-4' : 'translate-x-1'
           }`}
         />
@@ -484,7 +489,11 @@ const DropdownMenu = ({
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={toggleDropdown}
-        className={`p-2 rounded-md ${isDarkMode ? 'text-gray-400 hover:text-gray-300 hover:bg-gray-800' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'} transition-colors`}
+        className={`p-2 rounded-md transition-colors ${
+          isDarkMode 
+            ? 'text-gray-400 hover:text-[#F5D9D1] hover:bg-[#E65C52]/20' 
+            : 'text-[#E65C52] hover:text-[#E14C42] hover:bg-[#F5D9D1]'
+        }`}
         aria-label="More options"
       >
         <svg 
@@ -500,29 +509,45 @@ const DropdownMenu = ({
       </button>
 
       {isOpen && (
-        <div className={`absolute right-0 top-full mt-1 w-64 rounded-lg shadow-lg py-2 z-50 ${isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'}`}>
+        <div className={`absolute right-0 top-full mt-1 w-64 rounded-lg shadow-xl border-2 border-[#E65C52]/20 py-2 z-50 ${
+          isDarkMode ? 'bg-gradient-to-b from-gray-800 to-gray-900' : 'bg-gradient-to-b from-white to-[#F5D9D1]/20'
+        }`}>
           <div className="max-h-96 overflow-y-auto">
             {/* Dictate button - moved to top for better visibility */}
             <button
               onClick={handleDictate}
-              className={`flex items-center w-full px-4 py-2 text-sm ${isDictating ? 'text-red-600 bg-red-100' : isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`}
+              className={`flex items-center w-full px-4 py-2.5 text-sm transition-colors ${
+                isDictating 
+                  ? 'text-[#E14C42] bg-gradient-to-r from-[#F5D9D1] to-[#F5D9D1]/80 border-l-2 border-[#E65C52]' 
+                  : isDarkMode 
+                    ? 'text-gray-300 hover:text-[#F5D9D1] hover:bg-[#E65C52]/20' 
+                    : 'text-gray-700 hover:text-[#E14C42] hover:bg-gradient-to-r hover:from-[#F5D9D1] hover:to-[#F5D9D1]/50'
+              }`}
             >
-              {isDictating ? <Square size={16} className="mr-3" /> : <Mic size={16} className="mr-3" />}
+              {isDictating ? (
+                <Square size={16} className="mr-3 text-[#E14C42]" />
+              ) : (
+                <Mic size={16} className="mr-3 text-[#E65C52]" />
+              )}
               {isDictating ? 'Stop Dictation' : 'Dictate'}
             </button>
 
-            <div className={`my-1 h-px ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+            <div className={`my-1 h-px ${isDarkMode ? 'bg-[#E65C52]/20' : 'bg-[#E65C52]/10'}`}></div>
 
             {/* Rest of the menu items */}
             <button
               onClick={handleCopyLink}
-              className={`flex items-center justify-between w-full px-4 py-2 text-sm ${isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`}
+              className={`flex items-center justify-between w-full px-4 py-2.5 text-sm transition-colors ${
+                isDarkMode 
+                  ? 'text-gray-300 hover:text-[#F5D9D1] hover:bg-[#E65C52]/20' 
+                  : 'text-gray-700 hover:text-[#E14C42] hover:bg-gradient-to-r hover:from-[#F5D9D1] hover:to-[#F5D9D1]/50'
+              }`}
             >
               <div className="flex items-center">
-                <LinkIcon size={16} className="mr-3" />
+                <LinkIcon size={16} className={`mr-3 ${isDarkMode ? 'text-gray-400' : 'text-[#E65C52]'}`} />
                 Copy link
               </div>
-              <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+              <span className={`text-xs ${isDarkMode ? 'text-[#E65C52]/60' : 'text-[#E65C52]'}`}>
                 Ctrl+Alt+L
               </span>
             </button>
@@ -530,13 +555,17 @@ const DropdownMenu = ({
             {/* Duplicate */}
             <button
               onClick={handleDuplicate}
-              className={`flex items-center justify-between w-full px-4 py-2 text-sm ${isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`}
+              className={`flex items-center justify-between w-full px-4 py-2.5 text-sm transition-colors ${
+                isDarkMode 
+                  ? 'text-gray-300 hover:text-[#F5D9D1] hover:bg-[#E65C52]/20' 
+                  : 'text-gray-700 hover:text-[#E14C42] hover:bg-gradient-to-r hover:from-[#F5D9D1] hover:to-[#F5D9D1]/50'
+              }`}
             >
               <div className="flex items-center">
-                <Copy size={16} className="mr-3" />
+                <Copy size={16} className={`mr-3 ${isDarkMode ? 'text-gray-400' : 'text-[#E65C52]'}`} />
                 Duplicate
               </div>
-              <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+              <span className={`text-xs ${isDarkMode ? 'text-[#E65C52]/60' : 'text-[#E65C52]'}`}>
                 Ctrl+D
               </span>
             </button>
@@ -544,13 +573,17 @@ const DropdownMenu = ({
             {/* Move to */}
             <button
               onClick={handleMoveTo}
-              className={`flex items-center justify-between w-full px-4 py-2 text-sm ${isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`}
+              className={`flex items-center justify-between w-full px-4 py-2.5 text-sm transition-colors ${
+                isDarkMode 
+                  ? 'text-gray-300 hover:text-[#F5D9D1] hover:bg-[#E65C52]/20' 
+                  : 'text-gray-700 hover:text-[#E14C42] hover:bg-gradient-to-r hover:from-[#F5D9D1] hover:to-[#F5D9D1]/50'
+              }`}
             >
               <div className="flex items-center">
-                <Move size={16} className="mr-3" />
+                <Move size={16} className={`mr-3 ${isDarkMode ? 'text-gray-400' : 'text-[#E65C52]'}`} />
                 Move to
               </div>
-              <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+              <span className={`text-xs ${isDarkMode ? 'text-[#E65C52]/60' : 'text-[#E65C52]'}`}>
                 Ctrl+↑+P
               </span>
             </button>
@@ -558,18 +591,24 @@ const DropdownMenu = ({
             {/* Move to Trash */}
             <button
               onClick={handleMoveToTrash}
-              className={`flex items-center w-full px-4 py-2 text-sm ${isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`}
+              className={`flex items-center w-full px-4 py-2.5 text-sm transition-colors ${
+                isDarkMode 
+                  ? 'text-gray-300 hover:text-[#F5D9D1] hover:bg-[#E65C52]/20' 
+                  : 'text-gray-700 hover:text-[#E14C42] hover:bg-gradient-to-r hover:from-[#F5D9D1] hover:to-[#F5D9D1]/50'
+              }`}
             >
-              <Trash2 size={16} className="mr-3" />
+              <Trash2 size={16} className={`mr-3 ${isDarkMode ? 'text-gray-400' : 'text-[#E65C52]'}`} />
               Move to Trash
             </button>
 
-            <div className={`my-1 h-px ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+            <div className={`my-1 h-px ${isDarkMode ? 'bg-[#E65C52]/20' : 'bg-[#E65C52]/10'}`}></div>
 
             {/* Small text toggle */}
-            <div className={`flex items-center justify-between w-full px-4 py-2 text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+            <div className={`flex items-center justify-between w-full px-4 py-2.5 text-sm ${
+              isDarkMode ? 'text-gray-300' : 'text-gray-700'
+            }`}>
               <div className="flex items-center">
-                <Type size={16} className="mr-3" />
+                <Type size={16} className={`mr-3 ${isDarkMode ? 'text-gray-400' : 'text-[#E65C52]'}`} />
                 Small text
               </div>
               <ToggleSwitch 
@@ -578,9 +617,11 @@ const DropdownMenu = ({
               />
             </div>
 
-            <div className={`flex items-center justify-between w-full px-4 py-2 text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+            <div className={`flex items-center justify-between w-full px-4 py-2.5 text-sm ${
+              isDarkMode ? 'text-gray-300' : 'text-gray-700'
+            }`}>
               <div className="flex items-center">
-                <Maximize size={16} className="mr-3" />
+                <Maximize size={16} className={`mr-3 ${isDarkMode ? 'text-gray-400' : 'text-[#E65C52]'}`} />
                 Full width
               </div>
               <ToggleSwitch 
@@ -592,73 +633,95 @@ const DropdownMenu = ({
             {/* Customize page */}
             <button
               onClick={handleCustomizePage}
-              className={`flex items-center w-full px-4 py-2 text-sm ${isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`}
+              className={`flex items-center w-full px-4 py-2.5 text-sm transition-colors ${
+                isDarkMode 
+                  ? 'text-gray-300 hover:text-[#F5D9D1] hover:bg-[#E65C52]/20' 
+                  : 'text-gray-700 hover:text-[#E14C42] hover:bg-gradient-to-r hover:from-[#F5D9D1] hover:to-[#F5D9D1]/50'
+              }`}
             >
-              <Edit3 size={16} className="mr-3" />
+              <Edit3 size={16} className={`mr-3 ${isDarkMode ? 'text-gray-400' : 'text-[#E65C52]'}`} />
               Customize page
             </button>
 
-            {/*<div className={`my-1 h-px ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+            <div className={`my-1 h-px ${isDarkMode ? 'bg-[#E65C52]/20' : 'bg-[#E65C52]/10'}`}></div>
 
-            {/* Lock page toggle 
-            <div className={`flex items-center justify-between w-full px-4 py-2 text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+            {/* Lock page toggle */}
+            <div className={`flex items-center justify-between w-full px-4 py-2.5 text-sm ${
+              isDarkMode ? 'text-gray-300' : 'text-gray-700'
+            }`}>
               <div className="flex items-center">
-                <Lock size={16} className="mr-3" />
+                <Lock size={16} className={`mr-3 ${isDarkMode ? 'text-gray-400' : 'text-[#E65C52]'}`} />
                 Lock page
-             
+              </div>
               <ToggleSwitch 
                 checked={isLocked} 
                 onChange={handleToggleLock} 
               />
-            </div>*/}
+            </div>
 
-            <div className={`my-1 h-px ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+            <div className={`my-1 h-px ${isDarkMode ? 'bg-[#E65C52]/20' : 'bg-[#E65C52]/10'}`}></div>
 
             {/* Suggest edits */}
             <button
               onClick={handleSuggestEdits}
-              className={`flex items-center w-full px-4 py-2 text-sm ${isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`}
+              className={`flex items-center w-full px-4 py-2.5 text-sm transition-colors ${
+                isDarkMode 
+                  ? 'text-gray-300 hover:text-[#F5D9D1] hover:bg-[#E65C52]/20' 
+                  : 'text-gray-700 hover:text-[#E14C42] hover:bg-gradient-to-r hover:from-[#F5D9D1] hover:to-[#F5D9D1]/50'
+              }`}
             >
-              <Edit3 size={16} className="mr-3" />
+              <Edit3 size={16} className={`mr-3 ${isDarkMode ? 'text-gray-400' : 'text-[#E65C52]'}`} />
               Suggest edits
             </button>
 
             {/* Translate */}
             <button
               onClick={handleTranslate}
-              className={`flex items-center justify-between w-full px-4 py-2 text-sm ${isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`}
+              className={`flex items-center justify-between w-full px-4 py-2.5 text-sm transition-colors ${
+                isDarkMode 
+                  ? 'text-gray-300 hover:text-[#F5D9D1] hover:bg-[#E65C52]/20' 
+                  : 'text-gray-700 hover:text-[#E14C42] hover:bg-gradient-to-r hover:from-[#F5D9D1] hover:to-[#F5D9D1]/50'
+              }`}
             >
               <div className="flex items-center">
-                <Languages size={16} className="mr-3" />
+                <Languages size={16} className={`mr-3 ${isDarkMode ? 'text-gray-400' : 'text-[#E65C52]'}`} />
                 Translate
               </div>
-              <ChevronRight size={16} className={isDarkMode ? 'text-gray-500' : 'text-gray-400'} />
+              <ChevronRight size={16} className={isDarkMode ? 'text-[#E65C52]/60' : 'text-[#E65C52]'} />
             </button>
 
-            <div className={`my-1 h-px ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+            <div className={`my-1 h-px ${isDarkMode ? 'bg-[#E65C52]/20' : 'bg-[#E65C52]/10'}`}></div>
 
             {/* Undo */}
             <button
               onClick={handleUndo}
-              className={`flex items-center justify-between w-full px-4 py-2 text-sm ${isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`}
+              className={`flex items-center justify-between w-full px-4 py-2.5 text-sm transition-colors ${
+                isDarkMode 
+                  ? 'text-gray-300 hover:text-[#F5D9D1] hover:bg-[#E65C52]/20' 
+                  : 'text-gray-700 hover:text-[#E14C42] hover:bg-gradient-to-r hover:from-[#F5D9D1] hover:to-[#F5D9D1]/50'
+              }`}
             >
               <div className="flex items-center">
-                <Undo size={16} className="mr-3" />
+                <Undo size={16} className={`mr-3 ${isDarkMode ? 'text-gray-400' : 'text-[#E65C52]'}`} />
                 Undo
               </div>
-              <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+              <span className={`text-xs ${isDarkMode ? 'text-[#E65C52]/60' : 'text-[#E65C52]'}`}>
                 Ctrl+Z
               </span>
             </button>
 
-            <div className={`my-1 h-px ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+            <div className={`my-1 h-px ${isDarkMode ? 'bg-[#E65C52]/20' : 'bg-[#E65C52]/10'}`}></div>
 
             {/* Import */}
             <button
               onClick={handleImport}
-              className={`flex items-center w-full px-4 py-2 text-sm ${isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`}
+              className={`flex items-center w-full px-4 py-2.5 text-sm transition-colors ${
+                isDarkMode 
+                  ? 'text-gray-300 hover:text-[#F5D9D1] hover:bg-[#E65C52]/20' 
+                  : 'text-gray-700 hover:text-[#E14C42] hover:bg-gradient-to-r hover:from-[#F5D9D1] hover:to-[#F5D9D1]/50'
+              }`}
             >
-              <Upload size={16} className="mr-3" />
+              <Upload size={16} className={`mr-3 ${isDarkMode ? 'text-gray-400' : 'text-[#E65C52]'}`} />
               Import
             </button>
 
@@ -666,112 +729,142 @@ const DropdownMenu = ({
             <button
               onClick={handleExport}
               disabled={isExporting}
-              className={`flex items-center w-full px-4 py-2 text-sm ${
+              className={`flex items-center w-full px-4 py-2.5 text-sm transition-colors ${
                 isExporting 
-                  ? 'text-gray-400 cursor-not-allowed' 
+                  ? 'cursor-not-allowed' 
                   : isDarkMode 
-                    ? 'text-gray-300 hover:bg-gray-700' 
-                    : 'text-gray-700 hover:bg-gray-100'
-              } transition-colors`}
+                    ? 'text-gray-300 hover:text-[#F5D9D1] hover:bg-[#E65C52]/20' 
+                    : 'text-gray-700 hover:text-[#E14C42] hover:bg-gradient-to-r hover:from-[#F5D9D1] hover:to-[#F5D9D1]/50'
+              }`}
             >
               {isExporting ? (
                 <>
-                  <div className="mr-3 w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
-                  Exporting...
+                  <div className="mr-3 w-4 h-4 border-2 border-[#F5D9D1] border-t-[#E65C52] rounded-full animate-spin"></div>
+                  <span className={isDarkMode ? 'text-[#F5D9D1]' : 'text-[#E14C42]'}>Exporting...</span>
                 </>
               ) : (
                 <>
-                  <Download size={16} className="mr-3" />
+                  <Download size={16} className={`mr-3 ${isDarkMode ? 'text-gray-400' : 'text-[#E65C52]'}`} />
                   Export as PDF
                 </>
               )}
             </button>
 
-            <div className={`my-1 h-px ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+            <div className={`my-1 h-px ${isDarkMode ? 'bg-[#E65C52]/20' : 'bg-[#E65C52]/10'}`}></div>
 
             {/* Turn into wiki */}
             <button
               onClick={handleTurnIntoWiki}
-              className={`flex items-center w-full px-4 py-2 text-sm ${isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`}
+              className={`flex items-center w-full px-4 py-2.5 text-sm transition-colors ${
+                isDarkMode 
+                  ? 'text-gray-300 hover:text-[#F5D9D1] hover:bg-[#E65C52]/20' 
+                  : 'text-gray-700 hover:text-[#E14C42] hover:bg-gradient-to-r hover:from-[#F5D9D1] hover:to-[#F5D9D1]/50'
+              }`}
             >
-              <RotateCcw size={16} className="mr-3" />
+              <RotateCcw size={16} className={`mr-3 ${isDarkMode ? 'text-gray-400' : 'text-[#E65C52]'}`} />
               Turn into wiki
             </button>
 
-            <div className={`my-1 h-px ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+            <div className={`my-1 h-px ${isDarkMode ? 'bg-[#E65C52]/20' : 'bg-[#E65C52]/10'}`}></div>
 
             {/* Updates & analytics */}
             <button
               onClick={handleUpdatesAnalytics}
-              className={`flex items-center w-full px-4 py-2 text-sm ${isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`}
+              className={`flex items-center w-full px-4 py-2.5 text-sm transition-colors ${
+                isDarkMode 
+                  ? 'text-gray-300 hover:text-[#F5D9D1] hover:bg-[#E65C52]/20' 
+                  : 'text-gray-700 hover:text-[#E14C42] hover:bg-gradient-to-r hover:from-[#F5D9D1] hover:to-[#F5D9D1]/50'
+              }`}
             >
-              <Clock size={16} className="mr-3" />
+              <Clock size={16} className={`mr-3 ${isDarkMode ? 'text-gray-400' : 'text-[#E65C52]'}`} />
               Updates & analytics
             </button>
 
             {/* Version history */}
             <button
               onClick={handleVersionHistory}
-              className={`flex items-center w-full px-4 py-2 text-sm ${isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`}
+              className={`flex items-center w-full px-4 py-2.5 text-sm transition-colors ${
+                isDarkMode 
+                  ? 'text-gray-300 hover:text-[#F5D9D1] hover:bg-[#E65C52]/20' 
+                  : 'text-gray-700 hover:text-[#E14C42] hover:bg-gradient-to-r hover:from-[#F5D9D1] hover:to-[#F5D9D1]/50'
+              }`}
             >
-              <Clock size={16} className="mr-3" />
+              <Clock size={16} className={`mr-3 ${isDarkMode ? 'text-gray-400' : 'text-[#E65C52]'}`} />
               Version history
             </button>
 
-            <div className={`my-1 h-px ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+            <div className={`my-1 h-px ${isDarkMode ? 'bg-[#E65C52]/20' : 'bg-[#E65C52]/10'}`}></div>
 
             {/* Notify me */}
             <button
               onClick={handleNotifyMe}
-              className={`flex items-center justify-between w-full px-4 py-2 text-sm ${isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`}
+              className={`flex items-center justify-between w-full px-4 py-2.5 text-sm transition-colors ${
+                isDarkMode 
+                  ? 'text-gray-300 hover:text-[#F5D9D1] hover:bg-[#E65C52]/20' 
+                  : 'text-gray-700 hover:text-[#E14C42] hover:bg-gradient-to-r hover:from-[#F5D9D1] hover:to-[#F5D9D1]/50'
+              }`}
             >
               <div className="flex items-center">
-                <Bell size={16} className="mr-3" />
+                <Bell size={16} className={`mr-3 ${isDarkMode ? 'text-gray-400' : 'text-[#E65C52]'}`} />
                 Notify me
               </div>
               <div className="flex items-center">
-                <span className={`text-xs mr-2 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                <span className={`text-xs mr-2 ${isDarkMode ? 'text-[#E65C52]/60' : 'text-[#E65C52]'}`}>
                   Comments
                 </span>
-                <ChevronRight size={16} className={isDarkMode ? 'text-gray-500' : 'text-gray-400'} />
+                <ChevronRight size={16} className={isDarkMode ? 'text-[#E65C52]/60' : 'text-[#E65C52]'} />
               </div>
             </button>
 
             {/* Connections */}
             <button
               onClick={handleConnections}
-              className={`flex items-center justify-between w-full px-4 py-2 text-sm ${isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`}
+              className={`flex items-center justify-between w-full px-4 py-2.5 text-sm transition-colors ${
+                isDarkMode 
+                  ? 'text-gray-300 hover:text-[#F5D9D1] hover:bg-[#E65C52]/20' 
+                  : 'text-gray-700 hover:text-[#E14C42] hover:bg-gradient-to-r hover:from-[#F5D9D1] hover:to-[#F5D9D1]/50'
+              }`}
             >
               <div className="flex items-center">
-                <Users size={16} className="mr-3" />
+                <Users size={16} className={`mr-3 ${isDarkMode ? 'text-gray-400' : 'text-[#E65C52]'}`} />
                 Connections
               </div>
               <div className="flex items-center">
-                <span className={`text-xs mr-2 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                <span className={`text-xs mr-2 ${isDarkMode ? 'text-[#E65C52]/60' : 'text-[#E65C52]'}`}>
                   None
                 </span>
-                <ChevronRight size={16} className={isDarkMode ? 'text-gray-500' : 'text-gray-400'} />
+                <ChevronRight size={16} className={isDarkMode ? 'text-[#E65C52]/60' : 'text-[#E65C52]'} />
               </div>
             </button>
 
-            <div className={`my-1 h-px ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+            <div className={`my-1 h-px ${isDarkMode ? 'bg-[#E65C52]/20' : 'bg-[#E65C52]/10'}`}></div>
 
             {/* Open in Windows app */}
             <button
               onClick={handleOpenInWindowsApp}
-              className={`flex items-center w-full px-4 py-2 text-sm ${isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`}
+              className={`flex items-center w-full px-4 py-2.5 text-sm transition-colors ${
+                isDarkMode 
+                  ? 'text-gray-300 hover:text-[#F5D9D1] hover:bg-[#E65C52]/20' 
+                  : 'text-gray-700 hover:text-[#E14C42] hover:bg-gradient-to-r hover:from-[#F5D9D1] hover:to-[#F5D9D1]/50'
+              }`}
             >
-              <Monitor size={16} className="mr-3" />
+              <Monitor size={16} className={`mr-3 ${isDarkMode ? 'text-gray-400' : 'text-[#E65C52]'}`} />
               Open in Windows app
             </button>
 
-            <div className={`my-1 h-px ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+            <div className={`my-1 h-px ${isDarkMode ? 'bg-[#E65C52]/20' : 'bg-[#E65C52]/10'}`}></div>
 
             {/* Footer info */}
-            <div className={`px-4 py-2 text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-              <div>Word count: {note?.wordCount || 0} words</div>
+            <div className={`px-4 py-2.5 text-xs ${
+              isDarkMode 
+                ? 'text-[#F5D9D1]/70' 
+                : 'text-[#E65C52]'
+            }`}>
+              <div className="font-medium">Word count: {note?.wordCount || 0} words</div>
               <div className="mt-1">Last edited by {note?.author || 'Unknown'}</div>
-              <div>{note?.lastEdited ? new Date(note.lastEdited).toLocaleString() : new Date().toLocaleString()}</div>
+              <div className="text-[10px] opacity-75">
+                {note?.lastEdited ? new Date(note.lastEdited).toLocaleString() : new Date().toLocaleString()}
+              </div>
             </div>
           </div>
         </div>
