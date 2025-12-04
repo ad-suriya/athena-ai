@@ -8,8 +8,9 @@ const MindMapInterface = () => {
       id: 1,
       x: 250,
       y: 120,
-      title: "What is Mind Palace?",
-      content: "A Mind Palace, also known as the method of loci, is a mnemonic device...",
+      title: "What is Mental Clarity Map?",
+content: "A Mental Clarity Map is a simple tool that helps someone who feels overwhelmed, stressed, or emotionally stuck. By laying out their thoughts, feelings, and possible solutions visually, it guides the person to understand what’s really happening and discover clear stepsto improve their mental well-being.",
+
       tags: ["telegram", "article"],
       type: "main",
       expanded: true,
@@ -44,7 +45,7 @@ const MindMapInterface = () => {
       id: 4,
       x: 420,
       y: 180,
-      title: "No title makes no sense",
+      title: "Mental health Awareness",
       content: "notion",
       tags: ["notion"],
       type: "note",
@@ -56,8 +57,8 @@ const MindMapInterface = () => {
       id: 5,
       x: 420,
       y: 300,
-      title: "AI cluster analysis",
-      content: "AI cluster analysis refers to the application of machine learning algorithms...",
+      title: "",
+      content: "Our AI uses cluster analysis to find patterns in mental-health data and offer supportive well-being insights. It’s not a substitute for professional care",
       tags: ["obsidian", "article"],
       type: "ai",
       expanded: true,
@@ -285,8 +286,8 @@ const MindMapInterface = () => {
     return colors[tag] || 'bg-gray-100 text-gray-700';
   };
 
-  return (
-    <div className="h-screen bg-gray-50 flex relative overflow-hidden">
+    return (
+    <div className="h-screen bg-[#FCF4F1] flex relative overflow-hidden">
       {/* Sidebar */}
       <SideBar 
         isOpen={sidebarOpen} 
@@ -308,7 +309,7 @@ const MindMapInterface = () => {
         }}
       />
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+            <div className="flex-1 flex flex-col bg-[#FCF4F1]">
         {/* Notifications */}
         <div className="fixed top-16 right-4 z-50 space-y-1">
           {notifications.map(notif => (
@@ -340,49 +341,12 @@ const MindMapInterface = () => {
         </div>
       )}
 
-        {/* Compact Header */}
-        <header className="bg-white border-b border-gray-200 px-3 py-2 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={() => setSidebarOpen(true)}
-              className="p-1.5 hover:bg-gray-100 rounded"
-            >
-              <Menu className="w-4 h-4 text-gray-600" />
-            </button>
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 bg-gradient-to-br from-indigo-600 to-purple-600 rounded text-white flex items-center justify-center text-xs font-bold">
-                M
-              </div>
-              <span className="font-medium text-gray-900 text-sm">Makesense</span>
-            </div>
-            <nav className="flex gap-4 text-sm">
-              <a href="#" className="text-gray-900 font-medium border-b border-blue-500">Home</a>
-              <a href="#" className="text-gray-500 hover:text-gray-900">Maps</a>
-              <a href="#" className="text-gray-500 hover:text-gray-900">Explore</a>
-            </nav>
-          </div>
-          <div className="flex items-center gap-2">
-            <button className="p-1.5 hover:bg-gray-100 rounded">
-              <Settings className="w-4 h-4 text-gray-400" />
-            </button>
-            <button className="p-1.5 hover:bg-gray-100 rounded relative">
-              <Bell className="w-4 h-4 text-gray-400" />
-              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full"></span>
-            </button>
-            <div className="w-6 h-6 bg-gradient-to-br from-orange-400 to-red-400 rounded-full"></div>
-          </div>
-        </header>
+       
 
-      {/* Compact Sub Header */}
+            {/* Simple Header */}
       <div className="bg-white border-b border-gray-200 px-3 py-1.5 flex items-center justify-between text-sm">
         <div className="flex items-center gap-3">
-          <select className="bg-transparent font-medium text-gray-900 text-sm">
-            <option>🧠 Alex's Mind</option>
-          </select>
-          <div className="flex gap-3 ml-4">
-            <button className="text-gray-900 font-medium border-b border-blue-500 px-1">Map</button>
-            <button className="text-gray-500 px-1 hover:text-gray-700">Notes</button>
-          </div>
+          <div className="font-medium text-gray-900 text-sm">🧠 Sai's Mind</div>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex -space-x-1">
@@ -398,7 +362,7 @@ const MindMapInterface = () => {
       </div>
 
         {/* Main Canvas Area */}
-        <div className="flex-1 relative overflow-hidden">
+                <div className="flex-1 relative overflow-hidden bg-[#FCF4F1]">
         {/* Mini Map */}
         {showMiniMap && (
           <div className="absolute top-2 left-2 z-10 bg-white rounded shadow-md p-1.5 w-32 h-20 border text-xs">

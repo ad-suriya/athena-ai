@@ -1,40 +1,29 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import Profile from "../pages/profile/profile";
 import {
   MessageSquare,
   Search,
   CheckSquare,
   Smile,
-  BarChart3,
-  BookOpen,
-  Home as HomeIcon,
-  Mail as FeedbackIcon,
-  HelpCircle as SupportIcon,
-  Settings as SettingsIcon,
-  FileText,
   ChevronDown,
-  X,
-  Clock as ClockIcon,
   ChevronsRight,
+  X,
+  Clock,
   Plus,
   MoreVertical,
   Edit,
   Share,
   Star,
   Trash2,
-  Archive as ArchiveIcon,
-  Menu,
-  Sparkles,
-  Bookmark,
+  Archive,
   Calendar,
-  Users,
-  Bell,
+  User,
   LogOut,
-  User
+  Settings,
+  HelpCircle
 } from "lucide-react";
 
-// Tooltip Component
+// Tooltip Component remains the same
 const Tooltip = ({ children, text, position = "top" }) => {
   return (
     <div className="relative group">
@@ -60,7 +49,7 @@ const Tooltip = ({ children, text, position = "top" }) => {
   );
 };
 
-// Enhanced Conversation Panel Component (Updated for new theme)
+// Enhanced Conversation Panel Component remains the same
 const ConversationPanel = ({ 
   isOpen, 
   onClose, 
@@ -218,6 +207,112 @@ const ConversationPanel = ({
     </div>
   );
 
+  const ConversationItem = ({ conversation }) => (
+    <div
+      key={conversation.id}
+      className={`group relative flex items-start gap-3 p-3 rounded-xl cursor-pointer transition-all ${
+        selectedConversationId === conversation.id 
+          ? 'bg-[#FF6F61]/10 border border-[#FF6F61]/20' 
+          : 'hover:bg-[#FFE7E5] border border-transparent'
+      }`}
+      onClick={() => handleConversationSelect(conversation.id)}
+    >
+      <div className={`w-8 h-8 ${conversation.isFavorite || conversation.isScheduled ? 'bg-[#FF6F61]/10' : 'bg-gray-100'} rounded-xl flex items-center justify-center flex-shrink-0`}>
+        <MessageSquare className={`w-4 h-4 ${conversation.isFavorite || conversation.isScheduled ? 'text-[#FF6F61]' : 'text-gray-500'}`} />
+      </div>
+      <div className="flex-1 min-w-0">
+        {isRenaming === conversation.id ? (
+          <input
+            type="text"
+            value={newTitle}
+            onChange={(e) => setNewTitle(e.target.value)}
+            onBlur={(e) => handleRenameSubmit(e, conversation.id)}
+            onKeyDown={(e) => e.key === 'Enter' && handleRenameSubmit(e, conversation.id)}
+            className="w-full text-sm font-medium text-gray-800 bg-transparent border-b border-gray-300 focus:outline-none focus:border-[#FF6F61]"
+            autoFocus
+          />
+        ) : (
+          <p className="text-sm font-medium truncate flex items-center gap-1.5">
+            {conversation.title || `Conversation ${conversation.id}`}
+            {conversation.isFavorite && (
+              <Star className="w-3 h-3 fill-[#FF6F61] text-[#FF6F61] flex-shrink-0" />
+            )}
+          </p>
+        )}
+        {conversation.preview && (
+          <p className="text-xs text-gray-500 truncate mt-0.5">{conversation.preview}</p>
+        )}
+        <p className="text-xs text-gray-400 mt-1">
+          {formatDate(conversation.updatedAt || conversation.createdAt)}
+        </p>
+      </div>
+      <div className="relative">
+        <button
+          data-menu-button
+          className="opacity-0 group-hover:opacity-100 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-white rounded-lg transition-all"
+          onClick={(e) => handleContextMenu(e, conversation.id)}
+        >
+          <MoreVertical className="w-4 h-4" />
+        </button>
+        {openMenuId === conversation.id && (
+          <div
+            ref={el => menuRefs.current[conversation.id] = el}
+            className="absolute right-0 mt-1 w-44 bg-white border border-gray-200 rounded-xl shadow-lg z-[100] backdrop-blur-sm"
+          >
+            <button
+              className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-[#FFE7E5] w-full text-left rounded-lg"
+              onClick={(e) => handleRenameStart(e, conversation)}
+            >
+              <Edit className="w-4 h-4 mr-2" /> Rename
+            </button>
+            <button
+              className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-[#FFE7E5] w-full text-left rounded-lg"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleFavorite(conversation.id);
+                setOpenMenuId(null);
+              }}
+            >
+              <Star className="w-4 h-4 mr-2" />
+              {conversation.isFavorite ? "Remove favorite" : "Add to favorites"}
+            </button>
+            <button
+              className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-[#FFE7E5] w-full text-left rounded-lg"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleArchive(conversation.id);
+                setOpenMenuId(null);
+              }}
+            >
+              <Archive className="w-4 h-4 mr-2" />
+              {conversation.isArchived ? "Unarchive" : "Archive"}
+            </button>
+            <button
+              className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-[#FFE7E5] w-full text-left rounded-lg"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigator.clipboard.writeText(window.location.href);
+                setOpenMenuId(null);
+              }}
+            >
+              <Share className="w-4 h-4 mr-2" /> Share
+            </button>
+            <button
+              className="flex items-center px-3 py-2 text-sm text-[#FF6F61] hover:bg-[#FFE7E5] w-full text-left rounded-lg"
+              onClick={(e) => {
+                e.stopPropagation();
+                deleteConversation(conversation.id);
+                setOpenMenuId(null);
+              }}
+            >
+              <Trash2 className="w-4 h-4 mr-2" /> Delete
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   if (!isOpen) return null;
 
   return (
@@ -254,214 +349,10 @@ const ConversationPanel = ({
           {filteredConversations.favoritesAndScheduled.length > 0 || filteredConversations.others.length > 0 ? (
             <div className="space-y-1.5">
               {filteredConversations.favoritesAndScheduled.map((conversation) => (
-                <div
-                  key={conversation.id}
-                  className={`group relative flex items-start gap-3 p-3 rounded-xl cursor-pointer transition-all ${
-                    selectedConversationId === conversation.id 
-                      ? 'bg-[#FF6F61]/10 border border-[#FF6F61]/20' 
-                      : 'hover:bg-[#FFE7E5] border border-transparent'
-                  }`}
-                  onClick={() => handleConversationSelect(conversation.id)}
-                >
-                  <div className="w-8 h-8 bg-[#FF6F61]/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <MessageSquare className="w-4 h-4 text-[#FF6F61]" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    {isRenaming === conversation.id ? (
-                      <input
-                        type="text"
-                        value={newTitle}
-                        onChange={(e) => setNewTitle(e.target.value)}
-                        onBlur={(e) => handleRenameSubmit(e, conversation.id)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleRenameSubmit(e, conversation.id)}
-                        className="w-full text-sm font-medium text-gray-800 bg-transparent border-b border-gray-300 focus:outline-none focus:border-[#FF6F61]"
-                        autoFocus
-                      />
-                    ) : (
-                      <p className="text-sm font-medium truncate flex items-center gap-1.5">
-                        {conversation.title || `Conversation ${conversation.id}`}
-                        {conversation.isFavorite && (
-                          <Star className="w-3 h-3 fill-[#FF6F61] text-[#FF6F61] flex-shrink-0" />
-                        )}
-                      </p>
-                    )}
-                    {conversation.preview && (
-                      <p className="text-xs text-gray-500 truncate mt-0.5">{conversation.preview}</p>
-                    )}
-                    <p className="text-xs text-gray-400 mt-1">
-                      {formatDate(conversation.updatedAt || conversation.createdAt)}
-                    </p>
-                  </div>
-                  <div className="relative">
-                    <button
-                      data-menu-button
-                      className="opacity-0 group-hover:opacity-100 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-white rounded-lg transition-all"
-                      onClick={(e) => handleContextMenu(e, conversation.id)}
-                    >
-                      <MoreVertical className="w-4 h-4" />
-                    </button>
-                    {openMenuId === conversation.id && (
-                      <div
-                        ref={el => menuRefs.current[conversation.id] = el}
-                        className="absolute right-0 mt-1 w-44 bg-white border border-gray-200 rounded-xl shadow-lg z-[100] backdrop-blur-sm"
-                      >
-                        <button
-                          className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-[#FFE7E5] w-full text-left rounded-lg"
-                          onClick={(e) => handleRenameStart(e, conversation)}
-                        >
-                          <Edit className="w-4 h-4 mr-2" /> Rename
-                        </button>
-                        <button
-                          className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-[#FFE7E5] w-full text-left rounded-lg"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleFavorite(conversation.id);
-                            setOpenMenuId(null);
-                          }}
-                        >
-                          <Star className="w-4 h-4 mr-2" />
-                          {conversation.isFavorite ? "Remove favorite" : "Add to favorites"}
-                        </button>
-                        <button
-                          className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-[#FFE7E5] w-full text-left rounded-lg"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleArchive(conversation.id);
-                            setOpenMenuId(null);
-                          }}
-                        >
-                          <ArchiveIcon className="w-4 h-4 mr-2" />
-                          {conversation.isArchived ? "Unarchive" : "Archive"}
-                        </button>
-                        <button
-                          className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-[#FFE7E5] w-full text-left rounded-lg"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigator.clipboard.writeText(window.location.href);
-                            setOpenMenuId(null);
-                          }}
-                        >
-                          <Share className="w-4 h-4 mr-2" /> Share
-                        </button>
-                        <button
-                          className="flex items-center px-3 py-2 text-sm text-[#FF6F61] hover:bg-[#FFE7E5] w-full text-left rounded-lg"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deleteConversation(conversation.id);
-                            setOpenMenuId(null);
-                          }}
-                        >
-                          <Trash2 className="w-4 h-4 mr-2" /> Delete
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                <ConversationItem key={conversation.id} conversation={conversation} />
               ))}
               {filteredConversations.others.map((conversation) => (
-                <div
-                  key={conversation.id}
-                  className={`group relative flex items-start gap-3 p-3 rounded-xl cursor-pointer transition-all ${
-                    selectedConversationId === conversation.id 
-                      ? 'bg-[#FF6F61]/10 border border-[#FF6F61]/20' 
-                      : 'hover:bg-[#FFE7E5] border border-transparent'
-                  }`}
-                  onClick={() => handleConversationSelect(conversation.id)}
-                >
-                  <div className="w-8 h-8 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <MessageSquare className="w-4 h-4 text-gray-500" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    {isRenaming === conversation.id ? (
-                      <input
-                        type="text"
-                        value={newTitle}
-                        onChange={(e) => setNewTitle(e.target.value)}
-                        onBlur={(e) => handleRenameSubmit(e, conversation.id)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleRenameSubmit(e, conversation.id)}
-                        className="w-full text-sm font-medium text-gray-800 bg-transparent border-b border-gray-300 focus:outline-none focus:border-[#FF6F61]"
-                        autoFocus
-                      />
-                    ) : (
-                      <p className="text-sm font-medium truncate flex items-center gap-1.5">
-                        {conversation.title || `Conversation ${conversation.id}`}
-                        {conversation.isFavorite && (
-                          <Star className="w-3 h-3 fill-[#FF6F61] text-[#FF6F61] flex-shrink-0" />
-                        )}
-                      </p>
-                    )}
-                    {conversation.preview && (
-                      <p className="text-xs text-gray-500 truncate mt-0.5">{conversation.preview}</p>
-                    )}
-                    <p className="text-xs text-gray-400 mt-1">
-                      {formatDate(conversation.updatedAt || conversation.createdAt)}
-                    </p>
-                  </div>
-                  <div className="relative">
-                    <button
-                      data-menu-button
-                      className="opacity-0 group-hover:opacity-100 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-white rounded-lg transition-all"
-                      onClick={(e) => handleContextMenu(e, conversation.id)}
-                    >
-                      <MoreVertical className="w-4 h-4" />
-                    </button>
-                    {openMenuId === conversation.id && (
-                      <div
-                        ref={el => menuRefs.current[conversation.id] = el}
-                        className="absolute right-0 mt-1 w-44 bg-white border border-gray-200 rounded-xl shadow-lg z-[100] backdrop-blur-sm"
-                      >
-                        <button
-                          className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-[#FFE7E5] w-full text-left rounded-lg"
-                          onClick={(e) => handleRenameStart(e, conversation)}
-                        >
-                          <Edit className="w-4 h-4 mr-2" /> Rename
-                        </button>
-                        <button
-                          className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-[#FFE7E5] w-full text-left rounded-lg"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleFavorite(conversation.id);
-                            setOpenMenuId(null);
-                          }}
-                        >
-                          <Star className="w-4 h-4 mr-2" />
-                          {conversation.isFavorite ? "Remove favorite" : "Add to favorites"}
-                        </button>
-                        <button
-                          className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-[#FFE7E5] w-full text-left rounded-lg"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleArchive(conversation.id);
-                            setOpenMenuId(null);
-                          }}
-                        >
-                          <ArchiveIcon className="w-4 h-4 mr-2" />
-                          {conversation.isArchived ? "Unarchive" : "Archive"}
-                        </button>
-                        <button
-                          className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-[#FFE7E5] w-full text-left rounded-lg"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigator.clipboard.writeText(window.location.href);
-                            setOpenMenuId(null);
-                          }}
-                        >
-                          <Share className="w-4 h-4 mr-2" /> Share
-                        </button>
-                        <button
-                          className="flex items-center px-3 py-2 text-sm text-[#FF6F61] hover:bg-[#FFE7E5] w-full text-left rounded-lg"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deleteConversation(conversation.id);
-                            setOpenMenuId(null);
-                          }}
-                        >
-                          <Trash2 className="w-4 h-4 mr-2" /> Delete
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                <ConversationItem key={conversation.id} conversation={conversation} />
               ))}
             </div>
           ) : (
@@ -476,7 +367,7 @@ const ConversationPanel = ({
   );
 };
 
-// Main Sidebar Component
+// Main Sidebar Component - UPDATED
 const Sidebar = ({
   isMobile = false,
   showSidebarOverlay = false,
@@ -512,10 +403,6 @@ const Sidebar = ({
       navigate('/notes');
     }
     startNewChat();
-  };
-
-  const handleHomePage = () => {
-    navigate('/chat');
   };
 
   useEffect(() => {
@@ -559,6 +446,12 @@ const Sidebar = ({
     } else {
       handleNavigate(id);
     }
+  };
+
+  const handleLogout = () => {
+    // Add your logout logic here
+    console.log("Logging out...");
+    navigate('/login');
   };
 
   return (
@@ -606,135 +499,146 @@ const Sidebar = ({
       
       <div
         className={`
-          fixed md:relative bg-white/70 backdrop-blur-xl border-r border-[#FFE7E5] flex flex-col h-screen
+          fixed md:relative bg-white/70 backdrop-blur-xl border-r border-[#FFE7E5] flex flex-col
           transition-all duration-300 ease-in-out z-[60]
-          ${isMobile ? "w-72" : isSidebarVisible ? "w-[280px]" : "w-0 overflow-hidden"}
+          ${isMobile ? "w-72" : isSidebarVisible ? "w-[240px]" : "w-0 overflow-hidden"}
           ${isMobile && !showSidebarOverlay ? "-translate-x-full" : "translate-x-0"}
           shadow-xl
-          overflow-hidden
+          h-screen max-h-screen
         `}
         style={{
           backgroundColor: 'rgba(255, 255, 255, 0.7)',
           backdropFilter: 'blur(20px)',
         }}
       >
-        {/* Header */}
-        <div className="p-6 border-b border-[#FFE7E5]/50">
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <div className="w-10 h-10 bg-gradient-to-br from-[#FF6F61] to-[#FF8A7D] rounded-xl flex items-center justify-center shadow-sm">
-                <Sparkles className="w-5 h-5 text-white" />
-              </div>
-              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-[#FF6F61] rounded-full border-2 border-white flex items-center justify-center">
-                <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
-              </div>
-            </div>
-            <div>
-              <h1 className="text-lg font-bold text-[#2B3440]">Athena AI</h1>
-              <p className="text-xs text-gray-500">Wellness Assistant</p>
-            </div>
-            <button
-              onClick={toggleSidebar}
-              className="ml-auto p-1.5 hover:bg-[#FFE7E5] rounded-lg transition-colors"
-              aria-label="Collapse sidebar"
-            >
-              <ChevronsRight className="w-4 h-4 text-gray-400" />
-            </button>
-          </div>
-        </div>
-
-        {/* User Profile */}
-        <div className="px-6 py-4 border-b border-[#FFE7E5]/50">
-          <div className="flex items-center gap-3">
+        {/* User Profile - Moved up */}
+        <div className="px-4 py-3 border-b border-[#FFE7E5]/50 flex-shrink-0">
+          <div className="flex items-center gap-2">
             <div className="relative">
               <div className="w-10 h-10 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center">
                 <User className="w-5 h-5 text-gray-600" />
               </div>
               <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
             </div>
-            <div className="flex-1">
-              <h3 className="text-sm font-semibold text-[#2B3440]">{user?.displayName || "Welcome"}</h3>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-sm font-semibold text-[#2B3440] truncate">{user?.displayName || "Welcome"}</h3>
               <p className="text-xs text-gray-500">Premium Member</p>
             </div>
-            <Tooltip text="Conversation History" position="top">
-              <button
-                onClick={toggleConversation}
-                className="p-2 hover:bg-[#FFE7E5] rounded-lg transition-colors"
-              >
-                <ClockIcon className="w-4 h-4 text-gray-500" />
-              </button>
-            </Tooltip>
-          </div>
-        </div>
-
-        {/* Main Navigation */}
-        <div className="flex-1 px-4 py-6">
-          <div className="space-y-1">
-            {navigationItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => handleNavClick(item.id)}
-                className={`
-                  w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
-                  ${activeNav === item.id 
-                    ? 'bg-[#FF6F61]/10 text-[#FF6F61]' 
-                    : 'text-[#2B3440] hover:bg-[#FFE7E5]'
-                  }
-                `}
-              >
-                <item.icon className={`w-5 h-5 ${activeNav === item.id ? 'text-[#FF6F61]' : 'text-gray-500'}`} />
-                <span className="text-sm font-medium">{item.label}</span>
-                {activeNav === item.id && (
-                  <div className="ml-auto w-1 h-6 bg-[#FF6F61] rounded-full"></div>
-                )}
-              </button>
-            ))}
-          </div>
-
-          {/* Quick Actions */}
-          <div className="mt-8 px-2">
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Quick Actions</p>
-            <div className="space-y-2">
-              <button 
-                onClick={enhancedStartNewChat}
-                className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-[#2B3440] hover:bg-[#FFE7E5] rounded-lg transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-                New Journal Entry
-              </button>
-              <button 
-                onClick={() => handleNavigate('calendar')}
-                className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-[#2B3440] hover:bg-[#FFE7E5] rounded-lg transition-colors"
-              >
-                <Calendar className="w-4 h-4" />
-                Schedule Session
-              </button>
-              <button 
-                onClick={() => handleNavigate('bookmarks')}
-                className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-[#2B3440] hover:bg-[#FFE7E5] rounded-lg transition-colors"
-              >
-              </button>
+            <div className="flex items-center gap-1">
+              <Tooltip text="Conversation History" position="top">
+                <button
+                  onClick={toggleConversation}
+                  className="p-1.5 hover:bg-[#FFE7E5] rounded-lg transition-colors"
+                >
+                  <Clock className="w-4 h-4 text-gray-500" />
+                </button>
+              </Tooltip>
+              {!isMobile && (
+                <Tooltip text="Collapse sidebar" position="top">
+                  <button
+                    onClick={toggleSidebar}
+                    className="p-1.5 hover:bg-[#FFE7E5] rounded-lg transition-colors"
+                  >
+                    <ChevronsRight className="w-4 h-4 text-gray-500 rotate-180" />
+                  </button>
+                </Tooltip>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Footer Actions */}
-          <div className="px-4 py-4 border-t border-[#FFE7E5]/50">
-          <div className="mt-4 pt-4 border-t border-[#FFE7E5]/50">
-            <button
-              onClick={() => handleNavigate('profile')}
-              className="w-full flex items-center gap-3 px-3 py-2 hover:bg-[#FFE7E5] rounded-xl transition-colors"
-            >
-              <div className="w-8 h-8 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center">
-                <User className="w-4 h-4 text-gray-600" />
+        {/* Main Navigation - Scrollable Area */}
+        <div className="flex-1 overflow-y-auto min-h-0 py-3">
+          <div className="px-3">
+            <div className="space-y-0.5">
+              {navigationItems.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => handleNavClick(item.id)}
+                  className={`
+                    w-full flex items-center gap-2.5 px-3 py-1 rounded-xl transition-all duration-200
+                    ${activeNav === item.id 
+                      ? 'bg-[#FF6F61]/10 text-[#FF6F61]' 
+                      : 'text-[#2B3440] hover:bg-[#FFE7E5]'
+                    }
+                  `}
+                >
+                  <item.icon className={`w-5 h-5 ${activeNav === item.id ? 'text-[#FF6F61]' : 'text-gray-500'}`} />
+                  <span className="text-sm font-medium">{item.label}</span>
+                  {activeNav === item.id && (
+                    <div className="ml-auto w-1 h-6 bg-[#FF6F61] rounded-full"></div>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            {/* Quick Actions */}
+            <div className="mt-4 px-1.5">
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Quick Actions</p>
+              <div className="space-y-0.5">
+                <button 
+                  onClick={enhancedStartNewChat}
+                  className="w-full flex items-center gap-2 px-2.5 py-1.5 text-sm text-[#2B3440] hover:bg-[#FFE7E5] rounded-lg transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  New Journal Entry
+                </button>
+                <button 
+                  onClick={() => handleNavigate('calendar')}
+                  className="w-full flex items-center gap-2 px-2.5 py-1.5 text-sm text-[#2B3440] hover:bg-[#FFE7E5] rounded-lg transition-colors"
+                >
+                  <Calendar className="w-4 h-4" />
+                  Schedule Session
+                </button>
               </div>
-              <div className="flex-1 text-left">
-                <p className="text-sm font-medium text-[#2B3440]">My Profile</p>
-                <p className="text-xs text-gray-500">View & edit profile</p>
-              </div>
-              <ChevronDown className="w-4 h-4 text-gray-400" />
-            </button>
+            </div>
           </div>
+        </div>
+
+        {/* Footer Actions - Now visible and positioned below profile */}
+        <div className="mt-auto flex-shrink-0 border-t border-[#FFE7E5]/50">
+          {/* Profile Settings */}
+          <button
+            onClick={() => handleNavigate('settings')}
+            className="w-full flex items-center gap-2.5 px-4 py-3 hover:bg-[#FFE7E5] transition-colors border-b border-[#FFE7E5]/30"
+          >
+            <div className="w-8 h-8 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center">
+              <Settings className="w-4 h-4 text-gray-600" />
+            </div>
+            <div className="flex-1 text-left">
+              <p className="text-sm font-medium text-[#2B3440]">Settings</p>
+              <p className="text-xs text-gray-500">App preferences</p>
+            </div>
+            <ChevronDown className="w-4 h-4 text-gray-400" />
+          </button>
+          
+          {/* Help & Support */}
+          <button
+            onClick={() => handleNavigate('help')}
+            className="w-full flex items-center gap-2.5 px-4 py-3 hover:bg-[#FFE7E5] transition-colors border-b border-[#FFE7E5]/30"
+          >
+            <div className="w-8 h-8 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center">
+              <HelpCircle className="w-4 h-4 text-gray-600" />
+            </div>
+            <div className="flex-1 text-left">
+              <p className="text-sm font-medium text-[#2B3440]">Help & Support</p>
+              <p className="text-xs text-gray-500">Get help</p>
+            </div>
+          </button>
+          
+          {/* Logout */}
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-2.5 px-4 py-3 hover:bg-[#FFE7E5] transition-colors text-[#FF6F61]"
+          >
+            <div className="w-8 h-8 bg-gradient-to-br from-red-50 to-red-100 rounded-lg flex items-center justify-center">
+              <LogOut className="w-4 h-4 text-[#FF6F61]" />
+            </div>
+            <div className="flex-1 text-left">
+              <p className="text-sm font-medium">Logout</p>
+              <p className="text-xs text-[#FF6F61]/70">Sign out of account</p>
+            </div>
+          </button>
         </div>
       </div>
     </>
