@@ -1,66 +1,67 @@
 import React, { useState } from 'react';
-import { Pencil, GraduationCap, Code, Coffee, Lightbulb, X } from 'lucide-react';
+import { Heart, Anchor, Brain, Coffee, Sparkles, X } from 'lucide-react';
 
 export default function CategoryButtons({ onOptionSelect }) {
   const [selected, setSelected] = useState(null);
   const [showPanel, setShowPanel] = useState(false);
 
   const categories = [
-    { id: 'write', label: 'Write', icon: Pencil },
-    { id: 'learn', label: 'Learn', icon: GraduationCap },
-    { id: 'code', label: 'Code', icon: Code },
-    { id: 'lifestuff', label: 'Life stuff', icon: Coffee },
-    { id: 'choice', label: "Yudle's choice", icon: Lightbulb },
+    { id: 'mood', label: 'Mood Check-In', icon: Heart },
+    { id: 'calm', label: 'Calming Tools', icon: Anchor },
+    { id: 'learn', label: 'Learn Skills', icon: Brain },
+    { id: 'lifestuff', label: 'Daily Support', icon: Coffee },
+    { id: 'choice', label: "AI's Suggestion", icon: Sparkles },
   ];
 
-  const writeOptions = [
-    'Create presentation scripts',
-    'Help me identify my writing weaknesses',
-    'Help me develop a unique voice for an audience',
-    'Write case studies',
-    'Compare my writing style to famous authors',
+  const moodOptions = [
+    'Guide me through a mood check-in',
+    'Help me understand how I’m feeling',
+    'Ask me reflective questions',
+    'Help me identify emotional patterns',
+    'Give me grounding questions',
+  ];
+
+  const calmingOptions = [
+    'Guide me through a breathing exercise',
+    'Walk me through grounding',
+    'Help me calm anxiety',
+    'Lead a short mindfulness exercise',
+    'Help me regulate after stress',
   ];
 
   const learnOptions = [
-    'Explain a complex concept',
-    'Create study materials',
-    'Practice questions and quizzes',
-    'Summarize research papers',
-    'Learning roadmap planning',
-  ];
-
-  const codeOptions = [
-    'Debug my code',
-    'Write new functions',
-    'Code review and optimization',
-    'API integration help',
-    'Database design assistance',
+    'Teach me a CBT technique',
+    'Help me reframe a negative thought',
+    'Explain a mental health concept',
+    'Teach me emotional regulation skills',
+    'Guide me through a self-compassion exercise',
   ];
 
   const lifeOptions = [
-    'Plan my weekly schedule',
-    'Recipe suggestions',
-    'Travel itinerary planning',
-    'Email drafting help',
-    'Decision making guidance',
+    'Help me plan my day with wellbeing in mind',
+    'Give me a gentle productivity tip',
+    'Suggest a self-care activity',
+    'Help me set daily intentions',
+    'Check in on my energy and offer guidance',
   ];
 
-  const choiceOptions = [
-    'Suggest what I might need help with',
-    'Random creative challenge',
-    'Quick productivity tip',
-    'Interesting fact or insight',
-    'Problem-solving exercise',
+const choiceOptions = [
+    'Suggest what I may need right now',
+    'Give me a random wellness exercise',
+    'Share an uplifting message',
+    'Give me a journaling prompt',
+    'Provide a small grounding activity',
   ];
+
 
   const getOptions = (categoryId) => {
     switch (categoryId) {
-      case 'write':
-        return writeOptions;
+      case 'mood':
+        return moodOptions;
+      case 'calm':
+        return calmingOptions;
       case 'learn':
         return learnOptions;
-      case 'code':
-        return codeOptions;
       case 'lifestuff':
         return lifeOptions;
       case 'choice':

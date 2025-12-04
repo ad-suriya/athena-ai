@@ -29,7 +29,7 @@ export default function ToggleButtons({ onModeChange }) {
       >
         <MessageSquare className="w-4 h-4" />
         <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-sm rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-          <div className="font-medium">Basic Mode</div>
+          <div className="font-medium">Basic Support Mode</div>
           <div className="text-xs text-gray-300 mt-0.5">Simple and direct responses</div>
           <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-800"></div>
         </div>
@@ -39,12 +39,12 @@ export default function ToggleButtons({ onModeChange }) {
         type="button"
         className={getButtonClasses('brain')}
         onClick={() => handleButtonClick('brain')}
-        aria-label="Analytical Mode"
+        aria-label="Therapy Mode"
       >
         <Brain className="w-4 h-4" />
         <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-sm rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-          <div className="font-medium">Analytical</div>
-          <div className="text-xs text-gray-300 mt-0.5">Detailed analysis and reasoning</div>
+          <div className="font-medium">Therapeutical</div>
+          <div className="text-xs text-gray-300 mt-0.5">Psychological Therapy</div>
           <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-800"></div>
         </div>
       </button>
@@ -53,12 +53,12 @@ export default function ToggleButtons({ onModeChange }) {
         type="button"
         className={getButtonClasses('atom')}
         onClick={() => handleButtonClick('atom')}
-        aria-label="Complex Mode"
+        aria-label="Counselling Mode"
       >
         <Atom className="w-4 h-4" />
         <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-sm rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-          <div className="font-medium">Complex</div>
-          <div className="text-xs text-gray-300 mt-0.5">Advanced problem solving</div>
+          <div className="font-medium">Counselling</div>
+          <div className="text-xs text-gray-300 mt-0.5">Mental Wellness Counselling</div>
           <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-800"></div>
         </div>
       </button>
