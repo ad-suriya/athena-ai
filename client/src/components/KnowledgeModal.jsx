@@ -130,8 +130,8 @@ const KnowledgeModal = ({ isOpen, onClose, setShowSidebarOverlay = () => {}, set
       ref={modalRef}
       className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[1000] flex items-center justify-center p-4"
     >
-      <div className="bg-white rounded-xl w-full max-w-5xl max-h-[90vh] overflow-hidden shadow-2xl">
-        <div className="flex items-center justify-between p-6 border-b border-gray-300 bg-[#EBEBEB]">
+      <div className="bg-[#FCF4F1] rounded-xl w-full max-w-5xl max-h-[90vh] overflow-hidden shadow-2xl">
+        <div className="flex items-center justify-between p-6 border-b border-gray-300 bg-[#FCF4F1]">
           <div className="flex items-center gap-3">
             <BookOpen className="w-6 h-6 text-gray-700" />
             <h2 className="text-xl font-semibold text-gray-900">Knowledge</h2>
@@ -158,7 +158,7 @@ const KnowledgeModal = ({ isOpen, onClose, setShowSidebarOverlay = () => {}, set
             </button>
           </div>
         </div>
-        <div className="px-6 py-4 bg-[#EBEBEB] border-b border-gray-300">
+        <div className="px-6 py-4 bg-[#FCF4F1] border-b border-gray-300">
           <p className="text-sm text-gray-600 leading-relaxed">
             Store personalized knowledge entries to enhance task assistance.
           </p>
@@ -180,7 +180,7 @@ const KnowledgeModal = ({ isOpen, onClose, setShowSidebarOverlay = () => {}, set
             {knowledgeEntries.length} / 20 entries
           </div>
         </div>
-        <div className="px-6 py-3 bg-[#EBEBEB] border-b border-gray-300">
+        <div className="px-6 py-3 bg-[#FCF4F1] border-b border-gray-300">
           <div className="grid grid-cols-12 gap-4 text-sm font-medium text-gray-700">
             <div className="col-span-3">Name</div>
             <div className="col-span-4">Content</div>
@@ -195,7 +195,7 @@ const KnowledgeModal = ({ isOpen, onClose, setShowSidebarOverlay = () => {}, set
               <p className="text-sm text-gray-500">Loading...</p>
             </div>
           ) : showAddForm ? (
-            <div className="px-6 py-4 border-b border-gray-300 bg-gray-200">
+            <div className="px-6 py-4 border-b border-gray-300 bg-[#FCF4F1]">
               <div className="grid grid-cols-12 gap-4 items-center">
                 <div className="col-span-3">
                   <input
@@ -245,7 +245,7 @@ const KnowledgeModal = ({ isOpen, onClose, setShowSidebarOverlay = () => {}, set
             </div>
           ) : filteredEntries.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mb-4">
+              <div className="w-16 h-16 bg-[#FCF4F1] rounded-full flex items-center justify-center mb-4 border border-gray-300">
                 <Lightbulb className="w-8 h-8 text-gray-500" />
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">No knowledge yet</h3>
@@ -311,7 +311,7 @@ const KnowledgeModal = ({ isOpen, onClose, setShowSidebarOverlay = () => {}, set
             ))
           )}
         </div>
-        <div className="px-6 py-4 border-t border-gray-300 bg-[#EBEBEB]">
+        <div className="px-6 py-4 border-t border-gray-300 bg-[#FCF4F1]">
           <div className="flex items-center justify-between">
             <p className="text-sm text-gray-500">
               Enhance task assistance with personalized knowledge
