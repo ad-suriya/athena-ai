@@ -80,6 +80,7 @@ export default function WellnessTracker() {
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [addedSuggestions, setAddedSuggestions] = useState([]);
+  const [isSidebarVisible, setIsSidebarVisible] = useState(true);
 
   const mainContentRef = useRef(null);
   const suggestionsRef = useRef(null);
@@ -121,7 +122,6 @@ export default function WellnessTracker() {
     const handleScroll = () => {
       if (mainContentRef.current) {
         const { scrollTop, scrollHeight, clientHeight } = mainContentRef.current;
-        // Show scroll button when user scrolls past 50% of the content
         setShowScrollButton(scrollTop > clientHeight * 0.5);
       }
     };
@@ -273,7 +273,6 @@ export default function WellnessTracker() {
     resetNewTaskForm();
     setShowNewTaskForm(false);
     
-    // Scroll to top to see the newly added task
     setTimeout(() => scrollToTop(), 100);
   };
 
@@ -315,7 +314,6 @@ export default function WellnessTracker() {
     };
     setTasks(prev => [...prev, newTask]);
     
-    // Scroll to top to see the duplicated task
     setTimeout(() => scrollToTop(), 100);
   };
 
@@ -731,7 +729,6 @@ export default function WellnessTracker() {
       setTasks(prev => [...prev, newTask]);
       setAddedSuggestions(prev => [...prev, suggestion.id]);
       
-      // Show a brief success message and scroll to top
       setTimeout(() => {
         scrollToTop();
       }, 300);
@@ -808,38 +805,29 @@ export default function WellnessTracker() {
   };
 
   return (
-    <div className="flex bg-[#FCF4F1] h-screen">
-      {/* Sidebar */}
-      <div className="w-64 sm:w-48 bg-white border-r border-gray-200">
-        <Sidebar />
+    <div className="flex bg-[#FCF4F1] h-screen w-full overflow-hidden">
+      {/* Sidebar - Fixed position */}
+      <div className={`${isSidebarVisible ? 'w-64' : 'w-0'} flex-shrink-0 transition-all duration-300 ease-in-out overflow-hidden`}>
+        <Sidebar 
+          isSidebarVisible={isSidebarVisible}
+          setIsSidebarVisible={setIsSidebarVisible}
+        />
       </div>
-
-      {/* Main Content */}
+      
+      {/* Main Content - Dynamic width */}
       <div 
         ref={mainContentRef}
-        className="flex-1 overflow-y-auto relative"
+        className={`flex-1 overflow-y-auto transition-all duration-300 ease-in-out ${
+          isSidebarVisible ? 'ml-0' : 'ml-0'
+        }`}
+        style={{
+          width: isSidebarVisible ? 'calc(100% - 256px)' : '100%'
+        }}
       >
-        {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-4 py-2 sticky top-0 z-10">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Heart className="w-5 h-5 text-purple-600" />
-              <span className="text-xs text-gray-500">Wellness Tracker</span>
-              <span className="text-xs text-gray-400">Personal</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500">{tasks.length} Activities</span>
-              <button className="flex items-center gap-1 text-xs text-gray-600 hover:text-gray-900">
-                <Share2 className="w-3 h-3" />
-                Share
-              </button>
-              <Star className="w-4 h-4 text-gray-400 hover:text-yellow-500 cursor-pointer" />
-              <MoreHorizontal className="w-4 h-4 text-gray-400" />
-            </div>
-          </div>
-        </div>
+        
 
-        <div className="px-4 py-4">
+        {/* Main Content Area - Proper padding and responsive width */}
+        <div className="px-4 py-4 max-w-7xl mx-auto">
           {/* Title and Description */}
           <div className="mb-4">
             <div className="flex items-center gap-2 mb-2">
