@@ -105,7 +105,7 @@ const Tooltip = ({ text, children, position = 'top' }) => {
 };
 
 // AppLogo Component
-const AppLogo = ({ size = 24 }) => (
+const AppLogo = ({ size = 45 }) => (
   <img src={logo} alt="Yudle Logo" width={size} height={size} />
 );
 
@@ -1206,7 +1206,7 @@ Please execute the task as soon as you can - an artifact would be great if it ma
               )}
               {currentConversationId === null && (
                 <>
-                  <AppLogo size={24} />
+                  <AppLogo size={45} />
                   <div className="font-semibold text-lg">Athena AI</div>
                 </>
               )}
