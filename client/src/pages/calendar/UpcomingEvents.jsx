@@ -23,7 +23,7 @@ const UpcomingEvents = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white rounded-3xl">
+    <div className="max-w-2xl mx-auto p-6 rounded-3xl" style={{ backgroundColor: '#FCF4F1' }}>
       {/* Header */}
       <div className="flex items-center gap-2 mb-6">
         <Calendar className="w-5 h-5 text-gray-500" />
@@ -31,7 +31,7 @@ const UpcomingEvents = () => {
       </div>
 
       {/* Content Area */}
-      <div className="border-2 border-gray-300 rounded-3xl p-8">
+      <div className="border-2 border-gray-300 rounded-3xl p-8 bg-white">
         {events.length === 0 ? (
           // Empty State
           <div className="text-center">
@@ -43,9 +43,10 @@ const UpcomingEvents = () => {
             </p>
             <button
               onClick={handleNewEventClick}
-              className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 font-medium transition-colors px-4 py-2 rounded-full hover:bg-blue-50"
+              className="inline-flex items-center gap-1 font-medium transition-colors px-4 py-2 rounded-full hover:opacity-90"
+              style={{ color: '#E25752' }}
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-4 h-4" style={{ color: '#E25752' }} />
               New event
             </button>
           </div>
@@ -69,9 +70,10 @@ const UpcomingEvents = () => {
             <div className="pt-4 border-t-2 border-gray-300">
               <button
                 onClick={handleNewEventClick}
-                className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 font-medium transition-colors px-4 py-2 rounded-full hover:bg-blue-50"
+                className="inline-flex items-center gap-1 font-medium transition-colors px-4 py-2 rounded-full hover:opacity-90"
+                style={{ color: '#E25752' }}
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-4 h-4" style={{ color: '#E25752' }} />
                 New event
               </button>
             </div>
