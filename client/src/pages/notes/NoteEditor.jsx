@@ -258,14 +258,7 @@ const NoteEditor = ({ isDarkMode = false, onNavigateBack, initialNote, onSave })
       {/* Header */}
       <div className={`flex justify-between items-center p-4 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
         <div className="flex items-center gap-4">
-          <button 
-            onClick={handleBack}
-            className={`p-2 rounded-md ${isDarkMode ? 'text-gray-400 hover:text-gray-300 hover:bg-gray-800' : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'} transition-colors`}
-          >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-              <path fillRule="evenodd" d="M12.8 7.2H5.6l2.8-2.8L7.2 3.2 2.4 8l4.8 4.8 1.2-1.2-2.8-2.8h7.2V7.2z"/>
-            </svg>
-          </button>
+          
           <button 
             onClick={() => editor.chain().focus().undo().run()} 
             disabled={!editor.can().chain().focus().undo().run() || isLocked}

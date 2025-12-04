@@ -585,6 +585,7 @@ const Sidebar = ({
                   <Plus className="w-4 h-4" />
                   New Journal Entry
                 </button>
+                
               </div>
             </div>
           </div>
