@@ -64,7 +64,7 @@ import FileCategoryPanel from '../../components/FileCategoryPanel';
 import { File } from 'lucide-react';
 import UpcomingEvents from '../Calendar/UpcomingEvents.jsx';
 
-// Tooltip Component
+// Tooltip Component - Updated colors
 const Tooltip = ({ text, children, position = 'top' }) => {
   const [isVisible, setIsVisible] = useState(false);
 
@@ -84,11 +84,11 @@ const Tooltip = ({ text, children, position = 'top' }) => {
       {children}
       {isVisible && (
         <div
-          className={`absolute ${positionClasses[position]} z-50 px-2 py-1 text-xs text-white bg-gray-800 rounded whitespace-nowrap pointer-events-none`}
+          className={`absolute ${positionClasses[position]} z-50 px-2 py-1 text-xs text-white bg-[#E14C42] rounded whitespace-nowrap pointer-events-none`}
         >
           {text}
           <div
-            className={`absolute w-2 h-2 bg-gray-800 transform rotate-45 ${
+            className={`absolute w-2 h-2 bg-[#E14C42] transform rotate-45 ${
               position === 'top'
                 ? 'top-full left-1/2 -translate-x-1/2 -translate-y-1/2'
                 : position === 'bottom'
@@ -109,7 +109,7 @@ const AppLogo = ({ size = 45 }) => (
   <img src={logo} alt="Yudle Logo" width={size} height={size} />
 );
 
-// SmartActionButton Component
+// SmartActionButton Component - Updated colors
 const SmartActionButton = ({ icon, label, active, onClick, isSearch = false }) => {
   const baseClasses = "flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 text-sm font-medium";
 
@@ -117,31 +117,31 @@ const SmartActionButton = ({ icon, label, active, onClick, isSearch = false }) =
     if (isSearch) {
       return `${baseClasses} ${
         active 
-          ? 'bg-blue-100 text-blue-700 border border-blue-200 shadow-inner shadow-[0_0_8px_rgba(59,130,246,0.5)]'
-          : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-transparent hover:shadow-[0_0_4px_rgba(0,0,0,0.1)]'
+          ? 'bg-gradient-to-r from-[#E65C52] to-[#E14C42] text-white border-2 border-transparent shadow-lg shadow-[#E65C52]/30' 
+          : 'bg-white text-gray-700 border-2 border-[#E65C52]/20 hover:bg-[#F5D9D1] hover:border-[#E65C52]/40 hover:shadow-md'
       }`;
     } else if (label === 'Deep Research') {
       return `${baseClasses} ${
         active 
-          ? 'bg-violet-100 text-violet-700 border border-violet-200 shadow-inner shadow-[0_0_8px_rgba(139,92,246,0.5)]'
-          : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-transparent hover:shadow-[0_0_4px_rgba(0,0,0,0.1)]'
+          ? 'bg-gradient-to-r from-[#E65C52] to-[#E14C42] text-white border-2 border-transparent shadow-lg shadow-[#E65C52]/30'
+          : 'bg-white text-gray-700 border-2 border-[#E65C52]/20 hover:bg-[#F5D9D1] hover:border-[#E65C52]/40 hover:shadow-md'
       }`;
     } else {
       return `${baseClasses} ${
         active 
-          ? 'bg-yellow-100 text-yellow-700 border border-yellow-200 shadow-inner shadow-[0_0_8px_rgba(234,179,8,0.5)]'
-          : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-transparent hover:shadow-[0_0_4px_rgba(0,0,0,0.1)]'
+          ? 'bg-gradient-to-r from-[#E65C52] to-[#E14C42] text-white border-2 border-transparent shadow-lg shadow-[#E65C52]/30'
+          : 'bg-white text-gray-700 border-2 border-[#E65C52]/20 hover:bg-[#F5D9D1] hover:border-[#E65C52]/40 hover:shadow-md'
       }`;
     }
   };
 
   const getIconClasses = () => {
     if (isSearch) {
-      return `w-4 h-4 ${active ? 'text-blue-600' : 'text-gray-600'}`;
+      return `w-4 h-4 ${active ? 'text-white' : 'text-[#E65C52]'}`;
     } else if (label === 'Deep Research') {
-      return `w-4 h-4 ${active ? 'text-violet-600' : 'text-gray-600'}`;
+      return `w-4 h-4 ${active ? 'text-white' : 'text-[#E65C52]'}`;
     } else {
-      return `w-4 h-4 ${active ? 'text-yellow-600' : 'text-gray-600'}`;
+      return `w-4 h-4 ${active ? 'text-white' : 'text-[#E65C52]'}`;
     }
   };
 
@@ -1076,7 +1076,7 @@ Please execute the task as soon as you can - an artifact would be great if it ma
           <button
             type="button"
             onClick={stopRecording}
-            className="p-2 rounded-full text-red-500 hover:text-red-600 bg-red-50 transition-colors"
+            className="p-2 rounded-full text-[#E14C42] hover:text-[#E14C42]/80 bg-[#F5D9D1] transition-colors"
           >
             <StopCircle className="w-5 h-5" />
           </button>
@@ -1089,7 +1089,7 @@ Please execute the task as soon as you can - an artifact would be great if it ma
         <Tooltip text="Send message">
           <button
             type="submit"
-            className="p-2 rounded-full text-[#0E0E28] hover:text-[#0E0E28]/80 bg-[#0E0E28]/10 transition-colors"
+            className="p-2 rounded-full bg-gradient-to-r from-[#E65C52] to-[#E14C42] text-white hover:shadow-lg hover:shadow-[#E65C52]/30 transition-all"
           >
             <Send className="w-5 h-5" />
           </button>
@@ -1106,8 +1106,8 @@ Please execute the task as soon as you can - an artifact would be great if it ma
           onClick={permissionState === 'denied' ? requestPermissionAgain : toggleRecording}
           className={`p-2 rounded-full transition-colors ${
             permissionState === 'denied' ? 
-              'text-red-500 bg-red-50' :
-              'text-gray-500 hover:text-gray-600 hover:bg-gray-100'
+              'text-[#E14C42] bg-[#F5D9D1]' :
+              'text-[#E65C52] hover:text-[#E14C42] hover:bg-[#F5D9D1]'
           }`}
         >
           {permissionState === 'denied' ? (
@@ -1142,10 +1142,10 @@ Please execute the task as soon as you can - an artifact would be great if it ma
   };
 
   return (
-    <div className="h-screen flex overflow-hidden bg-[#F8F8F7]">
+    <div className="h-screen flex overflow-hidden bg-gradient-to-b from-[#F5D9D1]/20 to-white">
       {isMobile && showSidebarOverlay && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40"
+          className="fixed inset-0 bg-[#E65C52]/10 backdrop-blur-sm z-40"
           onClick={() => {
             setShowSidebarOverlay(false);
             setIsSidebarVisible(false);
@@ -1171,13 +1171,13 @@ Please execute the task as soon as you can - an artifact would be great if it ma
 
       <div className="flex-1 flex flex-col h-full overflow-hidden">
         {isMobile && (
-          <div className="bg-[#F8F8F7] backdrop-blur-sm px-4 py-2 flex items-center justify-between h-[65px] sticky top-0 z-30">
+          <div className="bg-gradient-to-r from-white to-[#F5D9D1]/30 backdrop-blur-sm px-4 py-2 flex items-center justify-between h-[65px] sticky top-0 z-30 border-b border-[#E65C52]/10">
             {!showSidebarOverlay && !isSidebarVisible && (
               <button
                 onClick={toggleSidebar}
-                className="p-2 rounded spotlight-button hover:bg-gray-200 transition-colors menu-button shadow-[0_0_4px_rgba(0,0,0,0.1)]"
+                className="p-2 rounded-lg hover:bg-[#F5D9D1] transition-colors menu-button shadow-lg shadow-[#E65C52]/10"
               >
-                <PanelLeft className="w-5 h-5 text-gray-600" />
+                <PanelLeft className="w-5 h-5 text-[#E65C52]" />
               </button>
             )}
             {currentConversationId === null && (
@@ -1194,20 +1194,22 @@ Please execute the task as soon as you can - an artifact would be great if it ma
         )}
 
         {!isMobile && (
-          <div className="bg-[#F8F8F7] backdrop-blur-sm px-4 py-2 flex items-center justify-between h-[65px]">
+          <div className="bg-gradient-to-r from-white to-[#F5D9D1]/30 backdrop-blur-sm px-4 py-2 flex items-center justify-between h-[65px] border-b border-[#E65C52]/10">
             <div className="flex items-center gap-2">
               {!isSidebarVisible && (
                 <button
                   onClick={toggleSidebar}
-                  className="p-2 rounded-full hover:bg-gray-200 transition-colors menu-button shadow-[0_0_4px_rgba(0,0,0,0.1)]"
+                  className="p-2 rounded-lg hover:bg-[#F5D9D1] transition-colors menu-button shadow-lg shadow-[#E65C52]/10"
                 >
-                  <PanelLeft className="w-5 h-5 text-gray-600" />
+                  <PanelLeft className="w-5 h-5 text-[#E65C52]" />
                 </button>
               )}
               {currentConversationId === null && (
                 <>
                   <AppLogo size={45} />
-                  <div className="font-semibold text-lg">Athena AI</div>
+                  <div className="font-semibold text-lg bg-gradient-to-r from-[#E65C52] to-[#E14C42] bg-clip-text text-transparent">
+                    Athena AI
+                  </div>
                 </>
               )}
             </div>
@@ -1229,21 +1231,21 @@ Please execute the task as soon as you can - an artifact would be great if it ma
         ) : currentView === 'profile' ? (
           <ProfilePage onBack={() => setCurrentView('chat')} />
         ) : (
-          <div className="flex flex-col h-full overflow-hidden bg-[#F8F8F7]">
-            <div className="flex-1 p-4 md:p-6 overflow-y-auto flex flex-col items-center bg-[#F8F8F7]">
+          <div className="flex flex-col h-full overflow-hidden">
+            <div className="flex-1 p-4 md:p-6 overflow-y-auto flex flex-col items-center">
               <div className="w-full max-w-4xl">
                 {messages.length === 0 ? (
                   <div className="h-full flex flex-col items-center justify-center text-center py-12">
-                    <h1 className="text-2xl md:text-4xl font-semibold mb-2">
+                    <h1 className="text-2xl md:text-4xl font-semibold mb-2 bg-gradient-to-r from-[#E65C52] to-[#E14C42] bg-clip-text text-transparent">
                       Hi, {auth.currentUser?.displayName?.split(' ')[0] || 'there'}!
                     </h1>
-                    <p className="text-gray-500 text-lg md:text-xl mb-8">
+                    <p className="text-gray-600 text-lg md:text-xl mb-8">
                       How can I assist you today?
                     </p>
 
                     <form
                       onSubmit={handleSubmit}
-                      className="w-full max-w-2xl mx-auto bg-white border border-gray-300 rounded-xl px-4 py-4 shadow-sm"
+                      className="w-full max-w-2xl mx-auto bg-white border-2 border-[#E65C52]/20 rounded-xl px-4 py-4 shadow-lg hover:shadow-xl hover:shadow-[#E65C52]/10 transition-all"
                     >
                       <div className="flex flex-col gap-3">
                         <input
@@ -1251,7 +1253,7 @@ Please execute the task as soon as you can - an artifact would be great if it ma
                           type="text"
                           value={inputValue}
                           onChange={(e) => setInputValue(e.target.value)}
-                          placeholder="Ask anything"
+                          placeholder="Ask anything..."
                           className="w-full bg-transparent focus:outline-none text-gray-700 placeholder-gray-400 text-base min-h-[40px] py-2"
                           disabled={isLoading}
                           autoFocus
@@ -1263,10 +1265,10 @@ Please execute the task as soon as you can - an artifact would be great if it ma
                               <Tooltip text="Attach files">
                                 <button
                                   type="button"
-                                  className={`p-2 rounded spotlight-button hover:bg-gray-100 transition-colors attachment-button ${
+                                  className={`p-2 rounded-lg transition-colors attachment-button ${
                                     activeUploadPanel === 'attachment'
-                                      ? 'text-[#0E0E28] bg-[#0E0E28]/10 shadow-[0_0_8px_rgba(59,130,246,0.5)]'
-                                      : 'text-gray-500 shadow-[0_0_4px_rgba(0,0,0,0.1)]'
+                                      ? 'text-[#E14C42] bg-[#F5D9D1] border-2 border-[#E65C52]/40 shadow-lg shadow-[#E65C52]/20'
+                                      : 'text-[#E65C52] hover:text-[#E14C42] hover:bg-[#F5D9D1] hover:border-2 hover:border-[#E65C52]/20'
                                   }`}
                                   onClick={() => toggleUploadPanel('attachment')}
                                 >
@@ -1274,10 +1276,10 @@ Please execute the task as soon as you can - an artifact would be great if it ma
                                 </button>
                               </Tooltip>
                               {activeUploadPanel === 'attachment' && (
-                                <div className="absolute bottom-full left-0 mb-2 bg-white rounded-lg shadow-lg p-2 z-10 w-48 border border-gray-200">
+                                <div className="absolute bottom-full left-0 mb-2 bg-white rounded-lg shadow-xl border-2 border-[#E65C52]/20 p-2 z-10 w-48">
                                   <div className="flex flex-col gap-1">
-                                    <label className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:shadow-[0_0_4px_rgba(0,0,0,0.1)] rounded cursor-pointer">
-                                      <FileText className="w-4 h-4" />
+                                    <label className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-[#F5D9D1] rounded cursor-pointer">
+                                      <FileText className="w-4 h-4 text-[#E65C52]" />
                                       <span>Upload File</span>
                                       <input
                                         type="file"
@@ -1289,8 +1291,8 @@ Please execute the task as soon as you can - an artifact would be great if it ma
                                         multiple
                                       />
                                     </label>
-                                    <label className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:shadow-[0_0_4px_rgba(0,0,0,0.1)] rounded cursor-pointer">
-                                      <ImageIcon className="w-4 h-4" />
+                                    <label className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-[#F5D9D1] rounded cursor-pointer">
+                                      <ImageIcon className="w-4 h-4 text-[#E65C52]" />
                                       <span>Upload Image</span>
                                       <input
                                         type="file"
@@ -1317,16 +1319,16 @@ Please execute the task as soon as you can - an artifact would be great if it ma
                                 <button
                                   type="button"
                                   onClick={() => setShowSearchOptions(!showSearchOptions)}
-                                  className="p-2 rounded-full text-gray-500 hover:bg-gray-100 transition-colors"
+                                  className="p-2 rounded-lg text-[#E65C52] hover:text-[#E14C42] hover:bg-[#F5D9D1] transition-colors"
                                 >
                                   <Globe className="w-5 h-5" />
                                 </button>
                               </Tooltip>
 
                               {showSearchOptions && (
-                                <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-lg z-50 border border-gray-200">
-                                  <div className="p-3 border-b border-gray-200">
-                                    <h3 className="text-sm font-medium text-gray-900">Search options</h3>
+                                <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-xl z-50 border-2 border-[#E65C52]/20">
+                                  <div className="p-3 border-b-2 border-[#E65C52]/10 bg-gradient-to-r from-[#F5D9D1]/30 to-white">
+                                    <h3 className="text-sm font-medium text-[#E14C42]">Search options</h3>
                                   </div>
                                   <div className="p-2">
                                     {searchOptions.map((option) => {
@@ -1334,7 +1336,7 @@ Please execute the task as soon as you can - an artifact would be great if it ma
                                       return (
                                         <button
                                           key={option.id}
-                                          className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 rounded-md flex items-start gap-3"
+                                          className="w-full text-left px-3 py-2 text-sm hover:bg-[#F5D9D1] rounded-md flex items-start gap-3 transition-colors"
                                           onClick={() => {
                                             setActiveAction('search');
                                             setInputValue(`[${option.label}] `);
@@ -1342,7 +1344,7 @@ Please execute the task as soon as you can - an artifact would be great if it ma
                                             inputRef.current.focus();
                                           }}
                                         >
-                                          <div className="p-1.5 rounded-md bg-gray-100 text-gray-600">
+                                          <div className="p-1.5 rounded-md bg-[#F5D9D1] text-[#E65C52]">
                                             <Icon className="w-4 h-4" />
                                           </div>
                                           <div className="flex-1">
@@ -1361,13 +1363,13 @@ Please execute the task as soon as you can - an artifact would be great if it ma
                               <button
                                 type="button"
                                 onClick={() => setShowModelDropdown(!showModelDropdown)}
-                                className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors shadow-[0_0_4px_rgba(0,0,0,0.1)]"
+                                className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-[#E65C52] hover:bg-[#F5D9D1] rounded-lg transition-colors border border-[#E65C52]/20"
                               >
                                 <span>{selectedModel}</span>
                                 <ChevronDown className="w-4 h-4" />
                               </button>
                               {showModelDropdown && (
-                                <div className="absolute bottom-full right-0 mb-2 bg-white rounded-lg shadow-lg py-1 z-20 border border-gray-200 min-w-[120px]">
+                                <div className="absolute bottom-full right-0 mb-2 bg-white rounded-lg shadow-xl py-1 z-20 border-2 border-[#E65C52]/20 min-w-[120px]">
                                   {['GPT', 'Minerva', 'Gemini'].map((model) => (
                                     <button
                                       key={model}
@@ -1376,9 +1378,9 @@ Please execute the task as soon as you can - an artifact would be great if it ma
                                         setSelectedModel(model);
                                         setShowModelDropdown(false);
                                       }}
-                                      className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 transition-colors shadow-[0_0_4px_rgba(0,0,0,0.1)] ${
+                                      className={`w-full text-left px-4 py-2 text-sm hover:bg-[#F5D9D1] transition-colors ${
                                         selectedModel === model
-                                          ? 'text-blue-600 bg-blue-50'
+                                          ? 'text-[#E14C42] bg-[#F5D9D1]/50 font-medium'
                                           : 'text-gray-700'
                                       }`}
                                     >
@@ -1438,14 +1440,14 @@ Please execute the task as soon as you can - an artifact would be great if it ma
                               key={category.id}
                               onClick={() => handleCategoryClick(category.id)}
                               className={`
-                                flex items-center gap-2 px-3 py-2 rounded-lg transition-all text-sm font-medium
+                                flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all text-sm font-medium border-2
                                 ${selectedCategory === category.id 
-                                  ? 'bg-gray-900 text-white shadow-[0_0_8px_rgba(0,0,0,0.3)]' 
-                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-[0_0_4px_rgba(0,0,0,0.1)]'
+                                  ? 'bg-gradient-to-r from-[#E65C52] to-[#E14C42] text-white border-transparent shadow-lg shadow-[#E65C52]/30' 
+                                  : 'bg-white text-gray-700 border-[#E65C52]/20 hover:bg-[#F5D9D1] hover:border-[#E65C52]/40 hover:shadow-md'
                                 }
                               `}
                             >
-                              <Icon className={`w-4 h-4 ${selectedCategory === category.id ? 'text-white' : 'text-gray-600'}`} />
+                              <Icon className={`w-4 h-4 ${selectedCategory === category.id ? 'text-white' : 'text-[#E65C52]'}`} />
                               <span>{category.label}</span>
                             </button>
                           );
@@ -1453,12 +1455,14 @@ Please execute the task as soon as you can - an artifact would be great if it ma
                       </div>
 
                       {showCategoryPanel && selectedCategory && (
-                        <div className="relative w-full mt-2">
-                          <div className="absolute left-0 right-0 mx-auto border border-gray-200 rounded-xl shadow-lg z-10 overflow-hidden bg-white" style={{ width: 'calc(100% - 2rem)' }}>
-                            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-300 bg-gray-50">
+                        <div className="relative w-full mt-4">
+                          <div className="absolute left-0 right-0 mx-auto border-2 border-[#E65C52]/20 rounded-xl shadow-xl z-10 overflow-hidden bg-white" style={{ width: 'calc(100% - 2rem)' }}>
+                            <div className="flex items-center justify-between px-4 py-3 border-b-2 border-[#E65C52]/20 bg-gradient-to-r from-[#F5D9D1]/30 to-white">
                               <div className="flex items-center gap-2">
-                                {React.createElement(categories.find((c) => c.id === selectedCategory)?.icon, { className: 'w-4 h-4 text-gray-600' })}
-                                <span className="font-medium text-gray-900">
+                                {React.createElement(categories.find((c) => c.id === selectedCategory)?.icon, { 
+                                  className: 'w-4 h-4 text-[#E65C52]' 
+                                })}
+                                <span className="font-medium text-[#E14C42]">
                                   {categories.find((c) => c.id === selectedCategory)?.label}
                                 </span>
                               </div>
@@ -1467,7 +1471,7 @@ Please execute the task as soon as you can - an artifact would be great if it ma
                                   setShowCategoryPanel(false);
                                   setSelectedCategory(null);
                                 }}
-                                className="text-gray-400 hover:text-gray-600 hover:shadow-[0_0_4px_rgba(0,0,0,0.1)] p-1"
+                                className="text-gray-400 hover:text-[#E65C52] hover:bg-[#F5D9D1] rounded-full p-1 transition-colors"
                               >
                                 <X className="w-4 h-4" />
                               </button>
@@ -1477,7 +1481,7 @@ Please execute the task as soon as you can - an artifact would be great if it ma
                                 <button
                                   key={index}
                                   onClick={() => handleCategoryOptionSelect(option)}
-                                  className="w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-100 hover:shadow-[0_0_4px_rgba(0,0,0,0.1)] transition-colors border-b border-gray-300 last:border-b-0"
+                                  className="w-full text-left px-4 py-3 text-gray-700 hover:bg-[#F5D9D1] transition-colors border-b border-[#E65C52]/10 last:border-b-0"
                                 >
                                   <span className="text-sm leading-relaxed">{option}</span>
                                 </button>
@@ -1502,10 +1506,10 @@ Please execute the task as soon as you can - an artifact would be great if it ma
                         }`}
                       >
                         <div
-                          className={`message-container max-w-full md:max-w-4xl rounded-2xl ${
+                          className={`max-w-full md:max-w-4xl rounded-2xl ${
                             message.role === 'user'
-                              ? 'bg-[#1a1a1a] text-white p-3 md:p-5'
-                              : 'bg-white/90 backdrop-blur-sm border border-gray-200 shadow-sm p-3 md:p-5 relative'
+                              ? 'bg-gradient-to-r from-[#E65C52] to-[#E14C42] text-white p-3 md:p-5 shadow-lg'
+                              : 'bg-white border-2 border-[#E65C52]/20 shadow-md p-3 md:p-5 relative'
                           }`}
                         >
                           {message.role === 'user' ? (
@@ -1513,7 +1517,7 @@ Please execute the task as soon as you can - an artifact would be great if it ma
                               <div className="text-sm whitespace-pre-wrap">
                                 {formatMessageContent(message.content)}
                               </div>
-                              <div className="flex items-center justify-end gap-2 mt-2 pt-2 border-t border-gray-600">
+                              <div className="flex items-center justify-end gap-2 mt-2 pt-2 border-t border-white/20">
                                 <Tooltip text="Copy">
                                   <CopyButton1
                                     text={message.content}
@@ -1526,8 +1530,8 @@ Please execute the task as soon as you can - an artifact would be great if it ma
                                   <button
                                     className={`p-1.5 rounded-md transition-colors ${
                                       editingMessageId === index
-                                        ? 'text-gray-300 bg-gray-700'
-                                        : 'text-gray-300 bg-gray-700'
+                                        ? 'text-white bg-white/20'
+                                        : 'text-white/80 hover:text-white hover:bg-white/10'
                                     }`}
                                     onClick={() => {
                                       console.log('Edit clicked for user message index:', index);
@@ -1560,17 +1564,17 @@ Please execute the task as soon as you can - an artifact would be great if it ma
                                     return preview ? (
                                       <div
                                         key={url}
-                                        className="mt-2 p-4 border rounded-lg bg-gray-50 max-w-full"
+                                        className="mt-2 p-4 border-2 border-[#E65C52]/10 rounded-lg bg-[#F5D9D1]/20 max-w-full"
                                       >
                                         {preview.image && (
                                           <img
                                             src={preview.image}
                                             alt={preview.title}
-                                            className="w-full h-32 sm:h-48 md:h-64 object-cover rounded-t-lg"
+                                            className="w-full h-32 sm:h-48 md:h-64 object-cover rounded-lg"
                                           />
                                         )}
                                         <div className="p-4">
-                                          <h4 className="text-base font-bold link-preview-text">
+                                          <h4 className="text-base font-bold text-[#E14C42] link-preview-text">
                                             {preview.title}
                                           </h4>
                                           <p className="text-sm text-gray-600 link-preview-text">
@@ -1580,7 +1584,7 @@ Please execute the task as soon as you can - an artifact would be great if it ma
                                             href={preview.url}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="text-sm text-blue-500 link-preview-text"
+                                            className="text-sm text-[#E65C52] hover:text-[#E14C42] link-preview-text"
                                           >
                                             {preview.url}
                                           </a>
@@ -1590,10 +1594,10 @@ Please execute the task as soon as you can - an artifact would be great if it ma
                                   })}
                                 </div>
                               </div>
-                              <div className="flex items-center justify-end gap-2 mt-2 pt-2 border-t border-gray-100">
+                              <div className="flex items-center justify-end gap-2 mt-2 pt-2 border-t border-[#E65C52]/10">
                                 <Tooltip text="Regenerate">
                                   <button
-                                    className={`p-1.5 rounded-md text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors shadow-[0_0_4px_rgba(0,0,0,0.1)] ${
+                                    className={`p-1.5 rounded-md text-[#E65C52] hover:bg-[#F5D9D1] hover:text-[#E14C42] transition-colors ${
                                       index === 0 || messages[index - 1].role !== 'user'
                                         ? 'opacity-50 cursor-not-allowed'
                                         : ''
@@ -1638,12 +1642,12 @@ Please execute the task as soon as you can - an artifact would be great if it ma
                                 </Tooltip>
                                 <Tooltip text="Like">
                                   <button
-                                    className={`p-1.5 rounded-md transition-colors shadow-[0_0_4px_rgba(0,0,0,0.1)] ${
+                                    className={`p-1.5 rounded-md transition-colors ${
                                       messageRatings[index] === 'positive'
-                                        ? 'text-green-500 bg-green-50'
+                                        ? 'text-[#E14C42] bg-[#F5D9D1]'
                                         : messageRatings[index] === 'negative'
                                         ? 'hidden'
-                                        : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+                                        : 'text-gray-400 hover:text-[#E65C52] hover:bg-[#F5D9D1]'
                                     }`}
                                     onClick={() => {
                                       console.log('Like clicked for index:', index);
@@ -1668,12 +1672,12 @@ Please execute the task as soon as you can - an artifact would be great if it ma
                                 </Tooltip>
                                 <Tooltip text="Unlike">
                                   <button
-                                    className={`p-1.5 rounded-md transition-colors shadow-[0_0_4px_rgba(0,0,0,0.1)] ${
+                                    className={`p-1.5 rounded-md transition-colors ${
                                       messageRatings[index] === 'negative'
-                                        ? 'text-red-500 bg-red-50'
+                                        ? 'text-[#E14C42] bg-[#F5D9D1]'
                                         : messageRatings[index] === 'positive'
                                         ? 'hidden'
-                                        : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+                                        : 'text-gray-400 hover:text-[#E65C52] hover:bg-[#F5D9D1]'
                                     }`}
                                     onClick={() => {
                                       console.log('Unlike clicked for index:', index);
@@ -1698,7 +1702,7 @@ Please execute the task as soon as you can - an artifact would be great if it ma
                                 </Tooltip>
                                 <Tooltip text="More options">
                                   <button
-                                    className="p-1.5 rounded-md text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors shadow-[0_0_4px_rgba(0,0,0,0.1)]"
+                                    className="p-1.5 rounded-md text-gray-400 hover:text-[#E65C52] hover:bg-[#F5D9D1] transition-colors"
                                     onClick={() => {
                                       setActiveAction(
                                         activeAction === `options-${index}` ? null : `options-${index}`
@@ -1710,17 +1714,17 @@ Please execute the task as soon as you can - an artifact would be great if it ma
                                 </Tooltip>
                                 {activeAction === `options-${index}` && (
                                   <div
-                                    className="absolute top-full right-0 mt-2 bg-white rounded-lg shadow-lg py-1 z-50 border border-gray-200 more-options-dropdown"
+                                    className="absolute top-full right-0 mt-2 bg-white rounded-lg shadow-xl py-1 z-50 border-2 border-[#E65C52]/20 more-options-dropdown"
                                     style={{ minWidth: '200px' }}
                                   >
                                     <button
-                                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors shadow-[0_0_4px_rgba(0,0,0,0.1)] flex items-center"
+                                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-[#F5D9D1] transition-colors flex items-center"
                                       onClick={() => handleReportIssue(index)}
                                     >
                                       <span>Report Issue</span>
                                     </button>
                                     <button
-                                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors shadow-[0_0_4px_rgba(0,0,0,0.1)] flex items-center"
+                                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-[#F5D9D1] transition-colors flex items-center"
                                       onClick={() => {
                                         exportToPDF(message.content);
                                         setActiveAction(null);
@@ -1738,8 +1742,12 @@ Please execute the task as soon as you can - an artifact would be great if it ma
                     ))}
                     {isLoading && (
                       <div className="flex justify-start animate-fade duration-300">
-                        <div className="max-w-full md:max-w-4xl p-3 md:p-5 rounded-2xl bg-white/90 backdrop-blur-sm border border-gray-200 shadow-sm">
-                          <p className="text-sm">Thinking...</p>
+                        <div className="max-w-full md:max-w-4xl p-3 md:p-5 rounded-2xl bg-white border-2 border-[#E65C52]/20 shadow-md">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-[#E65C52] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                            <div className="w-2 h-2 bg-[#E65C52] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                            <div className="w-2 h-2 bg-[#E65C52] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                          </div>
                         </div>
                       </div>
                     )}
@@ -1753,12 +1761,12 @@ Please execute the task as soon as you can - an artifact would be great if it ma
               <div className="sticky bottom-0 p-4 bg-transparent">
                 <div className="max-w-4xl mx-auto">
                   {errorMessage && (
-                    <div className="bg-red-50/90 border border-red-200 rounded-lg p-3 mb-4 flex items-center justify-between">
+                    <div className="bg-[#F5D9D1]/90 border-2 border-[#E65C52]/20 rounded-lg p-3 mb-4 flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-red-700">{errorMessage}</span>
+                        <span className="text-sm text-[#E14C42]">{errorMessage}</span>
                       </div>
                       <button
-                        className="text-red-400 hover:text-red-600 shadow-[0_0_4px_rgba(0,0,0,0.1)]"
+                        className="text-[#E65C52] hover:text-[#E14C42]"
                         onClick={() => setErrorMessage(null)}
                       >
                         <X className="w-4 h-4" />
@@ -1766,12 +1774,12 @@ Please execute the task as soon as you can - an artifact would be great if it ma
                     </div>
                   )}
                   {recordingError && (
-                    <div className="bg-red-50/90 border border-red-200 rounded-lg p-3 mb-4 flex items-center justify-between">
+                    <div className="bg-[#F5D9D1]/90 border-2 border-[#E65C52]/20 rounded-lg p-3 mb-4 flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-red-700">{recordingError}</span>
+                        <span className="text-sm text-[#E14C42]">{recordingError}</span>
                       </div>
                       <button
-                        className="text-red-400 hover:text-red-600 shadow-[0_0_4px_rgba(0,0,0,0.1)]"
+                        className="text-[#E65C52] hover:text-[#E14C42]"
                         onClick={() => setRecordingError(null)}
                       >
                         <X className="w-4 h-4" />
@@ -1781,13 +1789,13 @@ Please execute the task as soon as you can - an artifact would be great if it ma
 
                   <form
                     onSubmit={handleSubmit}
-                    className="bg-white border border-gray-300 rounded-xl px-4 py-4 shadow-sm relative"
+                    className="bg-white border-2 border-[#E65C52]/20 rounded-xl px-4 py-4 shadow-lg hover:shadow-xl hover:shadow-[#E65C52]/10 transition-all relative"
                   >
                     <div className="absolute top-2 right-2 flex items-center gap-1">
                       <Tooltip text="Share">
                         <button
                           type="button"
-                          className="p-1.5 rounded-md text-gray-500 hover:bg-gray-100 transition-colors"
+                          className="p-1.5 rounded-md text-[#E65C52] hover:bg-[#F5D9D1] transition-colors"
                           onClick={() => {
                             console.log('Share clicked');
                             navigator.clipboard.writeText(window.location.href);
@@ -1818,7 +1826,7 @@ Please execute the task as soon as you can - an artifact would be great if it ma
                         <Tooltip text="More options">
                           <button
                             type="button"
-                            className="p-1.5 rounded-md text-gray-500 hover:bg-gray-100 transition-colors"
+                            className="p-1.5 rounded-md text-[#E65C52] hover:bg-[#F5D9D1] transition-colors"
                             onClick={() => setActiveAction(activeAction === 'message-options' ? null : 'message-options')}
                           >
                             <MoreVertical className="w-4 h-4" />
@@ -1826,10 +1834,10 @@ Please execute the task as soon as you can - an artifact would be great if it ma
                         </Tooltip>
 
                         {activeAction === 'message-options' && (
-                          <div className="absolute right-0 top-full mt-1 bg-white rounded-md shadow-lg py-1 z-10 border border-gray-200 w-40">
+                          <div className="absolute right-0 top-full mt-1 bg-white rounded-md shadow-xl py-1 z-10 border-2 border-[#E65C52]/20 w-40">
                             <button
                               type="button"
-                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-[#F5D9D1] flex items-center gap-2"
                               onClick={() => {
                                 console.log('Archive clicked');
                                 if (currentConversationId) {
@@ -1867,7 +1875,7 @@ Please execute the task as soon as you can - an artifact would be great if it ma
                             </button>
                             <button
                               type="button"
-                              className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                              className="w-full text-left px-4 py-2 text-sm text-[#E14C42] hover:bg-[#F5D9D1] flex items-center gap-2"
                               onClick={() => {
                                 console.log('Delete clicked');
                                 if (currentConversationId) {
@@ -1899,7 +1907,7 @@ Please execute the task as soon as you can - an artifact would be great if it ma
                         type="text"
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
-                        placeholder="Ask anything"
+                        placeholder="Ask anything..."
                         className="w-full bg-transparent focus:outline-none text-gray-700 placeholder-gray-400 text-base min-h-[40px] py-2"
                         disabled={isLoading}
                         autoFocus
@@ -1909,20 +1917,20 @@ Please execute the task as soon as you can - an artifact would be great if it ma
                           <div className="relative" ref={attachmentPanelRef}>
                             <button
                               type="button"
-                              className={`p-2 rounded spotlight-button hover:bg-gray-100 transition-colors attachment-button ${
+                              className={`p-2 rounded-lg transition-colors attachment-button ${
                                 activeUploadPanel === 'attachment'
-                                  ? 'text-[#0E0E28] bg-[#0E0E28]/10 shadow-[0_0_8px_rgba(59,130,246,0.5)]'
-                                  : 'text-gray-500 shadow-[0_0_4px_rgba(0,0,0,0.1)]'
+                                  ? 'text-[#E14C42] bg-[#F5D9D1] border-2 border-[#E65C52]/40 shadow-lg shadow-[#E65C52]/20'
+                                  : 'text-[#E65C52] hover:text-[#E14C42] hover:bg-[#F5D9D1] hover:border-2 hover:border-[#E65C52]/20'
                               }`}
                               onClick={() => toggleUploadPanel('attachment')}
                             >
                               <Paperclip className="w-5 h-5" />
                             </button>
                             {activeUploadPanel === 'attachment' && (
-                              <div className="absolute bottom-full left-0 mb-2 bg-white rounded-lg shadow-lg p-2 z-10 w-48 border border-gray-200">
+                              <div className="absolute bottom-full left-0 mb-2 bg-white rounded-lg shadow-xl border-2 border-[#E65C52]/20 p-2 z-10 w-48">
                                 <div className="flex flex-col gap-1">
-                                  <label className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:shadow-[0_0_4px_rgba(0,0,0,0.1)] rounded cursor-pointer">
-                                    <FileText className="w-4 h-4" />
+                                  <label className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-[#F5D9D1] rounded cursor-pointer">
+                                    <FileText className="w-4 h-4 text-[#E65C52]" />
                                     <span>Upload File</span>
                                     <input
                                       type="file"
@@ -1934,8 +1942,8 @@ Please execute the task as soon as you can - an artifact would be great if it ma
                                       multiple
                                     />
                                   </label>
-                                  <label className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:shadow-[0_0_4px_rgba(0,0,0,0.1)] rounded cursor-pointer">
-                                    <ImageIcon className="w-4 h-4" />
+                                  <label className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-[#F5D9D1] rounded cursor-pointer">
+                                    <ImageIcon className="w-4 h-4 text-[#E65C52]" />
                                     <span>Upload Image</span>
                                     <input
                                       type="file"
@@ -1960,36 +1968,34 @@ Please execute the task as soon as you can - an artifact would be great if it ma
                             <button
                               type="button"
                               onClick={() => setShowModelDropdown(!showModelDropdown)}
-                              className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors shadow-[0_0_4px_rgba(0,0,0,0.1)]"
+                              className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-[#E65C52] hover:bg-[#F5D9D1] rounded-lg transition-colors border border-[#E65C52]/20"
                             >
                               <span>{selectedModel}</span>
                               <ChevronDown className="w-4 h-4" />
-          </button>
-          {showModelDropdown && (
-            <div className="absolute bottom-full right-0 mb-2 bg-white rounded-lg shadow-lg py-1 z-20 border border-gray-200 min-w-[120px]">
-              {['GPT', 'Minerva', 'Gemini'].map((model) => (
-                <button
-                  key={model}
-                  type="button"
-                  onClick={() => {
-                    setSelectedModel(model);
-                    setShowModelDropdown(false);
-                  }}
-                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 transition-colors shadow-[0_0_4px_rgba(0,0,0,0.1)] ${
-                    selectedModel === model
-                      ? 'text-blue-600 bg-blue-50'
-                      : 'text-gray-700'
-                  }`}
-                >
-                  {model}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+                            </button>
+                            {showModelDropdown && (
+                              <div className="absolute bottom-full right-0 mb-2 bg-white rounded-lg shadow-xl py-1 z-20 border-2 border-[#E65C52]/20 min-w-[120px]">
+                                {['GPT', 'Minerva', 'Gemini'].map((model) => (
+                                  <button
+                                    key={model}
+                                    type="button"
+                                    onClick={() => {
+                                      setSelectedModel(model);
+                                      setShowModelDropdown(false);
+                                    }}
+                                    className={`w-full text-left px-4 py-2 text-sm hover:bg-[#F5D9D1] transition-colors ${
+                                      selectedModel === model
+                                        ? 'text-[#E14C42] bg-[#F5D9D1]/50 font-medium'
+                                        : 'text-gray-700'
+                                    }`}
+                                  >
+                                    {model}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
 
-          <Tooltip text="Browse files">
-          </Tooltip>
                           {renderInputButton()}
                         </div>
                       </div>
@@ -1998,7 +2004,7 @@ Please execute the task as soon as you can - an artifact would be great if it ma
                   {isRecording && (
                     <div className="mt-2 text-center">
                       <VoiceRecordingAnimation audioLevel={audioLevel} />
-                      <p className="text-sm text-red-500 mt-1">Recording... Speak now</p>
+                      <p className="text-sm text-[#E14C42] mt-1">Recording... Speak now</p>
                     </div>
                   )}
                 </div>
@@ -2009,29 +2015,27 @@ Please execute the task as soon as you can - an artifact would be great if it ma
       </div>
 
       {isReportModalOpen && (
-  <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
-    <ReportIssueModal
-      isOpen={isReportModalOpen}
-      onClose={() => setIsReportModalOpen(false)}
-      message={messages[selectedMessageIndex]?.content || ''}
-    />
-  </div>
-)}
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
+          <ReportIssueModal
+            isOpen={isReportModalOpen}
+            onClose={() => setIsReportModalOpen(false)}
+            message={messages[selectedMessageIndex]?.content || ''}
+          />
+        </div>
+      )}
 
-{/* Add this new panel component */}
-{showFileCategoryPanel && (
-  <div className="fixed inset-0 z-[100]">
-    <FileCategoryPanel 
-      onClose={() => setShowFileCategoryPanel(false)}
-      onSelectFile={(file) => {
-        setInputValue(`[File] ${file.name}`);
-        setShowFileCategoryPanel(false);
-      }}
-    />
-  </div>
-)}
+      {showFileCategoryPanel && (
+        <div className="fixed inset-0 z-[100]">
+          <FileCategoryPanel 
+            onClose={() => setShowFileCategoryPanel(false)}
+            onSelectFile={(file) => {
+              setInputValue(`[File] ${file.name}`);
+              setShowFileCategoryPanel(false);
+            }}
+          />
+        </div>
+      )}
     </div>
-    
   );
 };
 
