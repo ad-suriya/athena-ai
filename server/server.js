@@ -1,5 +1,5 @@
 require('dotenv').config();
-const fetch = require('node-fetch');
+const fetch = require('node-fetch'); // still here in case you use it elsewhere
 const express = require('express');
 const cors = require('cors');
 const { OpenAI } = require('openai');
@@ -20,7 +20,7 @@ app.use(morgan(process.env.NODE_ENV === 'development' ? 'dev' : 'combined'));
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later'
+  message: 'Too many requests from this IP, please try again later',
 });
 app.use(limiter);
 
@@ -29,7 +29,7 @@ const initializeFirebase = () => {
   try {
     // Handle Firebase private key formatting for different environments
     const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
-    
+
     if (!privateKey) {
       console.warn('⚠️ Firebase private key not found');
       return null;
@@ -41,7 +41,7 @@ const initializeFirebase = () => {
         private_key: privateKey,
         client_email: process.env.FIREBASE_CLIENT_EMAIL,
       }),
-      databaseURL: process.env.FIREBASE_DATABASE_URL
+      databaseURL: process.env.FIREBASE_DATABASE_URL,
     };
 
     return admin.initializeApp(firebaseConfig);
@@ -57,7 +57,7 @@ const firebaseApp = initializeFirebase();
 const initializeAIServices = () => {
   const services = {
     openai: null,
-    gemini: null
+    gemini: null,
   };
 
   // OpenAI Initialization
@@ -85,91 +85,40 @@ const initializeAIServices = () => {
 
 const aiServices = initializeAIServices();
 
-// === Middleware ===
-app.use(express.json({ limit: '10kb' }));
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production'
-    ? process.env.ALLOWED_ORIGINS?.split(',') || []
-    : ['http://localhost:5173', 'http://127.0.0.1:5173'],
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
-}));
-app.options('*', cors());
-
 // === Configuration ===
+// Now Minerva is just another OpenAI model (no separate server)
 const config = {
   models: {
-    openai: process.env.OPENAI_MODEL || 'gpt-4-turbo',
-    gemini: process.env.GEMINI_MODEL || 'gemini-1.5-flash',
-    minerva: {
-      endpoint: process.env.MINERVA_ENDPOINT || 'http://localhost:8001',
-      timeout: parseInt(process.env.MINERVA_TIMEOUT) || 30000,
-      fallbackEnabled: process.env.MINERVA_FALLBACK === 'true',
-      fallbackModel: 'gpt-3.5-turbo'
-    }
+    openai: process.env.OPENAI_MODEL || 'gpt-4.1-mini',
+    gemini: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
+    // Minerva uses OpenAI underneath
+    minerva: process.env.MINERVA_OPENAI_MODEL || process.env.OPENAI_MODEL || 'gpt-4.1-mini',
   },
   maxTokens: parseInt(process.env.MAX_TOKENS) || 1000,
   temperature: parseFloat(process.env.TEMPERATURE) || 0.7,
-  systemPrompt: process.env.SYSTEM_PROMPT || 'You are a helpful assistant.'
+  systemPrompt: process.env.SYSTEM_PROMPT || 'You are a helpful assistant.',
+  minervaSystemPrompt:
+    process.env.MINERVA_SYSTEM_PROMPT ||
+    `You are Minerva, an advanced, deeply analytical AI assistant.
+You reason step-by-step, think carefully, and provide structured, rigorous answers.
+You are especially good at technical topics, learning, and strategy.
+Always be clear, thorough, and user-friendly.`,
 };
 
-// === Minerva Service ===
-class MinervaService {
-  constructor() {
-    this.status = 'unknown';
-    this.lastChecked = null;
-  }
-
-  async checkStatus() {
-    try {
-      const response = await fetch(`${config.models.minerva.endpoint}/health`, {
-        timeout: 5000
-      });
-      
-      if (!response.ok) throw new Error(`Status: ${response.status}`);
-      
-      this.status = 'online';
-      this.lastChecked = new Date();
-      return true;
-    } catch (error) {
-      this.status = 'offline';
-      this.lastChecked = new Date();
-      console.warn('⚠️ Minerva service unavailable:', error.message);
-      return false;
-    }
-  }
-
-  async sendPrompt(prompt, history = []) {
-    try {
-      const minervaResponse = await fetch(`${config.models.minerva.endpoint}/minerva`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          prompt,
-          history // Include conversation history if your Minerva server supports it
-        }),
-        timeout: config.models.minerva.timeout
-      });
-
-      if (!minervaResponse.ok) {
-        const errorText = await minervaResponse.text();
-        throw new Error(`Minerva API error: ${errorText}`);
-      }
-
-      return await minervaResponse.json();
-    } catch (error) {
-      console.error('Minerva request failed:', error);
-      throw error;
-    }
-  }
-}
-
-const minervaService = new MinervaService();
-
-// Periodically check Minerva status (every 5 minutes)
-setInterval(() => minervaService.checkStatus(), 5 * 60 * 1000);
-minervaService.checkStatus(); // Initial check
+// === Middleware ===
+app.use(express.json({ limit: '10kb' }));
+app.use(
+  cors({
+    origin:
+      process.env.NODE_ENV === 'production'
+        ? process.env.ALLOWED_ORIGINS?.split(',') || []
+        : ['http://localhost:5173', 'http://127.0.0.1:5173'],
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+  })
+);
+app.options('*', cors());
 
 // === Google Auth Endpoint ===
 app.post('/api/auth/google', async (req, res) => {
@@ -180,12 +129,12 @@ app.post('/api/auth/google', async (req, res) => {
     // Development bypass
     if (!firebaseApp && process.env.NODE_ENV !== 'production') {
       console.warn('⚠️ Firebase not initialized. Dev mode bypass.');
-      return res.status(200).json({ 
-        user: { 
-          email: 'dev@example.com', 
+      return res.status(200).json({
+        user: {
+          email: 'dev@example.com',
           uid: 'dev-user-id',
-          isDev: true
-        } 
+          isDev: true,
+        },
       });
     }
 
@@ -203,73 +152,47 @@ app.post('/api/auth/google', async (req, res) => {
         email: userRecord.email,
         displayName: userRecord.displayName || 'User',
         photoURL: userRecord.photoURL,
-        emailVerified: userRecord.emailVerified
+        emailVerified: userRecord.emailVerified,
       },
     });
   } catch (error) {
     console.error('Google Auth Error:', error);
-    res.status(401).json({ 
+    res.status(401).json({
       error: 'Authentication failed',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined,
     });
   }
 });
 
 // === Unified Chat Endpoint ===
+// 👇 SAME SHAPE as before: { message, history = [], model = 'openai' }
 app.post('/api/chat', async (req, res) => {
   try {
     const { message, history = [], model = 'openai' } = req.body;
-    
+
     if (!message || typeof message !== 'string') {
       return res.status(400).json({ error: 'Invalid message format' });
     }
 
-    console.log(`📨 Chat request - Model: ${model}, Message: ${message.substring(0, 50)}...`);
+    console.log(
+      `📨 Chat request - Model: ${model}, Message: ${message.substring(0, 50)}...`
+    );
 
-    // === Minerva Handling ===
+    // === Minerva Handling (now OpenAI-based) ===
     if (model === 'minerva') {
-      try {
-        // Check Minerva status before proceeding
-        const isMinervaOnline = await minervaService.checkStatus();
-        
-        if (!isMinervaOnline && !config.models.minerva.fallbackEnabled) {
-          return res.status(503).json({ 
-            error: 'Minerva service is currently offline',
-            solution: 'Try again later or contact support'
-          });
-        }
-
-        if (!isMinervaOnline && config.models.minerva.fallbackEnabled) {
-          console.log('🔄 Falling back to OpenAI due to Minerva unavailability');
-          return handleOpenAIRequest(message, history, res, config.models.minerva.fallbackModel);
-        }
-
-        console.log('🔮 Contacting Minerva...');
-        const startTime = Date.now();
-        
-        const { response } = await minervaService.sendPrompt(message, history);
-        
-        console.log(`✅ Minerva response (${Date.now() - startTime}ms)`);
-        return res.json({
-          response,
-          modelUsed: 'minerva-mistral-7b',
-          isLocal: true
-        });
-
-      } catch (error) {
-        console.error('Minerva error:', error);
-        
-        if (config.models.minerva.fallbackEnabled) {
-          console.log('🔄 Falling back to OpenAI due to Minerva error');
-          return handleOpenAIRequest(message, history, res, config.models.minerva.fallbackModel);
-        }
-        
-        return res.status(503).json({ 
-          error: 'Minerva service error',
-          details: process.env.NODE_ENV === 'development' ? error.message : undefined,
-          solution: 'Try again later or use another model'
-        });
+      if (!aiServices.openai) {
+        return res.status(503).json({ error: 'OpenAI service is not configured' });
       }
+
+      // Use OpenAI with Minerva's system prompt
+      return handleOpenAIRequest(
+        message,
+        history,
+        res,
+        config.models.minerva,
+        config.minervaSystemPrompt,
+        'minerva'
+      );
     }
 
     // === Gemini Handling ===
@@ -279,20 +202,23 @@ app.post('/api/chat', async (req, res) => {
       }
 
       try {
-        const gModel = aiServices.gemini.getGenerativeModel({ 
+        const gModel = aiServices.gemini.getGenerativeModel({
           model: config.models.gemini,
           generationConfig: {
             temperature: config.temperature,
             maxOutputTokens: config.maxTokens,
-          }
+          },
         });
 
         const conversationHistory = history
-          .filter(msg => msg.role && msg.content)
-          .map(msg => `${msg.role === 'user' ? 'Human' : 'Assistant'}: ${msg.content}`)
+          .filter((msg) => msg.role && msg.content)
+          .map(
+            (msg) =>
+              `${msg.role === 'user' ? 'Human' : 'Assistant'}: ${msg.content}`
+          )
           .join('\n\n');
 
-        const prompt = conversationHistory 
+        const prompt = conversationHistory
           ? `${conversationHistory}\n\nHuman: ${message}\n\nAssistant:`
           : `Human: ${message}\n\nAssistant:`;
 
@@ -304,42 +230,56 @@ app.post('/api/chat', async (req, res) => {
         }
 
         const text = response.text();
-        return res.json({ 
-          response: text, 
-          modelUsed: config.models.gemini 
+        return res.json({
+          response: text,
+          modelUsed: config.models.gemini,
         });
-
       } catch (error) {
         console.error('Gemini error:', error);
-        return res.status(500).json({ 
+        return res.status(500).json({
           error: 'Gemini service error',
-          details: process.env.NODE_ENV === 'development' ? error.message : undefined
+          details: process.env.NODE_ENV === 'development' ? error.message : undefined,
         });
       }
     }
 
-    // === Default: OpenAI Handling ===
-    return handleOpenAIRequest(message, history, res, config.models.openai);
-
+    // === Default: OpenAI Handling (existing "openai" model) ===
+    return handleOpenAIRequest(
+      message,
+      history,
+      res,
+      config.models.openai,
+      config.systemPrompt,
+      'openai'
+    );
   } catch (error) {
     console.error('Chat endpoint error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Internal server error',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined,
     });
   }
 });
 
 // Helper function for OpenAI requests
-async function handleOpenAIRequest(message, history, res, model) {
+async function handleOpenAIRequest(
+  message,
+  history,
+  res,
+  model,
+  systemPromptOverride,
+  logicalModelName
+) {
   if (!aiServices.openai) {
     return res.status(503).json({ error: 'OpenAI service is not configured' });
   }
 
   try {
+    const systemPrompt = systemPromptOverride || config.systemPrompt;
+
     const messages = [
-      { role: 'system', content: config.systemPrompt },
-      ...history.filter(m => ['user', 'assistant'].includes(m.role)),
+      { role: 'system', content: systemPrompt },
+      ...history.filter((m) => ['user', 'assistant'].includes(m.role)),
       { role: 'user', content: message },
     ];
 
@@ -352,13 +292,14 @@ async function handleOpenAIRequest(message, history, res, model) {
 
     res.json({
       response: response.choices[0]?.message?.content || 'No response generated',
-      modelUsed: response.model,
+      modelUsed: logicalModelName || model,
+      actualModel: response.model,
     });
   } catch (error) {
     console.error('OpenAI error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'OpenAI service error',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined,
     });
   }
 }
@@ -373,39 +314,35 @@ app.get('/api/health', async (req, res) => {
       firebase: firebaseApp ? 'operational' : 'unavailable',
       openai: aiServices.openai ? 'operational' : 'unavailable',
       gemini: aiServices.gemini ? 'operational' : 'unavailable',
+      // Minerva is now an OpenAI-based logical model
       minerva: {
-        status: minervaService.status,
-        lastChecked: minervaService.lastChecked,
-        endpoint: config.models.minerva.endpoint,
-        fallback: config.models.minerva.fallbackEnabled ? 
-          `enabled (${config.models.minerva.fallbackModel})` : 'disabled'
-      }
+        status: aiServices.openai ? 'online' : 'offline',
+        backing: 'openai',
+        model: config.models.minerva,
+      },
     },
     rateLimiting: {
       enabled: true,
       windowMs: '15 minutes',
-      maxRequests: 100
-    }
+      maxRequests: 100,
+    },
   };
 
   res.json(healthStatus);
 });
 
-// === Minerva Status Endpoint ===
+// === Minerva Status Endpoint (kept for compatibility, but now OpenAI-backed) ===
 app.get('/api/minerva-status', async (req, res) => {
   try {
-    const isOnline = await minervaService.checkStatus();
     res.json({
-      status: isOnline ? 'online' : 'offline',
-      lastChecked: minervaService.lastChecked,
-      endpoint: config.models.minerva.endpoint,
-      fallback: config.models.minerva.fallbackEnabled,
-      fallbackModel: config.models.minerva.fallbackModel
+      status: aiServices.openai ? 'online' : 'offline',
+      model: config.models.minerva,
+      backing: 'openai',
     });
   } catch (error) {
     res.status(500).json({
       status: 'error',
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -415,9 +352,9 @@ app.use((req, res) => res.status(404).json({ error: 'Endpoint not found' }));
 
 app.use((err, req, res, next) => {
   console.error('Server error:', err);
-  res.status(500).json({ 
+  res.status(500).json({
     error: 'Internal server error',
-    details: process.env.NODE_ENV === 'development' ? err.message : undefined
+    details: process.env.NODE_ENV === 'development' ? err.message : undefined,
   });
 });
 
@@ -426,8 +363,8 @@ app.listen(port, () => {
   console.log(`🚀 Server running on http://localhost:${port}`);
   console.log('🛡️ Security middleware enabled');
   console.log('🤖 Available AI Services:');
-  console.log(`- OpenAI: ${aiServices.openai ? config.models.openai : 'Disabled'}`);
+  console.log(`- OpenAI (openai): ${aiServices.openai ? config.models.openai : 'Disabled'}`);
+  console.log(`- Minerva (OpenAI logical model): ${aiServices.openai ? config.models.minerva : 'Disabled'}`);
   console.log(`- Gemini: ${aiServices.gemini ? config.models.gemini : 'Disabled'}`);
-  console.log(`- Minerva: ${config.models.minerva.endpoint} (Fallback: ${config.models.minerva.fallbackEnabled ? 'Enabled' : 'Disabled'})`);
   // console.log(`- Rate limiting: ${limiter.options.max} requests per ${limiter.options.windowMs/60000} minutes`);
 });
