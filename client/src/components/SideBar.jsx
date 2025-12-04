@@ -619,20 +619,7 @@ const Sidebar = ({
         }}
       >
         {/* Header */}
-        <div className="p-6 border-b border-[#FFE7E5]/50">
           <div className="flex items-center gap-3">
-            <div className="relative">
-              <div className="w-10 h-10 bg-gradient-to-br from-[#FF6F61] to-[#FF8A7D] rounded-xl flex items-center justify-center shadow-sm">
-                <Sparkles className="w-5 h-5 text-white" />
-              </div>
-              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-[#FF6F61] rounded-full border-2 border-white flex items-center justify-center">
-                <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
-              </div>
-            </div>
-            <div>
-              <h1 className="text-lg font-bold text-[#2B3440]">Athena AI</h1>
-              <p className="text-xs text-gray-500">Wellness Assistant</p>
-            </div>
             <button
               onClick={toggleSidebar}
               className="ml-auto p-1.5 hover:bg-[#FFE7E5] rounded-lg transition-colors"
@@ -641,7 +628,7 @@ const Sidebar = ({
               <ChevronsRight className="w-4 h-4 text-gray-400" />
             </button>
           </div>
-        </div>
+        
 
         {/* User Profile */}
         <div className="px-6 py-4 border-b border-[#FFE7E5]/50">
@@ -668,7 +655,7 @@ const Sidebar = ({
         </div>
 
         {/* Main Navigation */}
-        <div className="flex-1 px-4 py-6">
+        <div className="flex-1 px-4 py-4">
           <div className="space-y-1">
             {navigationItems.map((item) => (
               <button
@@ -722,7 +709,7 @@ const Sidebar = ({
           <div className="px-4 py-4 border-t border-[#FFE7E5]/50">
           <div className="mt-4 pt-4 border-t border-[#FFE7E5]/50">
             <button
-              onClick={() => handleNavigate('profile')}
+              onClick={() => handleNavigate('settings')}
               className="w-full flex items-center gap-3 px-3 py-2 hover:bg-[#FFE7E5] rounded-xl transition-colors"
             >
               <div className="w-8 h-8 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center">

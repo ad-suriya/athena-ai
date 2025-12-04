@@ -1232,7 +1232,7 @@ Please execute the task as soon as you can - an artifact would be great if it ma
         )}
 
         {!isMobile && (
-          <div className="bg-gradient-to-r from-white to-[#F5D9D1]/30 backdrop-blur-sm px-4 py-2 flex items-center justify-between h-[65px] border-b border-[#E65C52]/10">
+          <div className="bg-#F5D9D1 px-4 py-2 flex items-center justify-between h-[65px] border-b border-[#E65C52]/10">
             <div className="flex items-center gap-2">
               {!isSidebarVisible && (
                 <button
