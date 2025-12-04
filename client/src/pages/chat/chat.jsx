@@ -1207,7 +1207,7 @@ Please execute the task as soon as you can - an artifact would be great if it ma
               {currentConversationId === null && (
                 <>
                   <AppLogo size={24} />
-                  <div className="font-semibold text-lg">Yudle</div>
+                  <div className="font-semibold text-lg">Athena AI</div>
                 </>
               )}
             </div>

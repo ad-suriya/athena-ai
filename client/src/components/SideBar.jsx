@@ -951,24 +951,12 @@ const Sidebar = ({
           </div>
         </div>
 
-        <div className="px-2 mt-4">
-          <div className="text-[10px] font-medium text-gray-500 uppercase tracking-wide mb-1.5">
-            Shared
-          </div>
-          <div
-            className="flex items-center space-x-1.5 text-gray-500 hover:bg-gray-100 rounded p-1 cursor-pointer"
-            onClick={() => handleNavigate('collaborate')}
-          >
-            <Plus className="w-3 h-3" />
-            <span className="text-xs">Start collaborating</span>
-          </div>
-        </div>
         <div
   className="flex items-center space-x-1.5 text-gray-600 hover:bg-gray-100 rounded p-1 cursor-pointer"
   onClick={() => handleNavigate('code-editor')}
 >
-  <Code2 className="w-3 h-3" />
-  <span className="text-xs">Code Editor</span>
+
+  {/* <span className="text-xs">Code Editor</span> */}
 </div>
 
         <div className="mt-auto border-t border-gray-300 bg-[#EBEBEB] p-2 flex justify-around">

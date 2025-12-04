@@ -200,7 +200,7 @@ class NeuralNetwork:
         <div className="auth-container">
           <div className="auth-header">
             <h2>Log in to</h2>
-            <h1>Yudle</h1>
+            <h1>Athena AI</h1>
           </div>
 
           <form onSubmit={handleLogin}>
@@ -291,7 +291,7 @@ class NeuralNetwork:
             
             <div className="chat-message ai-message">
               <div className="ai-avatar">
-                <img src={aiLogo} alt="Yudle AI" className="ai-logo" />
+                <img src={aiLogo} alt="Athena AI" className="ai-logo" />
               </div>
               <div className="message-content" style={{outline: 'none', userSelect: 'none', WebkitTapHighlightColor: 'transparent'}}>
                 <div className="response-text">{contentExamples[currentUseCaseIndex].content.response}</div>
