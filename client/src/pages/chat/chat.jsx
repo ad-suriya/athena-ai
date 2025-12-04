@@ -331,7 +331,7 @@ const Chat = ({ setIsAuthenticated }) => {
     { id: 'choice', label: "AI's Suggestion", icon: Sparkles },
   ];
 
-   const moodOptions = [
+  const moodOptions = [
     'Guide me through a mood check-in',
     'Help me understand how I’m feeling',
     'Ask me reflective questions',
@@ -371,22 +371,15 @@ const Chat = ({ setIsAuthenticated }) => {
     'Provide a small grounding activity',
   ];
 
-  const getOptions = (categoryId) => {
-    switch (categoryId) {
-      case 'mood':
-        return moodOptions;
-      case 'calm':
-        return calmingOptions;
-      case 'learn':
-        return learnOptions;
-      case 'lifestuff':
-        return lifeOptions;
-      case 'choice':
-        return choiceOptions;
-      default:
-        return [];
-    }
+  // Unified category options object
+  const categoryOptions = {
+    mood: moodOptions,
+    calm: calmingOptions,
+    learn: learnOptions,
+    lifestuff: lifeOptions,
+    choice: choiceOptions,
   };
+
   const searchOptions = [
     { id: 'web', label: 'Web', icon: Search, description: 'Search across the entire Internet' },
     { id: 'academic', label: 'Academic', icon: BookOpen, description: 'Search academic papers' },
@@ -745,8 +738,14 @@ const Chat = ({ setIsAuthenticated }) => {
   };
 
   const handleCategoryClick = (categoryId) => {
-    setSelectedCategory(selectedCategory === categoryId ? null : categoryId);
-    setShowCategoryPanel(selectedCategory !== categoryId);
+    // Toggle the category panel
+    if (selectedCategory === categoryId) {
+      setSelectedCategory(null);
+      setShowCategoryPanel(false);
+    } else {
+      setSelectedCategory(categoryId);
+      setShowCategoryPanel(true);
+    }
     setShowSearchOptions(false);
   };
 
@@ -997,6 +996,8 @@ Please execute the task as soon as you can - an artifact would be great if it ma
     setIsLoading(true);
     setInputValue('');
     setActiveAction(null);
+    setShowCategoryPanel(false);
+    setSelectedCategory(null);
 
     try {
       let conversationId = currentConversationId;
@@ -1093,6 +1094,8 @@ Please execute the task as soon as you can - an artifact would be great if it ma
     setActiveAction(null);
     setCurrentConversationId(null);
     setErrorMessage(null);
+    setShowCategoryPanel(false);
+    setSelectedCategory(null);
     if (isMobile) {
       setShowSidebarOverlay(false);
       setIsSidebarVisible(false);
@@ -1437,40 +1440,6 @@ Please execute the task as soon as you can - an artifact would be great if it ma
 
                     <div className="w-full max-w-2xl mt-6">
                       <div className="flex flex-wrap justify-center gap-2">
-                        {/* <SmartActionButton
-                          icon={
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="16"
-                              height="16"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            >
-                              <circle cx="11" cy="11" r="8"></circle>
-                              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                            </svg>
-                          }
-                          label="Search"
-                          active={activeAction === 'search'}
-                          onClick={() => handleActionClick('search')}
-                          isSearch={true}
-                        />
-                        <SmartActionButton
-                          icon={<Layers className="w-4 h-4" />}
-                          label="Deep Research"
-                          active={activeAction === 'deepResearch'}
-                          onClick={() => handleActionClick('deepResearch')}
-                        />
-                        <SmartActionButton
-                          icon={<Zap className="w-4 h-4" />}
-                          label="Think"
-                          active={activeAction === 'think'}
-                          onClick={() => handleActionClick('think')}
-                        /> */}
                         {categories.map((category) => {
                           const Icon = category.icon;
                           return (
@@ -1492,9 +1461,13 @@ Please execute the task as soon as you can - an artifact would be great if it ma
                         })}
                       </div>
 
+                      {/* Category Dropdown Panel for Empty Chat State */}
                       {showCategoryPanel && selectedCategory && (
                         <div className="relative w-full mt-4">
-                          <div className="absolute left-0 right-0 mx-auto border-2 border-[#E65C52]/20 rounded-xl shadow-xl z-10 overflow-hidden bg-white" style={{ width: 'calc(100% - 2rem)' }}>
+                          <div 
+                            className="absolute left-0 right-0 mx-auto border-2 border-[#E65C52]/20 rounded-xl shadow-xl z-10 overflow-hidden bg-white category-panel" 
+                            style={{ width: 'calc(100% - 2rem)' }}
+                          >
                             <div className="flex items-center justify-between px-4 py-3 border-b-2 border-[#E65C52]/20 bg-gradient-to-r from-[#F5D9D1]/30 to-white">
                               <div className="flex items-center gap-2">
                                 {React.createElement(categories.find((c) => c.id === selectedCategory)?.icon, { 
@@ -1822,6 +1795,69 @@ Please execute the task as soon as you can - an artifact would be great if it ma
                       >
                         <X className="w-4 h-4" />
                       </button>
+                    </div>
+                  )}
+
+                  {/* Category Buttons for Chat State */}
+                  <div className="mb-4 flex flex-wrap justify-center gap-2">
+                    {categories.map((category) => {
+                      const Icon = category.icon;
+                      return (
+                        <button
+                          key={category.id}
+                          onClick={() => handleCategoryClick(category.id)}
+                          className={`
+                            flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all text-sm font-medium border-2
+                            ${selectedCategory === category.id 
+                              ? 'bg-gradient-to-r from-[#E65C52] to-[#E14C42] text-white border-transparent shadow-lg shadow-[#E65C52]/30' 
+                              : 'bg-white text-gray-700 border-[#E65C52]/20 hover:bg-[#F5D9D1] hover:border-[#E65C52]/40 hover:shadow-md'
+                            }
+                          `}
+                        >
+                          <Icon className={`w-4 h-4 ${selectedCategory === category.id ? 'text-white' : 'text-[#E65C52]'}`} />
+                          <span>{category.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Category Dropdown Panel for Chat State */}
+                  {showCategoryPanel && selectedCategory && messages.length > 0 && (
+                    <div className="relative w-full mb-4">
+                      <div 
+                        className="border-2 border-[#E65C52]/20 rounded-xl shadow-xl overflow-hidden bg-white category-panel" 
+                      >
+                        <div className="flex items-center justify-between px-4 py-3 border-b-2 border-[#E65C52]/20 bg-gradient-to-r from-[#F5D9D1]/30 to-white">
+                          <div className="flex items-center gap-2">
+                            {React.createElement(categories.find((c) => c.id === selectedCategory)?.icon, { 
+                              className: 'w-4 h-4 text-[#E65C52]' 
+                            })}
+                            <span className="font-medium text-[#E14C42]">
+                              {categories.find((c) => c.id === selectedCategory)?.label}
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => {
+                              setShowCategoryPanel(false);
+                              setSelectedCategory(null);
+                            }}
+                            className="text-gray-400 hover:text-[#E65C52] hover:bg-[#F5D9D1] rounded-full p-1 transition-colors"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <div className="py-2">
+                          {categoryOptions[selectedCategory]?.map((option, index) => (
+                            <button
+                              key={index}
+                              onClick={() => handleCategoryOptionSelect(option)}
+                              className="w-full text-left px-4 py-3 text-gray-700 hover:bg-[#F5D9D1] transition-colors border-b border-[#E65C52]/10 last:border-b-0"
+                            >
+                              <span className="text-sm leading-relaxed">{option}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   )}
 
