@@ -242,7 +242,7 @@ const NotificationAppProfile = ({ user, isMobile = false, setShowSidebarOverlay,
     <>
       <div
         ref={rootRef}
-        className="flex items-center gap-4 pr-5 pl-3 py-2 bg-gradient-to-r from-[#F5D9D1]/30 to-white/50 rounded-xl relative border border-[#E65C52]/20 shadow-lg"
+        className="flex items-center gap-4 pr-5 pl-3 py-2 bg-#F5D9D1"
         style={{ overflow: 'visible' }} // allow badges and popups to overflow
       >
         {/* Notification Bell */}
