@@ -3,8 +3,10 @@ import { useNavigate, useLocation } from "react-router-dom";
 import {
   MessageSquare,
   Search,
-  CheckSquare,
-  Smile,
+  CalendarIcon,
+  Brain,
+  TrendingUp,
+  Home,
   ChevronDown,
   ChevronsRight,
   X,
@@ -433,11 +435,12 @@ const Sidebar = ({
     setIsConversationOpen(!isConversationOpen);
   };
 
-  const navigationItems = [
-    { id: "Home", icon: MessageSquare, label: "Home" },
-    { id: "search", icon: Search, label: "Search" },
-    { id: "tasks", icon: CheckSquare, label: "Tasks" },
-    { id: "mood", icon: Smile, label: "Mood" },
+   const navigationItems = [
+    { id: "Home", icon: Home, label: "Home" },
+    { id: "Tasks", icon: CalendarIcon, label: "Tasks" },
+    { id: "mindmap", icon: Brain, label: "Mind Map" },
+    { id: "Settings", icon: TrendingUp, label: "Heat Map" },
+    { id: "calendar", icon: Calendar, label: "Calendar" },
   ];
 
   const handleNavClick = (id) => {
@@ -522,7 +525,6 @@ const Sidebar = ({
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="text-sm font-semibold text-[#2B3440] truncate">{user?.displayName || "Welcome"}</h3>
-              <p className="text-xs text-gray-500">Premium Member</p>
             </div>
             <div className="flex items-center gap-1">
               <Tooltip text="Conversation History" position="top">
@@ -583,62 +585,9 @@ const Sidebar = ({
                   <Plus className="w-4 h-4" />
                   New Journal Entry
                 </button>
-                <button 
-                  onClick={() => handleNavigate('calendar')}
-                  className="w-full flex items-center gap-2 px-2.5 py-1.5 text-sm text-[#2B3440] hover:bg-[#FFE7E5] rounded-lg transition-colors"
-                >
-                  <Calendar className="w-4 h-4" />
-                  Schedule Session
-                </button>
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Footer Actions - Now visible and positioned below profile */}
-        <div className="mt-auto flex-shrink-0 border-t border-[#FFE7E5]/50">
-          {/* Profile Settings */}
-          <button
-            onClick={() => handleNavigate('settings')}
-            className="w-full flex items-center gap-2.5 px-4 py-3 hover:bg-[#FFE7E5] transition-colors border-b border-[#FFE7E5]/30"
-          >
-            <div className="w-8 h-8 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center">
-              <Settings className="w-4 h-4 text-gray-600" />
-            </div>
-            <div className="flex-1 text-left">
-              <p className="text-sm font-medium text-[#2B3440]">Settings</p>
-              <p className="text-xs text-gray-500">App preferences</p>
-            </div>
-            <ChevronDown className="w-4 h-4 text-gray-400" />
-          </button>
-          
-          {/* Help & Support */}
-          <button
-            onClick={() => handleNavigate('help')}
-            className="w-full flex items-center gap-2.5 px-4 py-3 hover:bg-[#FFE7E5] transition-colors border-b border-[#FFE7E5]/30"
-          >
-            <div className="w-8 h-8 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center">
-              <HelpCircle className="w-4 h-4 text-gray-600" />
-            </div>
-            <div className="flex-1 text-left">
-              <p className="text-sm font-medium text-[#2B3440]">Help & Support</p>
-              <p className="text-xs text-gray-500">Get help</p>
-            </div>
-          </button>
-          
-          {/* Logout */}
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-2.5 px-4 py-3 hover:bg-[#FFE7E5] transition-colors text-[#FF6F61]"
-          >
-            <div className="w-8 h-8 bg-gradient-to-br from-red-50 to-red-100 rounded-lg flex items-center justify-center">
-              <LogOut className="w-4 h-4 text-[#FF6F61]" />
-            </div>
-            <div className="flex-1 text-left">
-              <p className="text-sm font-medium">Logout</p>
-              <p className="text-xs text-[#FF6F61]/70">Sign out of account</p>
-            </div>
-          </button>
         </div>
       </div>
     </>

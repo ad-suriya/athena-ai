@@ -10,7 +10,7 @@ import Profile from './pages/profile/profile.jsx';
 import Settings from './pages/settings/settings.jsx';
 import CodeEditor from "./pages/CodeEditor/CodeEditor.jsx"; // Fixed import path
 import './App.css';
-import MindMapInterface from './components/MindMapInterface.JSX';
+import MindMap from './components/MindMapInterface.JSX';
 import YudleFeedbackForm from './components/YudleFeedbackForm.jsx';
 import { auth } from './firebase.js';
 
@@ -103,7 +103,7 @@ function App() {
           } />
           <Route path="/mindmap" element={
             isAuthenticated ? 
-              <MindMapInterface /> : 
+              <MindMap /> : 
               <Navigate to="/login" replace />
           } />
           <Route path="*" element={<Navigate to={isAuthenticated ? "/chat" : "/login"} replace />} />

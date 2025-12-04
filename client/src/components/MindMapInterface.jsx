@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Settings, Bell, Users, Plus, Zap, Sparkles, Edit3, Trash2, Link, Eye, EyeOff, MessageCircle, Heart, Share, Copy, Menu } from 'lucide-react';
 import SideBar from './SideBar';
 
-const MindMapInterface = () => {
+const MindMap = () => {
   const [nodes, setNodes] = useState([
     {
       id: 1,
@@ -613,4 +613,4 @@ content: "A Mental Clarity Map is a simple tool that helps someone who feels ove
   );
 };
 
-export default MindMapInterface;
+export default MindMap;
