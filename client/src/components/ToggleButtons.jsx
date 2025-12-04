@@ -13,7 +13,7 @@ export default function ToggleButtons({ onModeChange }) {
 
   const getButtonClasses = (buttonId) => {
     const baseClasses = "p-2 rounded-full transition-all duration-200 focus:outline-none relative group";
-    const activeClasses = "bg-[#0E0E28] text-white shadow-sm";
+    const activeClasses = "bg-[#E25752] text-white shadow-sm";
     const inactiveClasses = "text-gray-500 hover:bg-gray-100 hover:text-gray-700";
             
     return `${baseClasses} ${activeButton === buttonId ? activeClasses : inactiveClasses}`;
