@@ -254,7 +254,7 @@ const NoteEditor = ({ isDarkMode = false, onNavigateBack, initialNote, onSave })
   }
 
   return (
-    <div className={`flex flex-col h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
+  <div className={`flex flex-col h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-[#FCF4F1] text-gray-900'}`}>
       {/* Header */}
       <div className={`flex justify-between items-center p-4 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
         <div className="flex items-center gap-4">
@@ -296,12 +296,12 @@ const NoteEditor = ({ isDarkMode = false, onNavigateBack, initialNote, onSave })
           )}
           
           <button 
-            onClick={handleSave}
-            disabled={isLocked}
-            className={`px-3 py-1 rounded-md ${isDarkMode ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'} transition-colors disabled:opacity-50`}
-          >
-            Save
-          </button>
+  onClick={handleSave}
+  disabled={isLocked}
+  className={`px-3 py-1 rounded-md ${isDarkMode ? 'bg-[#E25752] hover:bg-[#D14C47] text-white' : 'bg-[#E25752] hover:bg-[#D14C47] text-white'} transition-colors disabled:opacity-50`}
+>
+  Save
+</button>
           
           {/* Lock/Unlock button 
           <button
@@ -338,7 +338,15 @@ const NoteEditor = ({ isDarkMode = false, onNavigateBack, initialNote, onSave })
       <div className="flex-1 overflow-auto">
         <div className={`h-full py-6 ${fullWidth ? '' : 'max-w-3xl mx-auto'}`}>
           {/* Page Title */}
-          <div className="px-6 mb-4">
+          
+          
+          {/* Today's Date Display */}
+          <div className="px-6 mb-6">
+            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} italic`}>
+              {getTodayDate()}
+            </p>
+          </div>
+          <div className="px-6 mb-2">
             <input
               type="text"
               value={note.title}
