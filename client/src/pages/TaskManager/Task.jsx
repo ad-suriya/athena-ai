@@ -1,87 +1,74 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { 
-  CheckSquare, Calendar, Target, Zap, MoreHorizontal, Star, Share2, 
+  CheckSquare, Target, MoreHorizontal, Star, Share2, 
   Filter, ArrowUpDown, Search, Menu, Plus, ChevronDown, X, Edit, 
-  Trash2, Save, AlertCircle, ShoppingCart, Send, Watch, Phone, 
-  Book, Users, Briefcase, Heart, DollarSign, Home, Car, Plane,
-  Coffee, Music, Camera, Gift
+  Trash2, Save, AlertCircle, Heart, Users, Book, Music, Camera,
+  Coffee, Zap, Home, Gift, Sun, Moon, Brain, Activity, Headphones,
+  Sprout, Droplets, Wind, Leaf, ArrowDown, ArrowUp
 } from 'lucide-react';
 import Sidebar from '../../components/SideBar';
 
-export default function TaskManager() {
+export default function WellnessTracker() {
   const [tasks, setTasks] = useState([
     {
       id: 1,
-      icon: 'ShoppingCart',
-      title: "Go grocery shopping",
-      deadline: "2025-09-25T11:00",
+      icon: 'Brain',
+      title: "Morning gratitude journal",
       status: "To Do",
-      priority: "Low",
-      category: ["Personal", "Family"],
-      notes: "Make sure you have enough food for the week.",
+      category: ["Mindfulness / Meditation"],
+      notes: "Write down three things you're grateful for today.",
       completed: false
     },
     {
       id: 2,
-      icon: 'Send',
-      title: "Send email to Tim Cook",
-      deadline: "2025-10-31T14:30",
+      icon: 'Activity',
+      title: "30-minute nature walk",
       status: "In progress",
-      priority: "High",
-      category: ["Personal"],
-      notes: "Draft questions regarding upcoming collaboration opportunities.",
+      category: ["Fitness & Movement"],
+      notes: "Connect with nature and get some fresh air.",
       completed: false
     },
     {
       id: 3,
-      icon: 'Target',
-      title: "Set goals for next week",
-      deadline: "2026-03-21T22:30",
+      icon: 'Users',
+      title: "Call a close friend",
       status: "In progress",
-      priority: "Medium",
-      category: ["Personal", "Work"],
-      notes: "Create a list of tasks and priorities for the upcoming week.",
+      category: ["Social Care & Connection"],
+      notes: "Check in and have a meaningful conversation.",
       completed: false
     },
     {
       id: 4,
-      icon: 'Watch',
-      title: "Order a new Apple Watch",
-      deadline: "2026-09-16T12:30",
+      icon: 'Leaf',
+      title: "Evening meditation session",
       status: "In progress",
-      priority: "Medium",
-      category: ["Personal"],
-      notes: "Compare models, check reviews and place the order.",
+      category: ["Mindfulness / Meditation"],
+      notes: "10 minutes of guided meditation before bed.",
       completed: false
     },
     {
       id: 5,
-      icon: 'Phone',
-      title: "Call Son",
-      deadline: "2026-09-17T11:30",
+      icon: 'Heart',
+      title: "Prepare healthy meal",
       status: "Done",
-      priority: "Low",
-      category: ["Family"],
-      notes: "Check in on how he's doing and discuss weekend meet up.",
+      category: ["Self-Care Routines"],
+      notes: "Cook something nutritious that makes you feel good.",
       completed: true
     },
     {
       id: 6,
-      icon: 'Book',
-      title: "Read a chapter of a book",
-      deadline: "2026-09-25T21:30",
+      icon: 'Music',
+      title: "Listen to uplifting music",
       status: "To Do",
-      priority: "Low",
-      category: ["Personal development"],
-      notes: "Read a chapter of a book to improve knowledge.",
+      category: ["Dopamine Activities"],
+      notes: "Create a mood-boosting playlist.",
       completed: false
     }
   ]);
 
-  const [viewMode, setViewMode] = useState("All Tasks");
+  const [viewMode, setViewMode] = useState("All Activities");
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [filterStatus, setFilterStatus] = useState('');
-  const [filterPriority, setFilterPriority] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [showNewTaskForm, setShowNewTaskForm] = useState(false);
@@ -91,31 +78,35 @@ export default function TaskManager() {
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [showStatusDropdown, setShowStatusDropdown] = useState(null);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(null);
-  const [showPriorityDropdown, setShowPriorityDropdown] = useState(null);
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  const [addedSuggestions, setAddedSuggestions] = useState([]);
+
+  const mainContentRef = useRef(null);
+  const suggestionsRef = useRef(null);
 
   const [newTask, setNewTask] = useState({
     title: '',
-    deadline: '',
     status: 'To Do',
-    priority: 'Medium',
     category: [],
     notes: '',
-    icon: 'Target'
+    icon: 'Heart'
   });
 
   const iconMap = {
-    ShoppingCart, Send, Target, Watch, Phone, Book, CheckSquare, Calendar, 
-    Zap, Star, Users, Briefcase, Heart, DollarSign, Home, Car, Plane,
-    Coffee, Music, Camera, Gift
+    Heart, Brain, Activity, Users, Leaf, Music, Book, Coffee, 
+    Sun, Moon, Headphones, Sprout, Droplets, Wind, Camera, Gift,
+    CheckSquare, Target, Star, Home, Zap
   };
 
   const availableIcons = Object.keys(iconMap);
   const availableCategories = [
-    'Personal', 'Work', 'Family', 'Personal development', 'Health', 
-    'Finance', 'Travel', 'Shopping', 'Social', 'Learning', 'Hobbies'
+    'Dopamine Activities',
+    'Fitness & Movement',
+    'Social Care & Connection',
+    'Mindfulness / Meditation',
+    'Self-Care Routines'
   ];
-  const statusOptions = ['To Do', 'In progress', 'Done', 'Cancelled'];
-  const priorityOptions = ['Low', 'Medium', 'High', 'Critical'];
+  const statusOptions = ['To Do', 'In progress', 'Done'];
 
   const allCategories = useMemo(() => {
     const categories = new Set();
@@ -125,6 +116,40 @@ export default function TaskManager() {
     availableCategories.forEach(cat => categories.add(cat));
     return Array.from(categories).sort();
   }, [tasks]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (mainContentRef.current) {
+        const { scrollTop, scrollHeight, clientHeight } = mainContentRef.current;
+        // Show scroll button when user scrolls past 50% of the content
+        setShowScrollButton(scrollTop > clientHeight * 0.5);
+      }
+    };
+
+    const currentRef = mainContentRef.current;
+    if (currentRef) {
+      currentRef.addEventListener('scroll', handleScroll);
+      return () => currentRef.removeEventListener('scroll', handleScroll);
+    }
+  }, []);
+
+  const scrollToBottom = () => {
+    if (mainContentRef.current) {
+      mainContentRef.current.scrollTo({
+        top: mainContentRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  const scrollToTop = () => {
+    if (mainContentRef.current) {
+      mainContentRef.current.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   const Dropdown = ({ 
     isOpen, 
@@ -188,16 +213,10 @@ export default function TaskManager() {
     { value: 'Done', label: 'Done', color: 'bg-green-100 text-green-600' }
   ];
 
-  const priorityDropdownOptions = [
-    { value: 'High', label: 'High', color: 'bg-red-100 text-red-600' },
-    { value: 'Medium', label: 'Medium', color: 'bg-yellow-100 text-yellow-600' },
-    { value: 'Low', label: 'Low', color: 'bg-blue-100 text-blue-600' }
-  ];
-
   const categoryDropdownOptions = allCategories.map(cat => ({
     value: cat,
     label: cat,
-    color: 'bg-gray-100 text-gray-700'
+    color: 'bg-purple-100 text-purple-700'
   }));
 
   const filteredAndSortedTasks = useMemo(() => {
@@ -206,27 +225,15 @@ export default function TaskManager() {
                            task.notes.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            task.category.some(cat => cat.toLowerCase().includes(searchTerm.toLowerCase()));
       const matchesStatus = !filterStatus || task.status === filterStatus;
-      const matchesPriority = !filterPriority || task.priority === filterPriority;
       const matchesCategory = !filterCategory || task.category.includes(filterCategory);
       
-      return matchesSearch && matchesStatus && matchesPriority && matchesCategory;
+      return matchesSearch && matchesStatus && matchesCategory;
     });
 
     if (sortConfig.key) {
       filtered.sort((a, b) => {
         let aValue = a[sortConfig.key];
         let bValue = b[sortConfig.key];
-        
-        if (sortConfig.key === 'deadline') {
-          aValue = new Date(aValue);
-          bValue = new Date(bValue);
-        }
-        
-        if (sortConfig.key === 'priority') {
-          const priorityOrder = { 'Critical': 4, 'High': 3, 'Medium': 2, 'Low': 1 };
-          aValue = priorityOrder[aValue] || 0;
-          bValue = priorityOrder[bValue] || 0;
-        }
         
         if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
         if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
@@ -235,7 +242,7 @@ export default function TaskManager() {
     }
 
     return filtered;
-  }, [tasks, searchTerm, filterStatus, filterPriority, filterCategory, sortConfig]);
+  }, [tasks, searchTerm, filterStatus, filterCategory, sortConfig]);
 
   const groupedTasks = useMemo(() => {
     const groups = {};
@@ -265,17 +272,18 @@ export default function TaskManager() {
     setTasks(prev => [...prev, task]);
     resetNewTaskForm();
     setShowNewTaskForm(false);
+    
+    // Scroll to top to see the newly added task
+    setTimeout(() => scrollToTop(), 100);
   };
 
   const resetNewTaskForm = () => {
     setNewTask({
       title: '',
-      deadline: '',
       status: 'To Do',
-      priority: 'Medium',
       category: [],
       notes: '',
-      icon: 'Target'
+      icon: 'Heart'
     });
   };
 
@@ -291,7 +299,7 @@ export default function TaskManager() {
   };
 
   const deleteTask = (id) => {
-    if (window.confirm('Are you sure you want to delete this task?')) {
+    if (window.confirm('Are you sure you want to delete this wellness activity?')) {
       setTasks(prev => prev.filter(task => task.id !== id));
       setSelectedTasks(prev => prev.filter(taskId => taskId !== id));
     }
@@ -306,6 +314,9 @@ export default function TaskManager() {
       completed: false
     };
     setTasks(prev => [...prev, newTask]);
+    
+    // Scroll to top to see the duplicated task
+    setTimeout(() => scrollToTop(), 100);
   };
 
   const toggleTaskSelection = (id) => {
@@ -333,20 +344,10 @@ export default function TaskManager() {
   };
 
   const bulkDelete = () => {
-    if (window.confirm(`Are you sure you want to delete ${selectedTasks.length} tasks?`)) {
+    if (window.confirm(`Are you sure you want to delete ${selectedTasks.length} wellness activities?`)) {
       setTasks(prev => prev.filter(task => !selectedTasks.includes(task.id)));
       setSelectedTasks([]);
     }
-  };
-
-  const formatDeadline = (deadline) => {
-    const date = new Date(deadline);
-    const now = new Date();
-    const isOverdue = date < now;
-    const formatted = date.toLocaleDateString('en-GB') + ' ' + 
-                     date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-    
-    return { formatted, isOverdue };
   };
 
   const getStatusColor = (status) => {
@@ -354,25 +355,13 @@ export default function TaskManager() {
       case "To Do": return "text-red-600 bg-red-100";
       case "In progress": return "text-blue-600 bg-blue-100";
       case "Done": return "text-green-600 bg-green-100";
-      case "Cancelled": return "text-gray-600 bg-gray-100";
       default: return "text-gray-600 bg-gray-100";
-    }
-  };
-
-  const getPriorityColor = (priority) => {
-    switch (priority) {
-      case "Critical": return "text-purple-700 bg-purple-100 border-purple-200";
-      case "High": return "text-red-700 bg-red-100 border-red-200";
-      case "Medium": return "text-yellow-700 bg-yellow-100 border-yellow-200";
-      case "Low": return "text-blue-700 bg-blue-100 border-blue-200";
-      default: return "text-gray-700 bg-gray-100 border-gray-200";
     }
   };
 
   const TaskRow = ({ task, isEditing = false, showCheckbox = false }) => {
     const [editData, setEditData] = useState(task);
-    const IconComponent = iconMap[task.icon] || Target;
-    const { formatted: deadlineFormatted, isOverdue } = formatDeadline(task.deadline);
+    const IconComponent = iconMap[task.icon] || Heart;
 
     if (isEditing) {
       return (
@@ -400,15 +389,6 @@ export default function TaskManager() {
             />
           </div>
           
-          <div className="col-span-2 flex items-center">
-            <input
-              type="datetime-local"
-              value={editData.deadline}
-              onChange={(e) => setEditData(prev => ({...prev, deadline: e.target.value}))}
-              className="text-xs text-blue-600 bg-white border rounded px-2 py-1 w-full"
-            />
-          </div>
-          
           <div className="col-span-1 flex items-center">
             <select
               value={editData.status}
@@ -421,29 +401,17 @@ export default function TaskManager() {
             </select>
           </div>
           
-          <div className="col-span-1 flex items-center">
-            <select
-              value={editData.priority}
-              onChange={(e) => setEditData(prev => ({...prev, priority: e.target.value}))}
-              className="text-xs bg-white border rounded px-2 py-1 w-full"
-            >
-              {priorityOptions.map(priority => (
-                <option key={priority} value={priority}>{priority}</option>
-              ))}
-            </select>
-          </div>
-          
           <div className="col-span-2 flex items-center">
             <input
               type="text"
               value={editData.category.join(', ')}
               onChange={(e) => setEditData(prev => ({...prev, category: e.target.value.split(',').map(s => s.trim())}))}
-              placeholder="Personal, Work"
+              placeholder="Mindfulness, Self-Care"
               className="text-xs text-gray-600 bg-white border rounded px-2 py-1 w-full"
             />
           </div>
           
-          <div className="col-span-2 flex items-center gap-2">
+          <div className="col-span-5 flex items-center gap-2">
             <input
               type="text"
               value={editData.notes}
@@ -487,17 +455,10 @@ export default function TaskManager() {
           </div>
         )}
         
-        <div className={`${showCheckbox ? 'col-span-3' : 'col-span-3'} flex items-center gap-2`}>
+        <div className={`${showCheckbox ? 'col-span-4' : 'col-span-4'} flex items-center gap-2`}>
           <IconComponent className="w-4 h-4 text-gray-600 flex-shrink-0" />
           <span className={`text-xs font-medium ${task.completed ? 'line-through text-gray-500' : 'text-gray-900'}`}>
             {task.title}
-          </span>
-        </div>
-        
-        <div className="col-span-2 flex items-center">
-          <span className={`text-xs ${isOverdue && !task.completed ? 'text-red-600 font-medium' : 'text-blue-600'}`}>
-            {deadlineFormatted}
-            {isOverdue && !task.completed && <span className="ml-1 text-[10px]">(Overdue)</span>}
           </span>
         </div>
         
@@ -519,24 +480,6 @@ export default function TaskManager() {
           />
         </div>
         
-        <div className="col-span-1 flex items-center relative">
-          <button
-            onClick={() => setShowPriorityDropdown(showPriorityDropdown === task.id ? null : task.id)}
-            className={`px-1 py-0.5 rounded text-[10px] font-medium border ${getPriorityColor(task.priority)} hover:opacity-80 cursor-pointer flex items-center gap-1`}
-          >
-            {task.priority}
-            <ChevronDown className="w-2 h-2" />
-          </button>
-          <Dropdown
-            isOpen={showPriorityDropdown === task.id}
-            onClose={() => setShowPriorityDropdown(null)}
-            value={task.priority}
-            onChange={(newPriority) => updateTask(task.id, { priority: newPriority })}
-            options={priorityDropdownOptions}
-            placeholder="Select a priority"
-          />
-        </div>
-        
         <div className="col-span-2 flex items-center gap-1 relative">
           <div className="flex flex-wrap gap-1 flex-1">
             {task.category.map((cat, index) => (
@@ -546,7 +489,7 @@ export default function TaskManager() {
                   const newCategories = task.category.filter((_, i) => i !== index);
                   updateTask(task.id, { category: newCategories });
                 }}
-                className="inline-flex bg-gray-100 text-gray-700 px-1 py-0.5 rounded-full text-[10px] hover:bg-gray-200 cursor-pointer items-center gap-1"
+                className="inline-flex bg-purple-100 text-purple-700 px-1 py-0.5 rounded-full text-[10px] hover:bg-purple-200 cursor-pointer items-center gap-1"
               >
                 {cat}
                 <X className="w-2 h-2" />
@@ -574,7 +517,7 @@ export default function TaskManager() {
           />
         </div>
         
-        <div className="col-span-2 flex items-center">
+        <div className="col-span-4 flex items-center">
           <span className="text-xs text-gray-600 truncate" title={task.notes}>
             {task.notes}
           </span>
@@ -584,21 +527,21 @@ export default function TaskManager() {
           <button
             onClick={() => setEditingTask(task.id)}
             className="p-0.5 text-blue-600 hover:bg-blue-100 rounded"
-            title="Edit task"
+            title="Edit activity"
           >
             <Edit className="w-3 h-3" />
           </button>
           <button
             onClick={() => duplicateTask(task)}
             className="p-0.5 text-green-600 hover:bg-green-100 rounded"
-            title="Duplicate task"
+            title="Duplicate activity"
           >
             <Plus className="w-3 h-3" />
           </button>
           <button
             onClick={() => deleteTask(task.id)}
             className="p-0.5 text-red-600 hover:bg-red-100 rounded"
-            title="Delete task"
+            title="Delete activity"
           >
             <Trash2 className="w-3 h-3" />
           </button>
@@ -610,7 +553,7 @@ export default function TaskManager() {
   const NewTaskForm = () => (
     <div className="bg-white border border-blue-200 rounded-md p-4 mb-4 shadow-sm">
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-base font-medium">Add New Task</h3>
+        <h3 className="text-base font-medium">Add New Wellness Activity</h3>
         <button
           onClick={() => setShowNewTaskForm(false)}
           className="text-gray-400 hover:text-gray-600"
@@ -622,27 +565,17 @@ export default function TaskManager() {
       <div className="grid grid-cols-2 gap-2">
         <div className="col-span-2">
           <label className="block text-xs font-medium text-gray-700 mb-1">
-            Title <span className="text-red-500">*</span>
+            Activity <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
             value={newTask.title}
             onChange={(e) => setNewTask(prev => ({...prev, title: e.target.value}))}
             className="w-full border border-gray-300 rounded-md px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Enter task title"
+            placeholder="What wellness activity would you like to add?"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && e.ctrlKey) addTask();
             }}
-          />
-        </div>
-        
-        <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">Deadline</label>
-          <input
-            type="datetime-local"
-            value={newTask.deadline}
-            onChange={(e) => setNewTask(prev => ({...prev, deadline: e.target.value}))}
-            className="w-full border border-gray-300 rounded-md px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
         
@@ -660,19 +593,6 @@ export default function TaskManager() {
         </div>
         
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">Priority</label>
-          <select
-            value={newTask.priority}
-            onChange={(e) => setNewTask(prev => ({...prev, priority: e.target.value}))}
-            className="w-full border border-gray-300 rounded-md px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:border-transparent"
-          >
-            {priorityOptions.map(priority => (
-              <option key={priority} value={priority}>{priority}</option>
-            ))}
-          </select>
-        </div>
-        
-        <div>
           <label className="block text-xs font-medium text-gray-700 mb-1">Icon</label>
           <select
             value={newTask.icon}
@@ -685,17 +605,10 @@ export default function TaskManager() {
           </select>
         </div>
         
-        <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">Categories</label>
-          <input
-            type="text"
-            value={newTask.category.join(', ')}
-            onChange={(e) => setNewTask(prev => ({...prev, category: e.target.value.split(',').map(s => s.trim()).filter(s => s)}))}
-            className="w-full border border-gray-300 rounded-md px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Personal, Work, Family"
-          />
+        <div className="col-span-2">
+          <label className="block text-xs font-medium text-gray-700 mb-1">Wellness Category</label>
           <div className="mt-1 flex flex-wrap gap-1">
-            {availableCategories.slice(0, 6).map(cat => (
+            {availableCategories.map(cat => (
               <button
                 key={cat}
                 type="button"
@@ -705,9 +618,9 @@ export default function TaskManager() {
                     : [...newTask.category, cat];
                   setNewTask(prev => ({...prev, category: categories}));
                 }}
-                className={`text-[10px] px-1 py-0.5 rounded-full border ${
+                className={`text-[10px] px-2 py-1 rounded-full border ${
                   newTask.category.includes(cat)
-                    ? 'bg-blue-100 text-blue-700 border-blue-300'
+                    ? 'bg-purple-100 text-purple-700 border-purple-300'
                     : 'bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200'
                 }`}
               >
@@ -724,7 +637,7 @@ export default function TaskManager() {
             onChange={(e) => setNewTask(prev => ({...prev, notes: e.target.value}))}
             className="w-full border border-gray-300 rounded-md px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:border-transparent"
             rows="2"
-            placeholder="Enter task notes"
+            placeholder="How does this activity support your mental wellness?"
           />
         </div>
       </div>
@@ -733,9 +646,9 @@ export default function TaskManager() {
         <button
           onClick={addTask}
           disabled={!newTask.title.trim()}
-          className="bg-blue-600 text-white px-2 py-1 rounded-md text-xs hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="bg-purple-600 text-white px-2 py-1 rounded-md text-xs hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          Add Task
+          Add Wellness Activity
         </button>
         <button
           onClick={resetNewTaskForm}
@@ -755,10 +668,10 @@ export default function TaskManager() {
   );
 
   const BulkActions = () => (
-    <div className="bg-blue-50 border border-blue-200 rounded-md p-2 mb-2">
+    <div className="bg-purple-50 border border-purple-200 rounded-md p-2 mb-2">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-blue-900">
-          {selectedTasks.length} task{selectedTasks.length !== 1 ? 's' : ''} selected
+        <span className="text-xs font-medium text-purple-900">
+          {selectedTasks.length} activit{selectedTasks.length !== 1 ? 'ies' : 'y'} selected
         </span>
         <div className="flex gap-1">
           <button
@@ -796,25 +709,126 @@ export default function TaskManager() {
     </div>
   );
 
+  const AthenaSuggestions = () => {
+    const suggestions = [
+      { id: 's1', title: "Take a 10-minute walk", category: ["Fitness & Movement"], icon: 'Activity', notes: "Fresh air can boost your mood instantly" },
+      { id: 's2', title: "5-minute breathing exercise", category: ["Mindfulness / Meditation"], icon: 'Wind', notes: "Focus on deep, calming breaths" },
+      { id: 's3', title: "Text a friend you care about", category: ["Social Care & Connection"], icon: 'Users', notes: "Strengthen your social connections" },
+      { id: 's4', title: "Listen to your favorite song", category: ["Dopamine Activities"], icon: 'Music', notes: "Music can elevate your mood" },
+      { id: 's5', title: "Drink a glass of water", category: ["Self-Care Routines"], icon: 'Droplets', notes: "Stay hydrated for better mental clarity" },
+      { id: 's6', title: "Write down 3 positive things", category: ["Mindfulness / Meditation"], icon: 'Book', notes: "Practice positive thinking" },
+      { id: 's7', title: "Stretch for 5 minutes", category: ["Fitness & Movement"], icon: 'Activity', notes: "Release tension from your body" },
+      { id: 's8', title: "Plan a small treat for yourself", category: ["Dopamine Activities"], icon: 'Gift', notes: "Reward yourself for small victories" }
+    ];
+
+    const addSuggestion = (suggestion) => {
+      const newTask = {
+        ...suggestion,
+        id: Date.now(),
+        status: 'To Do',
+        completed: false
+      };
+      setTasks(prev => [...prev, newTask]);
+      setAddedSuggestions(prev => [...prev, suggestion.id]);
+      
+      // Show a brief success message and scroll to top
+      setTimeout(() => {
+        scrollToTop();
+      }, 300);
+    };
+
+    const isSuggestionAdded = (suggestionId) => {
+      return addedSuggestions.includes(suggestionId);
+    };
+
+    return (
+      <div ref={suggestionsRef} className="mt-8 bg-white rounded-md border border-gray-200 p-4 shadow-sm">
+        <div className="flex items-center gap-2 mb-3">
+          <Brain className="w-5 h-5 text-purple-600" />
+          <h2 className="text-lg font-semibold text-gray-900">Athena AI Suggestions</h2>
+        </div>
+        <p className="text-xs text-gray-600 mb-4">
+          Based on your wellness journey, here are some gentle suggestions to support your mental health today. 
+          Click "Add Activity" to add any suggestion to your wellness tracker above.
+        </p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+          {suggestions.map((suggestion) => {
+            const Icon = iconMap[suggestion.icon] || Heart;
+            const isAdded = isSuggestionAdded(suggestion.id);
+            
+            return (
+              <div key={suggestion.id} className={`bg-gray-50 border ${isAdded ? 'border-green-200' : 'border-gray-200'} rounded-lg p-3 hover:bg-gray-100 transition-colors`}>
+                <div className="flex items-start justify-between mb-2">
+                  <Icon className="w-4 h-4 text-purple-600 mt-0.5" />
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full">
+                      {suggestion.category[0]}
+                    </span>
+                    {isAdded && (
+                      <span className="text-[10px] px-2 py-0.5 bg-green-100 text-green-700 rounded-full">
+                        Added
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <h3 className="text-sm font-medium text-gray-900 mb-1">{suggestion.title}</h3>
+                <p className="text-xs text-gray-600 mb-3">{suggestion.notes}</p>
+                <button
+                  onClick={() => addSuggestion(suggestion)}
+                  disabled={isAdded}
+                  className={`w-full px-2 py-1 rounded-md text-xs font-medium transition-colors ${
+                    isAdded 
+                      ? 'bg-green-50 text-green-700 border border-green-200 cursor-default' 
+                      : 'bg-white border border-purple-600 text-purple-600 hover:bg-purple-50'
+                  }`}
+                >
+                  {isAdded ? '✓ Added to Tracker' : 'Add Activity'}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  const ScrollButton = () => {
+    if (!showScrollButton) return null;
+
+    return (
+      <button
+        onClick={scrollToBottom}
+        className="fixed right-8 bottom-8 z-40 bg-purple-600 text-white p-3 rounded-full shadow-lg hover:bg-purple-700 transition-all duration-300 hover:scale-110"
+        title="Scroll to Athena AI Suggestions"
+      >
+        <ArrowDown className="w-5 h-5" />
+      </button>
+    );
+  };
+
   return (
-    <div className="flex bg-gray-50">
+    <div className="flex bg-[#FCF4F1] h-screen">
       {/* Sidebar */}
       <div className="w-64 sm:w-48 bg-white border-r border-gray-200">
         <Sidebar />
       </div>
 
       {/* Main Content */}
-      <div className="flex-1">
+      <div 
+        ref={mainContentRef}
+        className="flex-1 overflow-y-auto relative"
+      >
         {/* Header */}
         <div className="bg-white border-b border-gray-200 px-4 py-2 sticky top-0 z-10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <CheckSquare className="w-5 h-5" />
-              <span className="text-xs text-gray-500">Tasks</span>
-              <span className="text-xs text-gray-400">Private</span>
+              <Heart className="w-5 h-5 text-purple-600" />
+              <span className="text-xs text-gray-500">Wellness Tracker</span>
+              <span className="text-xs text-gray-400">Personal</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500">Edited just now</span>
+              <span className="text-xs text-gray-500">{tasks.length} Activities</span>
               <button className="flex items-center gap-1 text-xs text-gray-600 hover:text-gray-900">
                 <Share2 className="w-3 h-3" />
                 Share
@@ -829,11 +843,11 @@ export default function TaskManager() {
           {/* Title and Description */}
           <div className="mb-4">
             <div className="flex items-center gap-2 mb-2">
-              <CheckSquare className="w-6 h-6" />
-              <h1 className="text-2xl font-semibold">Tasks</h1>
+              <Heart className="w-6 h-6 text-purple-600" />
+              <h1 className="text-2xl font-semibold">Wellness Tracker</h1>
             </div>
             <p className="text-xs text-gray-600 max-w-xl">
-              A simple, intuitive task management system. Focus on what matters most.
+              A gentle, intuitive system for tracking mental wellness activities. Nourish your mind, one activity at a time.
             </p>
           </div>
 
@@ -844,16 +858,16 @@ export default function TaskManager() {
                 <Search className="w-4 h-4 absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search tasks..."
+                  placeholder="Search wellness activities..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8 pr-3 py-1 w-full border border-gray-300 rounded-md text-xs focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                  className="pl-8 pr-3 py-1 w-full border border-gray-300 rounded-md text-xs focus:ring-1 focus:ring-purple-500 focus:border-transparent"
                 />
               </div>
               <button
                 onClick={() => setShowFilters(!showFilters)}
                 className={`p-1 rounded-md border transition-colors ${
-                  showFilters ? 'bg-blue-100 border-blue-300 text-blue-700' : 'border-gray-300 hover:bg-gray-100'
+                  showFilters ? 'bg-purple-100 border-purple-300 text-purple-700' : 'border-gray-300 hover:bg-gray-100'
                 }`}
                 title="Toggle filters"
               >
@@ -872,13 +886,13 @@ export default function TaskManager() {
             
             {showFilters && (
               <div className="bg-white p-2 rounded-md border border-gray-200 mb-2 shadow-sm">
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">Status</label>
                     <select
                       value={filterStatus}
                       onChange={(e) => setFilterStatus(e.target.value)}
-                      className="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-purple-500 focus:border-transparent"
                     >
                       <option value="">All Statuses</option>
                       {statusOptions.map(status => (
@@ -887,24 +901,11 @@ export default function TaskManager() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Priority</label>
-                    <select
-                      value={filterPriority}
-                      onChange={(e) => setFilterPriority(e.target.value)}
-                      className="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      <option value="">All Priorities</option>
-                      {priorityOptions.map(priority => (
-                        <option key={priority} value={priority}>{priority}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Category</label>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Wellness Category</label>
                     <select
                       value={filterCategory}
                       onChange={(e) => setFilterCategory(e.target.value)}
-                      className="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-purple-500 focus:border-transparent"
                     >
                       <option value="">All Categories</option>
                       {allCategories.map(category => (
@@ -916,7 +917,6 @@ export default function TaskManager() {
                     <button
                       onClick={() => {
                         setFilterStatus('');
-                        setFilterPriority('');
                         setFilterCategory('');
                         setSearchTerm('');
                       }}
@@ -927,7 +927,7 @@ export default function TaskManager() {
                   </div>
                 </div>
                 <div className="mt-2 text-xs text-gray-500">
-                  Showing {filteredAndSortedTasks.length} of {tasks.length} tasks
+                  Showing {filteredAndSortedTasks.length} of {tasks.length} wellness activities
                 </div>
               </div>
             )}
@@ -941,12 +941,12 @@ export default function TaskManager() {
             <div className="flex items-center gap-2">
               <button
                 className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors ${
-                  viewMode === "All Tasks" ? "bg-gray-100 text-gray-900" : "text-gray-600 hover:text-gray-900"
+                  viewMode === "All Activities" ? "bg-gray-100 text-gray-900" : "text-gray-600 hover:text-gray-900"
                 }`}
-                onClick={() => setViewMode("All Tasks")}
+                onClick={() => setViewMode("All Activities")}
               >
                 <Menu className="w-3 h-3" />
-                All Tasks ({filteredAndSortedTasks.length})
+                All Activities ({filteredAndSortedTasks.length})
               </button>
               <button
                 className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors ${
@@ -962,10 +962,18 @@ export default function TaskManager() {
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setShowNewTaskForm(!showNewTaskForm)}
-                className="flex items-center gap-1 bg-blue-600 text-white px-2 py-1 rounded-md text-xs font-medium hover:bg-blue-700 transition-colors"
+                className="flex items-center gap-1 bg-purple-600 text-white px-2 py-1 rounded-md text-xs font-medium hover:bg-purple-700 transition-colors"
               >
                 <Plus className="w-3 h-3" />
-                New Task
+                New Wellness Activity
+              </button>
+              <button
+                onClick={scrollToBottom}
+                className="flex items-center gap-1 bg-gray-100 text-gray-700 px-2 py-1 rounded-md text-xs font-medium hover:bg-gray-200 transition-colors"
+                title="Go to Athena AI Suggestions"
+              >
+                <Brain className="w-3 h-3" />
+                AI Suggestions
               </button>
             </div>
           </div>
@@ -973,8 +981,8 @@ export default function TaskManager() {
           {/* New Task Form */}
           {showNewTaskForm && <NewTaskForm />}
 
-          {/* Task Table - All Tasks View */}
-          {viewMode === "All Tasks" ? (
+          {/* Task Table - All Activities View */}
+          {viewMode === "All Activities" ? (
             <div className="bg-white rounded-md border border-gray-200 shadow-sm">
               <div className="grid grid-cols-12 gap-2 px-3 py-2 bg-gray-50 border-b border-gray-200 text-xs font-medium text-gray-600">
                 {showBulkActions && (
@@ -983,27 +991,17 @@ export default function TaskManager() {
                       type="checkbox"
                       checked={selectedTasks.length === filteredAndSortedTasks.length && filteredAndSortedTasks.length > 0}
                       onChange={selectAllTasks}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-3 h-3"
+                      className="rounded border-gray-300 text-purple-600 focus:ring-purple-500 w-3 h-3"
                     />
                   </div>
                 )}
                 <button 
-                  className={`${showBulkActions ? 'col-span-3' : 'col-span-3'} flex items-center gap-1 text-left hover:text-gray-900 transition-colors`}
+                  className={`${showBulkActions ? 'col-span-4' : 'col-span-4'} flex items-center gap-1 text-left hover:text-gray-900 transition-colors`}
                   onClick={() => handleSort('title')}
                 >
                   <Target className="w-3 h-3" />
-                  Tasks
+                  Wellness Activities
                   {sortConfig.key === 'title' && (
-                    <ArrowUpDown className={`w-2 h-2 ${sortConfig.direction === 'desc' ? 'rotate-180' : ''}`} />
-                  )}
-                </button>
-                <button 
-                  className="col-span-2 flex items-center gap-1 text-left hover:text-gray-900 transition-colors"
-                  onClick={() => handleSort('deadline')}
-                >
-                  <Calendar className="w-3 h-3" />
-                  Deadline
-                  {sortConfig.key === 'deadline' && (
                     <ArrowUpDown className={`w-2 h-2 ${sortConfig.direction === 'desc' ? 'rotate-180' : ''}`} />
                   )}
                 </button>
@@ -1017,21 +1015,11 @@ export default function TaskManager() {
                     <ArrowUpDown className={`w-2 h-2 ${sortConfig.direction === 'desc' ? 'rotate-180' : ''}`} />
                   )}
                 </button>
-                <button 
-                  className="col-span-1 flex items-center gap-1 text-left hover:text-gray-900 transition-colors"
-                  onClick={() => handleSort('priority')}
-                >
-                  <Star className="w-3 h-3" />
-                  Priority
-                  {sortConfig.key === 'priority' && (
-                    <ArrowUpDown className={`w-2 h-2 ${sortConfig.direction === 'desc' ? 'rotate-180' : ''}`} />
-                  )}
-                </button>
                 <div className="col-span-2 flex items-center gap-1">
                   <Menu className="w-3 h-3" />
-                  Category
+                  Wellness Category
                 </div>
-                <div className="col-span-2 flex items-center gap-1">
+                <div className="col-span-4 flex items-center gap-1">
                   <Menu className="w-3 h-3" />
                   Notes
                 </div>
@@ -1050,28 +1038,28 @@ export default function TaskManager() {
 
                 {filteredAndSortedTasks.length === 0 && (
                   <div className="px-3 py-8 text-center text-gray-500">
-                    <AlertCircle className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                    <h3 className="text-base font-medium mb-2">No tasks found</h3>
+                    <Heart className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                    <h3 className="text-base font-medium mb-2">No wellness activities found</h3>
                     <p className="text-xs mb-2">
-                      {searchTerm || filterStatus || filterPriority || filterCategory
+                      {searchTerm || filterStatus || filterCategory
                         ? "Try adjusting your search or filters"
-                        : "Get started by creating your first task"
+                        : "Start your wellness journey by adding your first self-care activity"
                       }
                     </p>
                     {!showNewTaskForm && (
                       <button
                         onClick={() => setShowNewTaskForm(true)}
-                        className="inline-flex items-center gap-1 bg-blue-600 text-white px-2 py-1 rounded-md text-xs hover:bg-blue-700 transition-colors"
+                        className="inline-flex items-center gap-1 bg-purple-600 text-white px-2 py-1 rounded-md text-xs hover:bg-purple-700 transition-colors"
                       >
                         <Plus className="w-3 h-3" />
-                        Add First Task
+                        Add First Activity
                       </button>
                     )}
                   </div>
                 )}
               </div>
 
-              {/* Add New Page Row */}
+              {/* Add New Activity Row */}
               {filteredAndSortedTasks.length > 0 && (
                 <div className="px-3 py-2 border-t border-gray-100">
                   <button 
@@ -1079,7 +1067,7 @@ export default function TaskManager() {
                     className="flex items-center gap-1 text-gray-500 hover:text-gray-700 transition-colors text-xs"
                   >
                     <Plus className="w-3 h-3" />
-                    <span>New page</span>
+                    <span>New wellness activity</span>
                   </button>
                 </div>
               )}
@@ -1097,29 +1085,21 @@ export default function TaskManager() {
                           {status} ({statusTasks.length})
                         </h3>
                         <div className="text-xs text-gray-500">
-                          {status === 'Done' && `${Math.round((statusTasks.length / tasks.length) * 100)}% of all tasks`}
+                          {status === 'Done' && `${Math.round((statusTasks.length / tasks.length) * 100)}% of all activities completed`}
                         </div>
                       </div>
                     </div>
                     
                     <div className="grid grid-cols-12 gap-2 px-3 py-2 bg-gray-50 border-b border-gray-200 text-xs font-medium text-gray-600">
-                      <div className="col-span-3 flex items-center gap-1">
+                      <div className="col-span-4 flex items-center gap-1">
                         <Target className="w-3 h-3" />
-                        Tasks
-                      </div>
-                      <div className="col-span-2 flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
-                        Deadline
-                      </div>
-                      <div className="col-span-1 flex items-center gap-1">
-                        <Star className="w-3 h-3" />
-                        Priority
+                        Wellness Activities
                       </div>
                       <div className="col-span-2 flex items-center gap-1">
                         <Menu className="w-3 h-3" />
-                        Category
+                        Wellness Category
                       </div>
-                      <div className="col-span-3 flex items-center gap-1">
+                      <div className="col-span-5 flex items-center gap-1">
                         <Menu className="w-3 h-3" />
                         Notes
                       </div>
@@ -1140,14 +1120,20 @@ export default function TaskManager() {
               
               {Object.values(groupedTasks).every(arr => arr.length === 0) && (
                 <div className="bg-white rounded-md border border-gray-200 px-3 py-8 text-center text-gray-500 shadow-sm">
-                  <AlertCircle className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                  <h3 className="text-base font-medium mb-2">No tasks found</h3>
-                  <p className="text-xs">Try adjusting your search or filters to see more tasks</p>
+                  <Heart className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                  <h3 className="text-base font-medium mb-2">No wellness activities found</h3>
+                  <p className="text-xs">Try adjusting your search or filters to see more activities</p>
                 </div>
               )}
             </div>
           )}
+
+          {/* Athena AI Suggestions Section */}
+          <AthenaSuggestions />
         </div>
+
+        {/* Scroll to Bottom Button */}
+        <ScrollButton />
       </div>
     </div>
   );
