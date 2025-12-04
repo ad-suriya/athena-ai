@@ -1,0 +1,81 @@
+/* Calendar.css */
+.calendar-container {
+  padding: 1rem;
+}
+
+/* Dark mode styles */
+.dark .calendar-container {
+  background-color: #0f172a;
+}
+
+.dark .bg-white {
+  background-color: #1e293b !important;
+}
+
+.dark .text-gray-900 {
+  color: #f1f5f9 !important;
+}
+
+.dark .text-gray-500 {
+  color: #94a3b8 !important;
+}
+
+.dark .text-gray-400 {
+  color: #64748b !important;
+}
+
+.dark .border-gray-300 {
+  border-color: #475569 !important;
+}
+
+.dark .bg-gray-100 {
+  background-color: #334155 !important;
+}
+
+.dark .bg-gray-50 {
+  background-color: #1e293b !important;
+}
+
+.dark .hover\:bg-gray-100:hover {
+  background-color: #475569 !important;
+}
+
+.dark .bg-gray-900 {
+  background-color: #475569 !important;
+}
+
+.dark .hover\:bg-gray-800:hover {
+  background-color: #64748b !important;
+}
+
+.dark .bg-blue-100 {
+  background-color: #1e3a8a !important;
+  color: #bfdbfe !important;
+  border-color: #1e40af !important;
+}
+
+.dark .bg-purple-100 {
+  background-color: #5b21b6 !important;
+  color: #ddd6fe !important;
+  border-color: #6d28d9 !important;
+}
+
+.dark .bg-orange-100 {
+  background-color: #9a3412 !important;
+  color: #fed7aa !important;
+  border-color: #c2410c !important;
+}
+
+.dark .text-blue-600 {
+  color: #93c5fd !important;
+}
+
+.dark .bg-blue-600 {
+  background-color: #2563eb !important;
+}
+
+.dark .hover\:bg-blue-700:hover {
+  background-color: #1d4ed8 !important;
+}
+
+/* Add more specific dark mode styles as needed */

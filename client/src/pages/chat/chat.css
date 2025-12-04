@@ -1,0 +1,608 @@
+/* ===========================================
+   CHAT INTERFACE THEME SYSTEM
+   Light mode only version
+   Improved accessibility, performance, and UX
+   =========================================== */
+
+:root {
+  /* Color Palette */
+  --light-primary: #3b82f6;
+  --light-danger: #ef4444;
+  
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+
+  /* Light mode colors */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --border-color: #e2e8f0;
+  --border-light: #f1f5f9;
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --message-user-bg: #2563eb;
+  --message-bot-bg: #f1f5f9;
+}
+
+/* Base Styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  transition: background-color 0.3s ease, color 0.3s ease;
+  scrollbar-color: var(--text-muted) var(--bg-tertiary);
+  scrollbar-width: thin;
+}
+
+[class*="bg-"], [class*="text-"], [class*="border-"] {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+body {
+  height: 100%;
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Layout */
+.chat-container {
+  display: flex;
+  height: 100vh;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Header */
+.chat-header {
+  padding: var(--space-md);
+  background-color: var(--bg-primary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.chat-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Message Area */
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-md);
+  background-color: var(--bg-secondary);
+  scroll-behavior: smooth;
+}
+
+.message {
+  margin-bottom: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: 0.5rem;
+  max-width: 80%;
+  position: relative;
+  word-wrap: break-word;
+  will-change: transform, opacity;
+}
+
+.user-message {
+  margin-left: auto;
+  background-color: var(--message-user-bg);
+  color: white;
+  border-bottom-right-radius: 0.25rem !important;
+}
+
+.bot-message {
+  margin-right: auto;
+  background-color: var(--message-bot-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border-light);
+  border-bottom-left-radius: 0.25rem !important;
+}
+
+.message-meta {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: var(--space-xs);
+  display: flex;
+  justify-content: space-between;
+}
+
+.message-content {
+  line-height: 1.6;
+}
+
+.message-content p {
+  margin-bottom: var(--space-xs);
+}
+
+.message-content p:last-child {
+  margin-bottom: 0;
+}
+
+/* Input Area */
+.chat-input-container {
+  padding: var(--space-md);
+  background-color: var(--bg-primary);
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  border-top: 1px solid var(--border-color);
+}
+
+.chat-input-form {
+  display: flex;
+  gap: var(--space-sm);
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.chat-input {
+  flex: 1;
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 1rem;
+  min-height: 44px;
+}
+
+.chat-input::placeholder {
+  color: var(--text-muted);
+}
+
+.chat-input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-color: var(--accent);
+}
+
+/* Enhanced Control Button Styles */
+.enhanced-control-button {
+  background-color: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  width: 2.5rem;
+  height: 2.5rem;
+  min-height: 44px;
+  min-width: 44px;
+  box-shadow: var(--shadow), 0 2px 4px rgba(59, 130, 246, 0.15);
+}
+
+.enhanced-control-button:hover {
+  background-color: var(--accent-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow), 0 4px 12px rgba(59, 130, 246, 0.25);
+}
+
+.enhanced-control-button:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow), 0 1px 3px rgba(59, 130, 246, 0.2);
+}
+
+.enhanced-control-button:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.enhanced-control-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: var(--shadow);
+}
+
+.send-button {
+  padding: var(--space-sm) var(--space-md);
+  background-color: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  min-height: 44px;
+  min-width: 80px;
+}
+
+.send-button:hover {
+  background-color: var(--accent-hover);
+}
+
+.send-button:active {
+  transform: scale(0.98);
+}
+
+.send-button:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.send-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Sidebar base styles */
+.sidebar {
+  width: 256px;
+  background-color: var(--bg-primary);
+  border-right: 1px solid var(--border-color);
+  height: 100vh;
+  flex-shrink: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 50;
+  transition: transform 0.3s ease-in-out;
+  transform: translateX(-100%);
+}
+
+/* Open state for mobile */
+.sidebar.open {
+  transform: translateX(0);
+}
+
+/* Desktop styles */
+@media (min-width: 768px) {
+  .sidebar {
+    position: relative;
+    transform: translateX(0);
+  }
+  
+  /* Collapsed state for desktop */
+  .sidebar.collapsed {
+    width: 0;
+    overflow: hidden;
+    border-right: none;
+  }
+}
+
+/* Chat container adjustment */
+.chat-container {
+  flex: 1;
+  min-width: 0; /* Prevent flex item overflow */
+  transition: margin-left 0.3s ease-in-out;
+}
+
+/* Mobile overlay */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: 40;
+}
+
+/* Overlay */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 40;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Menu Button */
+.menu-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-primary);
+  padding: var(--space-xs);
+  border-radius: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+.menu-button:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.menu-button:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Utility Classes */
+.hidden {
+  display: none !important;
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+.text-secondary {
+  color: var(--text-secondary);
+}
+
+.bg-primary {
+  background-color: var(--bg-primary);
+}
+
+.bg-secondary {
+  background-color: var(--bg-secondary);
+}
+
+/* Loading State */
+.thinking-message::after {
+  content: "...";
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* Recording Indicator */
+.recording-indicator {
+  box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  animation: recordingPulse 1.5s infinite;
+}
+
+@keyframes recordingPulse {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+/* Image Upload Preview */
+.image-preview {
+  aspect-ratio: 1/1;
+  object-fit: cover;
+  background-color: var(--bg-tertiary);
+  border-radius: 0.5rem;
+  max-width: 100%;
+  margin-top: var(--space-sm);
+}
+
+/* Model Dropdown */
+.model-dropdown {
+  transform-origin: top right;
+  transition: opacity 0.1s ease, transform 0.1s ease;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  padding: var(--space-sm) 0;
+  min-width: 200px;
+  box-shadow: var(--shadow);
+  z-index: 30;
+}
+
+.model-dropdown-item {
+  padding: var(--space-sm) var(--space-md);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.model-dropdown-item:hover {
+  background-color: var(--bg-tertiary);
+}
+
+/* Code Block */
+.code-block {
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-light);
+  border-radius: 0.5rem;
+  padding: var(--space-md);
+  margin: var(--space-sm) 0;
+  overflow-x: auto;
+}
+
+.code-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-sm);
+}
+
+.code-language {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.code-content {
+  font-family: 'Fira Code', 'Consolas', monospace;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.new-message {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--text-muted);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --border-color: var(--text-primary);
+  }
+  
+  .message {
+    border: 2px solid var(--border-color);
+  }
+  
+  button, input, textarea {
+    border: 2px solid var(--text-primary) !important;
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .chat-container {
+    flex-direction: column;
+  }
+  
+  .sidebar {
+    width: 256px;
+    transform: translateX(-256px);
+  }
+  
+  .sidebar.translate-x-0 {
+    transform: translateX(0);
+  }
+  
+  .message {
+    max-width: 90%;
+  }
+  
+  .chat-header {
+    padding: var(--space-sm) var(--space-md);
+  }
+  
+  .chat-input-container {
+    padding: var(--space-sm) var(--space-md);
+  }
+  
+  .chat-input-form {
+    width: 100%;
+    max-width: none;
+    padding: 0 var(--space-sm);
+  }
+}
+
+@media (max-width: 640px) {
+  .message {
+    max-width: 95%;
+    padding: var(--space-sm);
+  }
+  
+  .chat-input-form {
+    flex-direction: column;
+    padding: 0 var(--space-xs);
+  }
+  
+  .send-button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  html, body {
+    overflow-x: hidden;
+  }
+  .h-screen {
+    min-height: 100vh;
+  }
+}
+/* Animation for the greeting */
+.animate-greeting {
+  animation: slideRotateScaleIn 1.2s ease-out forwards;
+}
+
+/* Animation for the subtitle with a slight delay */
+.animate-greeting-delayed {
+  animation: slideRotateScaleIn 0.8s ease-out 0.3s forwards;
+  opacity: 0; /* Start hidden to allow animation */
+}
+
+/* Keyframes for slide-from-right with rotation and scale effect */
+@keyframes slideRotateScaleIn {
+  0% {
+    opacity: 0;
+    transform: translateX(40px) rotate(-15deg) scale(0.8);
+  }
+  60% {
+    opacity: 0.7;
+    transform: translateX(0) rotate(5deg) scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) rotate(0deg) scale(1);
+  }
+}
+/* Ensure chatbox has lower z-index than profile dropdown */
+.chat-container {
+  z-index: 50;
+}
+
+/* Profile dropdown should be higher */
+.profile-dropdown {
+  z-index: 60;
+}
+
+/* Modal overlays should be highest */
+.modal-overlay {
+  z-index: 100;
+}

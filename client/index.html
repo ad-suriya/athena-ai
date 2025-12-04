@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- Primary Favicon (recommended 32x32 or 64x64) -->
+    <link rel="icon" type="image/png" href="/src/assets/logo-07.png" />
+         
+    <!-- For best compatibility across all devices -->
+    <link rel="shortcut icon" href="/src/assets/logo-07.png" type="image/png">
+    <link rel="apple-touch-icon" href="/src/assets/logo-07.png">
+         
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Yudle AI</title>
+         
+    <!-- For PWA/Modern Browsers -->
+    <meta name="theme-color" content="#1a1a1a">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#1a1a1a" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+    
+    <script>
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.classList.contains('dark');
+  
+  if (isDark) {
+    html.classList.remove('dark');
+    localStorage.setItem('theme', 'light');
+  } else {
+    html.classList.add('dark');
+    localStorage.setItem('theme', 'dark');
+  }
+}
+
+// Load saved theme on page load
+document.addEventListener('DOMContentLoaded', function() {
+  const savedTheme = localStorage.getItem('theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  
+  if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+  }
+});
+    </script>
+  </body>
+</html>

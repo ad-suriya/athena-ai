@@ -1,0 +1,121 @@
+/* Theme CSS - Light Mode Only */
+
+/* Light Mode Variables */
+:root {
+  --bg-primary: #f9fafb;
+  --bg-secondary: #ffffff;
+  --text-primary: #1a1a1a;
+  --text-secondary: #4b5563;
+  --accent-color: #f97316;
+  --border-color: #e5e7eb;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --input-bg: rgba(255, 255, 255, 0.9);
+  --card-bg: rgba(255, 255, 255, 0.9);
+  --sidebar-bg: #ffffff;
+  --highlight: #f97316;
+  
+  /* Transition for smooth animations */
+  --theme-transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Apply theme to main elements */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: var(--theme-transition);
+}
+
+/* Sidebar styling */
+.sidebar {
+  background-color: var(--sidebar-bg);
+  border-color: var(--border-color);
+  transition: var(--theme-transition);
+}
+
+/* Input and card styling */
+.input-area, .card {
+  background-color: var(--input-bg);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+  transition: var(--theme-transition);
+}
+
+/* Message styling */
+.message-user {
+  background-color: var(--accent-color) !important;
+  color: white !important;
+}
+
+.message-assistant {
+  background-color: var(--card-bg) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+/* Button styling */
+.button-primary {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+.button-secondary {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+/* Header styling */
+header {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+/* Navbar styling */
+.navbar {
+  background-color: var(--bg-secondary);
+}
+
+/* Footer styling */
+.footer {
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+
+/* Card styling */
+.card {
+  background-color: var(--card-bg);
+  box-shadow: 0 4px 6px var(--shadow-color);
+}
+
+/* Form elements styling */
+input, textarea, select {
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+/* Button transitions */
+button {
+  transition: var(--theme-transition);
+}
+
+/* Table styling */
+table {
+  border-color: var(--border-color);
+}
+
+tr:nth-child(even) {
+  background-color: rgba(249, 250, 251, 0.5);
+}
+
+th {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+/* Modal styling */
+.modal {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+  box-shadow: 0 10px 15px -3px var(--shadow-color);
+}
