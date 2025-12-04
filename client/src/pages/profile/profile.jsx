@@ -1,11 +1,13 @@
 import React from 'react';
 import { ArrowLeft, User } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Profile = ({ onBack }) => {
+  const navigate = useNavigate();
   return (
     <div className="flex-1 p-8">
       <button 
-        onClick={onBack}
+        onClick={() => navigate("/chat")}
         className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-8"
       >
         <ArrowLeft className="w-5 h-5" />

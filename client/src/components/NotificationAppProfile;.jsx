@@ -212,7 +212,7 @@ const NotificationAppProfile = ({ user, isMobile = false, setShowSidebarOverlay,
               </button>
               <button
                 className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-gray-700 hover:text-[#E14C42] hover:bg-gradient-to-r hover:from-[#F5D9D1] hover:to-[#F5D9D1]/50 rounded-lg transition-colors"
-                onClick={() => handleAction(() => (window.location.href = 'https://yudle.vercel.app/'))}
+                onClick={() => handleAction(() => navigate('/chat'))}
               >
                 <Home className="w-4 h-4 text-[#E65C52]" />
                 Homepage

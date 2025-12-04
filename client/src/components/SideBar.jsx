@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Code2 } from 'lucide-react';
+import Profile from "../pages/profile/profile";
 import {
-  Plus,
+  MessageSquare,
   Search,
-  PanelLeft,
+  CheckSquare,
+  Smile,
+  BarChart3,
+  BookOpen,
   Home as HomeIcon,
   Mail as FeedbackIcon,
   HelpCircle as SupportIcon,
@@ -13,18 +16,22 @@ import {
   ChevronDown,
   X,
   Clock as ClockIcon,
-  MessageSquare,
   ChevronsRight,
-  Send,
-  MessageCircle,
+  Plus,
   MoreVertical,
   Edit,
   Share,
   Star,
   Trash2,
-  ExternalLink,
   Archive as ArchiveIcon,
-  BookOpen,
+  Menu,
+  Sparkles,
+  Bookmark,
+  Calendar,
+  Users,
+  Bell,
+  LogOut,
+  User
 } from "lucide-react";
 
 // Tooltip Component
@@ -34,19 +41,18 @@ const Tooltip = ({ children, text, position = "top" }) => {
       {children}
       <div
         className={`
-          absolute z-[200] px-1.5 py-0.5 text-[10px] text-white bg-gray-900 rounded
+          absolute z-[200] px-2 py-1 text-xs text-white bg-gray-900/90 rounded-lg
           opacity-0 group-hover:opacity-100 transition-opacity duration-200
-          pointer-events-none whitespace-nowrap
-          ${position === "top" ? "bottom-full mb-1 left-1/2 transform -translate-x-1/2" : ""}
-          ${position === "right" ? "left-full ml-1 top-1/2 transform -translate-y-1/2" : ""}
+          pointer-events-none whitespace-nowrap backdrop-blur-sm
+          ${position === "top" ? "bottom-full mb-2 left-1/2 transform -translate-x-1/2" : ""}
+          ${position === "right" ? "left-full ml-2 top-1/2 transform -translate-y-1/2" : ""}
         `}
       >
         {text}
         <div
           className={`
             absolute w-0 h-0
-            ${position === "top" ? "top-full left-1/2 transform -translate-x-1/2 border-l-3 border-r-3 border-t-3 border-l-transparent border-r-transparent border-t-gray-900" : ""}
-            ${position === "right" ? "right-full top-1/2 transform -translate-y-1/2 border-t-3 border-b-3 border-r-3 border-t-transparent border-b-transparent border-r-gray-900" : ""}
+            ${position === "top" ? "top-full left-1/2 transform -translate-x-1/2 border-l-2 border-r-2 border-t-2 border-l-transparent border-r-transparent border-t-gray-900/90" : ""}
           `}
         />
       </div>
@@ -54,35 +60,7 @@ const Tooltip = ({ children, text, position = "top" }) => {
   );
 };
 
-// Error Boundary Component
-class ErrorBoundary extends React.Component {
-  state = { hasError: false, error: null };
-
-  static getDerivedStateFromError(error) {
-    console.error("Error in component:", error);
-    return { hasError: true, error };
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="p-3 text-red-600">
-          <h3 className="text-sm">Error in Sidebar</h3>
-          <p className="text-xs">{this.state.error?.message || "An unexpected error occurred"}</p>
-          <button
-            className="mt-2 px-3 py-1 bg-[#EBEBEB] text-gray-800 rounded-md text-xs"
-            onClick={() => this.setState({ hasError: false, error: null })}
-          >
-            Retry
-          </button>
-        </div>
-      );
-    }
-    return this.props.children;
-  }
-}
-
-// Enhanced Conversation Panel Component
+// Enhanced Conversation Panel Component (Updated for new theme)
 const ConversationPanel = ({ 
   isOpen, 
   onClose, 
@@ -107,14 +85,12 @@ const ConversationPanel = ({
   const [searchTerm, setSearchTerm] = useState("");
   const menuRefs = useRef({});
 
-  // Ensure "All" is selected by default when the panel opens
   useEffect(() => {
     if (isOpen) {
       setCurrentView("All");
     }
   }, [isOpen, setCurrentView]);
 
-  // Sort and filter conversations based on search term
   const sortedConversations = [...userConversations]
     .filter(
       (conv) =>
@@ -127,7 +103,6 @@ const ConversationPanel = ({
       return dateB - dateA;
     });
 
-  // Filter and prioritize conversations
   const filteredConversations = sortedConversations.reduce((acc, conv) => {
     if (currentView === "All") {
       if (conv.isFavorite || conv.isScheduled) {
@@ -150,7 +125,6 @@ const ConversationPanel = ({
       setShowSidebarOverlay(false);
       setIsSidebarVisible(false);
     }
-    // Close conversation panel after selection
     onClose();
   };
 
@@ -174,14 +148,6 @@ const ConversationPanel = ({
     setIsRenaming(null);
   };
 
-  const handleKeyDown = (e, conversationId) => {
-    if (e.key === "Enter") {
-      handleRenameSubmit(e, conversationId);
-    } else if (e.key === "Escape") {
-      setIsRenaming(null);
-    }
-  };
-
   const formatDate = (dateString) => {
     if (!dateString) return "";
     try {
@@ -196,7 +162,6 @@ const ConversationPanel = ({
     }
   };
 
-  // Close menus when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (openMenuId) {
@@ -216,14 +181,13 @@ const ConversationPanel = ({
     };
   }, [openMenuId]);
 
-  // Navigation Tabs Component
   const NavigationTabs = () => (
-    <div className="px-3 py-2 border-b border-gray-200">
-      <div className="flex bg-gray-200 rounded-full p-0.5">
+    <div className="px-3 py-2">
+      <div className="flex bg-[#FFE7E5] rounded-lg p-0.5">
         <button
-          className={`flex-1 py-1.5 px-2 text-[10px] font-medium rounded-full transition-all ${
+          className={`flex-1 py-1.5 px-2 text-xs font-medium rounded-md transition-all ${
             currentView === "All"
-              ? "bg-gray-800 text-white shadow-sm"
+              ? "bg-white text-[#FF6F61] shadow-sm"
               : "text-gray-600 hover:text-gray-800"
           }`}
           onClick={() => setCurrentView("All")}
@@ -231,9 +195,9 @@ const ConversationPanel = ({
           All
         </button>
         <button
-          className={`flex-1 py-1.5 px-2 text-[10px] font-medium rounded-full transition-all ${
+          className={`flex-1 py-1.5 px-2 text-xs font-medium rounded-md transition-all ${
             currentView === "Favorites"
-              ? "bg-gray-800 text-white shadow-sm"
+              ? "bg-white text-[#FF6F61] shadow-sm"
               : "text-gray-600 hover:text-gray-800"
           }`}
           onClick={() => setCurrentView("Favorites")}
@@ -241,9 +205,9 @@ const ConversationPanel = ({
           Favorites
         </button>
         <button
-          className={`flex-1 py-1.5 px-2 text-[10px] font-medium rounded-full transition-all ${
+          className={`flex-1 py-1.5 px-2 text-xs font-medium rounded-md transition-all ${
             currentView === "Scheduled"
-              ? "bg-gray-800 text-white shadow-sm"
+              ? "bg-white text-[#FF6F61] shadow-sm"
               : "text-gray-600 hover:text-gray-800"
           }`}
           onClick={() => setCurrentView("Scheduled")}
@@ -257,53 +221,50 @@ const ConversationPanel = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed top-0 left-[200px] h-full w-64 bg-white border-l border-gray-200 shadow-lg z-50 flex transform transition-all duration-300 ease-in-out">
-      {/* Conversation List */}
+    <div className="fixed top-0 left-[280px] h-full w-72 bg-white/90 backdrop-blur-xl border-l border-[#FFE7E5] shadow-xl z-50 flex transform transition-all duration-300 ease-in-out">
       <div className="w-full flex flex-col">
-        <div className="p-3 border-b border-gray-200 bg-[#EBEBEB]">
+        <div className="p-4 border-b border-[#FFE7E5] bg-white/80">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-medium">Conversation History</h3>
+            <h3 className="text-sm font-semibold text-[#2B3440]">Conversation History</h3>
             <button
               onClick={onClose}
-              className="p-1 hover:bg-gray-200 rounded-full transition-colors"
+              className="p-1.5 hover:bg-[#FFE7E5] rounded-full transition-colors"
             >
               <X className="w-4 h-4 text-gray-500" />
             </button>
           </div>
         </div>
         
-        {/* Search Input */}
-        <div className="px-3 py-1.5 border-b border-gray-200">
+        <div className="px-3 py-3 border-b border-[#FFE7E5]">
           <div className="relative w-full">
-            <Search className="w-3 h-3 absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               placeholder="Search conversations..."
-              className="w-full pl-7 pr-2 py-1 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-gray-500 bg-white"
+              className="w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6F61]/30 focus:border-transparent bg-white"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
         </div>
         
-        {/* Navigation Tabs */}
         <NavigationTabs />
         
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto p-2">
           {filteredConversations.favoritesAndScheduled.length > 0 || filteredConversations.others.length > 0 ? (
-            <div className="space-y-1 p-2">
+            <div className="space-y-1.5">
               {filteredConversations.favoritesAndScheduled.map((conversation) => (
                 <div
                   key={conversation.id}
-                  className={`group relative flex items-start gap-2 p-2 rounded-lg cursor-pointer transition-colors ${
+                  className={`group relative flex items-start gap-3 p-3 rounded-xl cursor-pointer transition-all ${
                     selectedConversationId === conversation.id 
-                      ? 'bg-blue-50 border border-blue-200' 
-                      : 'hover:bg-gray-100'
+                      ? 'bg-[#FF6F61]/10 border border-[#FF6F61]/20' 
+                      : 'hover:bg-[#FFE7E5] border border-transparent'
                   }`}
                   onClick={() => handleConversationSelect(conversation.id)}
                 >
-                  <div className="w-6 h-6 bg-gray-700 rounded-full flex items-center justify-center flex-shrink-0">
-                    <MessageSquare className="w-3 h-3 text-white" />
+                  <div className="w-8 h-8 bg-[#FF6F61]/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <MessageSquare className="w-4 h-4 text-[#FF6F61]" />
                   </div>
                   <div className="flex-1 min-w-0">
                     {isRenaming === conversation.id ? (
@@ -312,85 +273,85 @@ const ConversationPanel = ({
                         value={newTitle}
                         onChange={(e) => setNewTitle(e.target.value)}
                         onBlur={(e) => handleRenameSubmit(e, conversation.id)}
-                        onKeyDown={(e) => handleKeyDown(e, conversation.id)}
-                        className="w-full text-xs font-medium text-gray-800 bg-transparent border-b border-gray-500 focus:outline-none focus:border-gray-700"
+                        onKeyDown={(e) => e.key === 'Enter' && handleRenameSubmit(e, conversation.id)}
+                        className="w-full text-sm font-medium text-gray-800 bg-transparent border-b border-gray-300 focus:outline-none focus:border-[#FF6F61]"
                         autoFocus
                       />
                     ) : (
-                      <p className="text-xs font-medium truncate flex items-center gap-1">
+                      <p className="text-sm font-medium truncate flex items-center gap-1.5">
                         {conversation.title || `Conversation ${conversation.id}`}
                         {conversation.isFavorite && (
-                          <Star className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400 flex-shrink-0" />
+                          <Star className="w-3 h-3 fill-[#FF6F61] text-[#FF6F61] flex-shrink-0" />
                         )}
                       </p>
                     )}
                     {conversation.preview && (
-                      <p className="text-[10px] text-gray-500 truncate">{conversation.preview}</p>
+                      <p className="text-xs text-gray-500 truncate mt-0.5">{conversation.preview}</p>
                     )}
-                    <p className="text-[9px] text-gray-400">
+                    <p className="text-xs text-gray-400 mt-1">
                       {formatDate(conversation.updatedAt || conversation.createdAt)}
                     </p>
                   </div>
                   <div className="relative">
                     <button
                       data-menu-button
-                      className="opacity-0 group-hover:opacity-100 p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-full transition-all"
+                      className="opacity-0 group-hover:opacity-100 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-white rounded-lg transition-all"
                       onClick={(e) => handleContextMenu(e, conversation.id)}
                     >
-                      <MoreVertical className="w-3 h-3" />
+                      <MoreVertical className="w-4 h-4" />
                     </button>
                     {openMenuId === conversation.id && (
                       <div
                         ref={el => menuRefs.current[conversation.id] = el}
-                        className="absolute right-0 mt-1 w-40 bg-white border border-gray-300 rounded-md shadow-lg z-[100]"
+                        className="absolute right-0 mt-1 w-44 bg-white border border-gray-200 rounded-xl shadow-lg z-[100] backdrop-blur-sm"
                       >
                         <button
-                          className="flex items-center px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-200 w-full text-left"
+                          className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-[#FFE7E5] w-full text-left rounded-lg"
                           onClick={(e) => handleRenameStart(e, conversation)}
                         >
-                          <Edit className="w-3 h-3 mr-2" /> Rename
+                          <Edit className="w-4 h-4 mr-2" /> Rename
                         </button>
                         <button
-                          className="flex items-center px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-200 w-full text-left"
+                          className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-[#FFE7E5] w-full text-left rounded-lg"
                           onClick={(e) => {
                             e.stopPropagation();
                             toggleFavorite(conversation.id);
                             setOpenMenuId(null);
                           }}
                         >
-                          <Star className="w-3 h-3 mr-2" />
+                          <Star className="w-4 h-4 mr-2" />
                           {conversation.isFavorite ? "Remove favorite" : "Add to favorites"}
                         </button>
                         <button
-                          className="flex items-center px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-200 w-full text-left"
+                          className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-[#FFE7E5] w-full text-left rounded-lg"
                           onClick={(e) => {
                             e.stopPropagation();
                             toggleArchive(conversation.id);
                             setOpenMenuId(null);
                           }}
                         >
-                          <ArchiveIcon className="w-3 h-3 mr-2" />
+                          <ArchiveIcon className="w-4 h-4 mr-2" />
                           {conversation.isArchived ? "Unarchive" : "Archive"}
                         </button>
                         <button
-                          className="flex items-center px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-200 w-full text-left"
+                          className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-[#FFE7E5] w-full text-left rounded-lg"
                           onClick={(e) => {
                             e.stopPropagation();
                             navigator.clipboard.writeText(window.location.href);
                             setOpenMenuId(null);
                           }}
                         >
-                          <Share className="w-3 h-3 mr-2" /> Share
+                          <Share className="w-4 h-4 mr-2" /> Share
                         </button>
                         <button
-                          className="flex items-center px-3 py-1.5 text-xs text-red-600 hover:bg-gray-200 w-full text-left"
+                          className="flex items-center px-3 py-2 text-sm text-[#FF6F61] hover:bg-[#FFE7E5] w-full text-left rounded-lg"
                           onClick={(e) => {
                             e.stopPropagation();
                             deleteConversation(conversation.id);
                             setOpenMenuId(null);
                           }}
                         >
-                          <Trash2 className="w-3 h-3 mr-2" /> Delete
+                          <Trash2 className="w-4 h-4 mr-2" /> Delete
                         </button>
                       </div>
                     )}
@@ -400,15 +361,15 @@ const ConversationPanel = ({
               {filteredConversations.others.map((conversation) => (
                 <div
                   key={conversation.id}
-                  className={`group relative flex items-start gap-2 p-2 rounded-lg cursor-pointer transition-colors ${
+                  className={`group relative flex items-start gap-3 p-3 rounded-xl cursor-pointer transition-all ${
                     selectedConversationId === conversation.id 
-                      ? 'bg-blue-50 border border-blue-200' 
-                      : 'hover:bg-gray-100'
+                      ? 'bg-[#FF6F61]/10 border border-[#FF6F61]/20' 
+                      : 'hover:bg-[#FFE7E5] border border-transparent'
                   }`}
                   onClick={() => handleConversationSelect(conversation.id)}
                 >
-                  <div className="w-6 h-6 bg-gray-700 rounded-full flex items-center justify-center flex-shrink-0">
-                    <MessageSquare className="w-3 h-3 text-white" />
+                  <div className="w-8 h-8 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <MessageSquare className="w-4 h-4 text-gray-500" />
                   </div>
                   <div className="flex-1 min-w-0">
                     {isRenaming === conversation.id ? (
@@ -417,85 +378,85 @@ const ConversationPanel = ({
                         value={newTitle}
                         onChange={(e) => setNewTitle(e.target.value)}
                         onBlur={(e) => handleRenameSubmit(e, conversation.id)}
-                        onKeyDown={(e) => handleKeyDown(e, conversation.id)}
-                        className="w-full text-xs font-medium text-gray-800 bg-transparent border-b border-gray-500 focus:outline-none focus:border-gray-700"
+                        onKeyDown={(e) => e.key === 'Enter' && handleRenameSubmit(e, conversation.id)}
+                        className="w-full text-sm font-medium text-gray-800 bg-transparent border-b border-gray-300 focus:outline-none focus:border-[#FF6F61]"
                         autoFocus
                       />
                     ) : (
-                      <p className="text-xs font-medium truncate flex items-center gap-1">
+                      <p className="text-sm font-medium truncate flex items-center gap-1.5">
                         {conversation.title || `Conversation ${conversation.id}`}
                         {conversation.isFavorite && (
-                          <Star className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400 flex-shrink-0" />
+                          <Star className="w-3 h-3 fill-[#FF6F61] text-[#FF6F61] flex-shrink-0" />
                         )}
                       </p>
                     )}
                     {conversation.preview && (
-                      <p className="text-[10px] text-gray-500 truncate">{conversation.preview}</p>
+                      <p className="text-xs text-gray-500 truncate mt-0.5">{conversation.preview}</p>
                     )}
-                    <p className="text-[9px] text-gray-400">
+                    <p className="text-xs text-gray-400 mt-1">
                       {formatDate(conversation.updatedAt || conversation.createdAt)}
                     </p>
                   </div>
                   <div className="relative">
                     <button
                       data-menu-button
-                      className="opacity-0 group-hover:opacity-100 p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-full transition-all"
+                      className="opacity-0 group-hover:opacity-100 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-white rounded-lg transition-all"
                       onClick={(e) => handleContextMenu(e, conversation.id)}
                     >
-                      <MoreVertical className="w-3 h-3" />
+                      <MoreVertical className="w-4 h-4" />
                     </button>
                     {openMenuId === conversation.id && (
                       <div
                         ref={el => menuRefs.current[conversation.id] = el}
-                        className="absolute right-0 mt-1 w-40 bg-white border border-gray-300 rounded-md shadow-lg z-[100]"
+                        className="absolute right-0 mt-1 w-44 bg-white border border-gray-200 rounded-xl shadow-lg z-[100] backdrop-blur-sm"
                       >
                         <button
-                          className="flex items-center px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-200 w-full text-left"
+                          className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-[#FFE7E5] w-full text-left rounded-lg"
                           onClick={(e) => handleRenameStart(e, conversation)}
                         >
-                          <Edit className="w-3 h-3 mr-2" /> Rename
+                          <Edit className="w-4 h-4 mr-2" /> Rename
                         </button>
                         <button
-                          className="flex items-center px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-200 w-full text-left"
+                          className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-[#FFE7E5] w-full text-left rounded-lg"
                           onClick={(e) => {
                             e.stopPropagation();
                             toggleFavorite(conversation.id);
                             setOpenMenuId(null);
                           }}
                         >
-                          <Star className="w-3 h-3 mr-2" />
+                          <Star className="w-4 h-4 mr-2" />
                           {conversation.isFavorite ? "Remove favorite" : "Add to favorites"}
                         </button>
                         <button
-                          className="flex items-center px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-200 w-full text-left"
+                          className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-[#FFE7E5] w-full text-left rounded-lg"
                           onClick={(e) => {
                             e.stopPropagation();
                             toggleArchive(conversation.id);
                             setOpenMenuId(null);
                           }}
                         >
-                          <ArchiveIcon className="w-3 h-3 mr-2" />
+                          <ArchiveIcon className="w-4 h-4 mr-2" />
                           {conversation.isArchived ? "Unarchive" : "Archive"}
                         </button>
                         <button
-                          className="flex items-center px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-200 w-full text-left"
+                          className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-[#FFE7E5] w-full text-left rounded-lg"
                           onClick={(e) => {
                             e.stopPropagation();
                             navigator.clipboard.writeText(window.location.href);
                             setOpenMenuId(null);
                           }}
                         >
-                          <Share className="w-3 h-3 mr-2" /> Share
+                          <Share className="w-4 h-4 mr-2" /> Share
                         </button>
                         <button
-                          className="flex items-center px-3 py-1.5 text-xs text-red-600 hover:bg-gray-200 w-full text-left"
+                          className="flex items-center px-3 py-2 text-sm text-[#FF6F61] hover:bg-[#FFE7E5] w-full text-left rounded-lg"
                           onClick={(e) => {
                             e.stopPropagation();
                             deleteConversation(conversation.id);
                             setOpenMenuId(null);
                           }}
                         >
-                          <Trash2 className="w-3 h-3 mr-2" /> Delete
+                          <Trash2 className="w-4 h-4 mr-2" /> Delete
                         </button>
                       </div>
                     )}
@@ -504,8 +465,8 @@ const ConversationPanel = ({
               ))}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center h-full text-gray-500">
-              <MessageSquare className="w-8 h-8 mb-2" />
+            <div className="flex flex-col items-center justify-center h-full text-gray-400 py-12">
+              <MessageSquare className="w-12 h-12 mb-3" />
               <p className="text-sm">No {currentView.toLowerCase()} conversations</p>
             </div>
           )}
@@ -515,198 +476,7 @@ const ConversationPanel = ({
   );
 };
 
-// KnowledgeModal Component
-const KnowledgeModal = ({ isOpen, onClose, setShowSidebarOverlay = () => {}, setIsSidebarVisible = () => {} }) => {
-  const [knowledgeEntries, setKnowledgeEntries] = useState([]);
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [newEntry, setNewEntry] = useState({ name: '', content: '' });
-  const [searchTerm, setSearchTerm] = useState('');
-
-  useEffect(() => {
-    if (isOpen) {
-      setShowSidebarOverlay(false);
-      setIsSidebarVisible(false);
-    }
-  }, [isOpen, setShowSidebarOverlay, setIsSidebarVisible]);
-
-  if (!isOpen) return null;
-
-  const handleAddKnowledge = () => {
-    if (newEntry.name.trim() && newEntry.content.trim() && knowledgeEntries.length < 20) {
-      const entry = {
-        id: Date.now(),
-        name: newEntry.name,
-        content: newEntry.content,
-        createdAt: new Date().toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
-        }),
-        status: 'Active',
-      };
-      setKnowledgeEntries((prev) => [...prev, entry]);
-      setNewEntry({ name: '', content: '' });
-      setShowAddForm(false);
-    }
-  };
-
-  const handleDeleteEntry = (id) => {
-    setKnowledgeEntries((prev) => prev.filter((entry) => entry.id !== id));
-  };
-
-  const filteredEntries = knowledgeEntries.filter(
-    (entry) =>
-      entry?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      entry?.content?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl w-full max-w-2xl max-h-[80vh] overflow-hidden shadow-2xl">
-        <div className="flex items-center justify-between p-3 border-b border-gray-300 bg-[#EBEBEB]">
-          <div className="flex items-center gap-2">
-            <FileText className="w-4 h-4 text-gray-700" />
-            <h2 className="text-base font-semibold text-gray-900">Knowledge</h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-1 hover:bg-gray-200 rounded-full transition-colors"
-          >
-            <X className="w-3 h-3 text-gray-500" />
-          </button>
-        </div>
-        <div className="px-3 py-1.5 bg-[#EBEBEB] border-b border-gray-300">
-          <p className="text-xs text-gray-600">Store personalized knowledge entries.</p>
-        </div>
-        <div className="flex items-center justify-between px-3 py-1.5 border-b border-gray-300">
-          <div className="relative w-40">
-            <Search className="w-3 h-3 absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search knowledge..."
-              className="w-full pl-7 pr-2 py-1 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-gray-500 bg-white"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          <div className="text-xs text-gray-500">{knowledgeEntries.length} / 20 entries</div>
-        </div>
-        <div className="px-3 py-1.5 bg-[#EBEBEB] border-b border-gray-300">
-          <div className="grid grid-cols-12 gap-2 text-xs font-medium text-gray-700">
-            <div className="col-span-3">Name</div>
-            <div className="col-span-4">Content</div>
-            <div className="col-span-2">Created</div>
-            <div className="col-span-2">Status</div>
-            <div className="col-span-1"></div>
-          </div>
-        </div>
-        <div className="overflow-y-auto" style={{ maxHeight: '40vh' }}>
-          {showAddForm && (
-            <div className="px-3 py-1.5 border-b border-gray-300 bg-gray-100">
-              <div className="grid grid-cols-12 gap-2 items-center">
-                <div className="col-span-3">
-                  <input
-                    type="text"
-                    placeholder="Name..."
-                    className="w-full px-2 py-1 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-gray-500"
-                    value={newEntry.name}
-                    onChange={(e) => setNewEntry((prev) => ({ ...prev, name: e.target.value }))}
-                    autoFocus
-                  />
-                </div>
-                <div className="col-span-4">
-                  <textarea
-                    placeholder="Content..."
-                    className="w-full px-2 py-1 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-gray-500 resize-none"
-                    rows={2}
-                    value={newEntry.content}
-                    onChange={(e) => setNewEntry((prev) => ({ ...prev, content: e.target.value }))}
-                  />
-                </div>
-                <div className="col-span-2"></div>
-                <div className="col-span-2"></div>
-                <div className="col-span-1 flex gap-1">
-                  <button
-                    onClick={handleAddKnowledge}
-                    className="px-2 py-1 bg-green-600 text-white text-xs rounded-md hover:bg-green-700"
-                    disabled={!newEntry.name.trim() || !newEntry.content.trim()}
-                  >
-                    Save
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowAddForm(false);
-                      setNewEntry({ name: '', content: '' });
-                    }}
-                    className="px-2 py-1 bg-gray-500 text-white text-xs rounded-md hover:bg-gray-600"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-          {filteredEntries.length === 0 && !showAddForm ? (
-            <div className="flex flex-col items-center justify-center py-6 text-center">
-              <FileText className="w-5 h-5 text-gray-500 mb-2" />
-              <p className="text-xs text-gray-500">No knowledge entries yet</p>
-              <button
-                onClick={() => setShowAddForm(true)}
-                className="mt-2 flex items-center gap-1 px-2 py-1 bg-white text-gray-800 rounded-md text-xs font-medium border border-gray-300 hover:bg-gray-200"
-              >
-                <Plus className="w-3 h-3" />
-                Add knowledge
-              </button>
-            </div>
-          ) : (
-            filteredEntries.map((entry) => (
-              <div key={entry.id} className="px-3 py-1.5 border-b border-gray-300 hover:bg-gray-100">
-                <div className="grid grid-cols-12 gap-2 items-start">
-                  <div className="col-span-3 text-xs font-medium text-gray-900 truncate">{entry.name}</div>
-                  <div className="col-span-4 text-xs text-gray-600 line-clamp-2">{entry.content}</div>
-                  <div className="col-span-2 text-xs text-gray-500">{entry.createdAt}</div>
-                  <div className="col-span-2">
-                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs bg-green-100 text-green-800">
-                      {entry.status}
-                    </span>
-                  </div>
-                  <div className="col-span-1">
-                    <button
-                      onClick={() => handleDeleteEntry(entry.id)}
-                      className="p-1 hover:bg-gray-200 rounded-full"
-                    >
-                      <X className="w-3 h-3 text-gray-500 hover:text-red-500" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-        <div className="px-3 py-1.5 border-t border-gray-300 bg-[#EBEBEB]">
-          <div className="flex items-center justify-between">
-            <button
-              onClick={() => setShowAddForm(true)}
-              className="flex items-center gap-1 px-2 py-1 bg-white text-gray-800 rounded-md text-xs font-medium border border-gray-300 hover:bg-gray-200"
-              disabled={knowledgeEntries.length >= 20 || showAddForm}
-            >
-              <Plus className="w-3 h-3" />
-              Add knowledge
-            </button>
-            <button
-              onClick={onClose}
-              className="px-2 py-1 bg-white text-gray-800 rounded-md text-xs font-medium border border-gray-300 hover:bg-gray-200"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Enhanced Sidebar Component
+// Main Sidebar Component
 const Sidebar = ({
   isMobile = false,
   showSidebarOverlay = false,
@@ -728,17 +498,15 @@ const Sidebar = ({
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [isKnowledgeOpen, setIsKnowledgeOpen] = useState(false);
   const [isConversationOpen, setIsConversationOpen] = useState(false);
+  const [activeNav, setActiveNav] = useState("chat");
 
-  // Close conversation panel when sidebar is toggled closed
   useEffect(() => {
     if (!isSidebarVisible && isConversationOpen) {
       setIsConversationOpen(false);
     }
   }, [isSidebarVisible, isConversationOpen]);
 
-  // Enhanced startNewChat function that navigates to notes
   const enhancedStartNewChat = () => {
     if (!location.pathname.includes('/notes')) {
       navigate('/notes');
@@ -746,12 +514,10 @@ const Sidebar = ({
     startNewChat();
   };
 
-  // Fix home page navigation
   const handleHomePage = () => {
-    window.location.href = 'https://yudle.vercel.app/';
+    navigate('/chat');
   };
 
-  // Ctrl+K Shortcut for New Page
   useEffect(() => {
     const handleKeyDown = (event) => {
       if ((event.ctrlKey || event.metaKey) && event.key === "k") {
@@ -769,6 +535,7 @@ const Sidebar = ({
 
   const handleNavigate = (path) => {
     navigate(`/${path}`);
+    setActiveNav(path);
     if (isMobile) {
       setShowSidebarOverlay(false);
       setIsSidebarVisible(false);
@@ -779,15 +546,23 @@ const Sidebar = ({
     setIsConversationOpen(!isConversationOpen);
   };
 
+  const navigationItems = [
+    { id: "chat", icon: MessageSquare, label: "Chat" },
+    { id: "search", icon: Search, label: "Search" },
+    { id: "tasks", icon: CheckSquare, label: "Tasks" },
+    { id: "mood", icon: Smile, label: "Mood" },
+  ];
+
+  const handleNavClick = (id) => {
+    if (id === "chat") {
+      enhancedStartNewChat();
+    } else {
+      handleNavigate(id);
+    }
+  };
+
   return (
-    <ErrorBoundary>
-      <KnowledgeModal
-        isOpen={isKnowledgeOpen}
-        onClose={() => setIsKnowledgeOpen(false)}
-        setShowSidebarOverlay={setShowSidebarOverlay}
-        setIsSidebarVisible={setIsSidebarVisible}
-      />
-      
+    <>
       <ConversationPanel 
         isOpen={isConversationOpen} 
         onClose={() => setIsConversationOpen(false)}
@@ -808,7 +583,7 @@ const Sidebar = ({
       
       {isMobile && showSidebarOverlay && (
         <div
-          className="fixed inset-0 bg-black/30 z-[50] md:hidden"
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[50] md:hidden"
           onClick={() => {
             setShowSidebarOverlay(false);
             setIsSidebarVisible(false);
@@ -821,193 +596,148 @@ const Sidebar = ({
         <Tooltip text="Expand sidebar" position="right">
           <button
             onClick={toggleSidebar}
-            className="fixed left-0 top-1/2 transform -translate-y-1/2 z-50 p-1 bg-gray-100 rounded-r-md border border-gray-200 border-l-0 shadow-sm hover:bg-gray-200 transition-colors"
+            className="fixed left-0 top-1/2 transform -translate-y-1/2 z-50 p-2.5 bg-white/80 backdrop-blur-sm rounded-r-xl border border-[#FFE7E5] border-l-0 shadow-lg hover:bg-white transition-all"
             aria-label="Expand sidebar"
           >
-            <ChevronsRight className="w-4 h-4 text-gray-600" />
+            <ChevronsRight className="w-4 h-4 text-[#FF6F61]" />
           </button>
         </Tooltip>
       )}
       
       <div
         className={`
-          fixed md:relative bg-gray-50 border-r border-gray-200 flex flex-col h-screen
+          fixed md:relative bg-white/70 backdrop-blur-xl border-r border-[#FFE7E5] flex flex-col h-screen
           transition-all duration-300 ease-in-out z-[60]
-          ${isMobile ? "w-64" : isSidebarVisible ? "w-[200px]" : "w-0 overflow-hidden"}
+          ${isMobile ? "w-72" : isSidebarVisible ? "w-[280px]" : "w-0 overflow-hidden"}
           ${isMobile && !showSidebarOverlay ? "-translate-x-full" : "translate-x-0"}
-          rounded-r-2xl md:rounded-r-3xl
-          shadow-md
+          shadow-xl
           overflow-hidden
         `}
+        style={{
+          backgroundColor: 'rgba(255, 255, 255, 0.7)',
+          backdropFilter: 'blur(20px)',
+        }}
       >
-        <div className="p-2 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-1.5">
-              <div className="w-5 h-5 bg-green-600 rounded flex items-center justify-center">
-                <span className="text-white text-xs font-semibold">{user?.displayName?.[0] || "S"}</span>
+        {/* Header */}
+        <div className="p-6 border-b border-[#FFE7E5]/50">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <div className="w-10 h-10 bg-gradient-to-br from-[#FF6F61] to-[#FF8A7D] rounded-xl flex items-center justify-center shadow-sm">
+                <Sparkles className="w-5 h-5 text-white" />
               </div>
-              <span className="font-medium text-xs text-gray-900">{user?.displayName || "Suriya's Notion"}</span>
-              <button
-                onClick={toggleConversation}
-                className="p-0.5 rounded hover:bg-gray-200 transition-colors"
-                aria-label="Open conversation history"
-              >
-                <ClockIcon className="w-3 h-3 text-gray-500" />
-              </button>
+              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-[#FF6F61] rounded-full border-2 border-white flex items-center justify-center">
+                <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
+              </div>
+            </div>
+            <div>
+              <h1 className="text-lg font-bold text-[#2B3440]">Athena AI</h1>
+              <p className="text-xs text-gray-500">Wellness Assistant</p>
             </div>
             <button
               onClick={toggleSidebar}
-              className="p-1 rounded-full hover:bg-gray-200 transition-colors"
+              className="ml-auto p-1.5 hover:bg-[#FFE7E5] rounded-lg transition-colors"
               aria-label="Collapse sidebar"
             >
-              <ChevronsRight className="w-3 h-3 text-gray-600 rotate-180" />
+              <ChevronsRight className="w-4 h-4 text-gray-400" />
             </button>
           </div>
         </div>
 
-        <div className="p-2">
-          <div className="flex items-center space-x-1.5 text-gray-600 hover:bg-gray-100 rounded p-1">
-            <Search className="w-3 h-3" />
-            <span className="text-xs">Search</span>
+        {/* User Profile */}
+        <div className="px-6 py-4 border-b border-[#FFE7E5]/50">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <div className="w-10 h-10 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center">
+                <User className="w-5 h-5 text-gray-600" />
+              </div>
+              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-sm font-semibold text-[#2B3440]">{user?.displayName || "Welcome"}</h3>
+              <p className="text-xs text-gray-500">Premium Member</p>
+            </div>
+            <Tooltip text="Conversation History" position="top">
+              <button
+                onClick={toggleConversation}
+                className="p-2 hover:bg-[#FFE7E5] rounded-lg transition-colors"
+              >
+                <ClockIcon className="w-4 h-4 text-gray-500" />
+              </button>
+            </Tooltip>
           </div>
         </div>
 
-        <div className="px-2 space-y-1">
-          <div
-            className="flex items-center space-x-1.5 text-gray-600 hover:bg-gray-100 rounded p-1 cursor-pointer"
-            onClick={() => handleNavigate('home')}
-          >
-            <HomeIcon className="w-3 h-3" />
-            <span className="text-xs">Home</span>
-          </div>
-          <div
-            className="flex items-center space-x-1.5 text-gray-600 hover:bg-gray-100 rounded p-1 cursor-pointer"
-            onClick={() => handleNavigate('inbox')}
-          >
-            <FeedbackIcon className="w-3 h-3" />
-            <span className="text-xs">Inbox</span>
-          </div>
-          <div
-            className="flex items-center space-x-1.5 text-gray-600 hover:bg-gray-100 rounded p-1 cursor-pointer"
-            onClick={() => handleNavigate('tasks')}
-          >
-            <svg
-              className="w-3 h-3"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M9 5h6m-6 0a1 1 0 011-1h2a1 1 0 011 1m-6 0h6m-6 3H7a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1V9a1 1 0 00-1-1h-1m-6 0h6m-6 3h6m-6 3h6m-6 3h6"
-              />
-            </svg>
-            <span className="text-xs">Tasks</span>
-          </div>
-          <div
-            className="flex items-center space-x-1.5 text-gray-600 hover:bg-gray-100 rounded p-1 cursor-pointer"
-            onClick={() => handleNavigate('mindmap')}
-          >
-            <svg
-              className="w-3 h-3"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M8 10h.01M12 10h.01M16 10h.01M9 16H5v-4a2 2 0 012-2h10a2 2 0 012 2v4h-4m-6 0h.01"
-              />
-            </svg>
-            <span className="text-xs">Mind Map</span>
-          </div>
-        </div>
-
-        <div className="px-2 mt-4">
-          <div className="text-[10px] font-medium text-gray-500 uppercase tracking-wide mb-1.5">
-            Private
-          </div>
+        {/* Main Navigation */}
+        <div className="flex-1 px-4 py-6">
           <div className="space-y-1">
-            <div
-              className="flex items-center space-x-1.5 text-gray-600 hover:bg-gray-100 rounded p-1 cursor-pointer"
-              onClick={enhancedStartNewChat}
-            >
-              <FileText className="w-3 h-3" />
-              <span className="text-xs">New journal</span>
-            </div>
-            <div
-              className="flex items-center space-x-1.5 text-gray-500 hover:bg-gray-100 rounded p-1 cursor-pointer"
-              onClick={() => handleNavigate('add-new')}
-            >
-              <Plus className="w-3 h-3" />
-              <span className="text-xs">Add New+</span>
+            {navigationItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => handleNavClick(item.id)}
+                className={`
+                  w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
+                  ${activeNav === item.id 
+                    ? 'bg-[#FF6F61]/10 text-[#FF6F61]' 
+                    : 'text-[#2B3440] hover:bg-[#FFE7E5]'
+                  }
+                `}
+              >
+                <item.icon className={`w-5 h-5 ${activeNav === item.id ? 'text-[#FF6F61]' : 'text-gray-500'}`} />
+                <span className="text-sm font-medium">{item.label}</span>
+                {activeNav === item.id && (
+                  <div className="ml-auto w-1 h-6 bg-[#FF6F61] rounded-full"></div>
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* Quick Actions */}
+          <div className="mt-8 px-2">
+            <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Quick Actions</p>
+            <div className="space-y-2">
+              <button 
+                onClick={enhancedStartNewChat}
+                className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-[#2B3440] hover:bg-[#FFE7E5] rounded-lg transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                New Journal Entry
+              </button>
+              <button 
+                onClick={() => handleNavigate('calendar')}
+                className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-[#2B3440] hover:bg-[#FFE7E5] rounded-lg transition-colors"
+              >
+                <Calendar className="w-4 h-4" />
+                Schedule Session
+              </button>
+              <button 
+                onClick={() => handleNavigate('bookmarks')}
+                className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-[#2B3440] hover:bg-[#FFE7E5] rounded-lg transition-colors"
+              >
+              </button>
             </div>
           </div>
         </div>
 
-        <div
-  className="flex items-center space-x-1.5 text-gray-600 hover:bg-gray-100 rounded p-1 cursor-pointer"
-  onClick={() => handleNavigate('code-editor')}
->
-
-  {/* <span className="text-xs">Code Editor</span> */}
-</div>
-
-        <div className="mt-auto border-t border-gray-300 bg-[#EBEBEB] p-2 flex justify-around">
-          <Tooltip text="HomePage" position="top">
+        {/* Footer Actions */}
+          <div className="px-4 py-4 border-t border-[#FFE7E5]/50">
+          <div className="mt-4 pt-4 border-t border-[#FFE7E5]/50">
             <button
-              onClick={handleHomePage}
-              className="p-1.5 hover:bg-gray-200 rounded-full transition-colors"
-              aria-label="Home Page"
+              onClick={() => handleNavigate('profile')}
+              className="w-full flex items-center gap-3 px-3 py-2 hover:bg-[#FFE7E5] rounded-xl transition-colors"
             >
-              <HomeIcon className="w-3 h-3 text-gray-600" />
+              <div className="w-8 h-8 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center">
+                <User className="w-4 h-4 text-gray-600" />
+              </div>
+              <div className="flex-1 text-left">
+                <p className="text-sm font-medium text-[#2B3440]">My Profile</p>
+                <p className="text-xs text-gray-500">View & edit profile</p>
+              </div>
+              <ChevronDown className="w-4 h-4 text-gray-400" />
             </button>
-          </Tooltip>
-          <Tooltip text="Get Help" position="top">
-            <button
-              onClick={() => handleNavigate('support')}
-              className="p-1.5 hover:bg-gray-200 rounded-full transition-colors"
-              aria-label="Get Help"
-            >
-              <SupportIcon className="w-3 h-3 text-gray-600" />
-            </button>
-          </Tooltip>
-          <Tooltip text="Knowledge" position="top">
-            <button
-              onClick={() => setIsKnowledgeOpen(true)}
-              className="p-1.5 hover:bg-gray-200 rounded-full transition-colors"
-              aria-label="Knowledge"
-            >
-              <FileText className="w-3 h-3 text-gray-600" />
-            </button>
-          </Tooltip>
-          <Tooltip text="Feedback" position="top">
-            <button
-              onClick={() => handleNavigate('feedback')}
-              className="p-1.5 hover:bg-gray-200 rounded-full transition-colors"
-              aria-label="Feedback"
-            >
-              <FeedbackIcon className="w-3 h-3 text-gray-600" />
-            </button>
-          </Tooltip>
-          <Tooltip text="Settings" position="top">
-            <button
-              onClick={() => handleNavigate('settings')}
-              className="p-1.5 hover:bg-gray-200 rounded-full transition-colors"
-              aria-label="Settings"
-            >
-              <SettingsIcon className="w-3 h-3 text-gray-600" />
-            </button>
-          </Tooltip>
+          </div>
         </div>
       </div>
-    </ErrorBoundary>
+    </>
   );
 };
 

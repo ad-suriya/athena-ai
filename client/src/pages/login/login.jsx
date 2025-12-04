@@ -264,7 +264,7 @@ class NeuralNetwork:
             <a href="#" className="forgot-password">Forgot password?</a>
             <p className="signup-link">Don't have an account? <a href="#">Sign up</a></p>
             <a 
-              href="https://yudle.vercel.app/" 
+              href="#"
               target="_blank" 
               rel="noopener noreferrer"
               className="learn-more-link"
