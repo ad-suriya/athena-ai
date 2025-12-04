@@ -76,7 +76,7 @@ const NoteEditor = ({ isDarkMode = false, onNavigateBack, initialNote, onSave })
   const [note, setNote] = useState(
     initialNote || {
       id: Date.now(),
-      title: 'New Page',
+      title: 'New journal',
       content: '',
       category: 'Personal',
       createdAt: new Date().toISOString(),
@@ -90,6 +90,13 @@ const NoteEditor = ({ isDarkMode = false, onNavigateBack, initialNote, onSave })
   const [fullWidth, setFullWidth] = useState(false);
   const [smallText, setSmallText] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
+
+  // Format today's date
+  const getTodayDate = () => {
+    const today = new Date();
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    return today.toLocaleDateString('en-US', options);
+  };
 
   const editor = useEditor({
     extensions: [
@@ -147,16 +154,16 @@ const NoteEditor = ({ isDarkMode = false, onNavigateBack, initialNote, onSave })
       }),
     ],
     content: note.content,
-    editable: !isLocked, // Make editor editable based on lock state
+    editable: !isLocked,
     onUpdate: ({ editor }) => {
-      if (isLocked) return; // Don't update content if locked
-      
-      const html = editor.getHTML();
-      setNote(prev => ({
-        ...prev,
-        content: html,
-        updatedAt: new Date().toISOString()
-      }));
+      if (!isLocked) {
+        const content = editor.getHTML();
+        setNote(prev => ({
+          ...prev,
+          content,
+          updatedAt: new Date().toISOString()
+        }));
+      }
     },
   });
 
@@ -284,7 +291,7 @@ const NoteEditor = ({ isDarkMode = false, onNavigateBack, initialNote, onSave })
             />
           ) : (
             <span className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-              {isSaving ? 'Saving...' : `Edited by sree anirudhan • ${formatDate(note.updatedAt)}`}
+              {}
             </span>
           )}
           
@@ -345,7 +352,7 @@ const NoteEditor = ({ isDarkMode = false, onNavigateBack, initialNote, onSave })
               }}
               readOnly={isLocked}
               className={`${smallText ? 'text-2xl' : 'text-4xl'} font-bold bg-transparent border-none outline-none w-full placeholder-gray-400 ${isDarkMode ? 'text-white' : 'text-gray-900'} ${isLocked ? 'cursor-not-allowed opacity-70' : ''}`}
-              placeholder="New Page"
+              placeholder="New journal"
             />
           </div>
           

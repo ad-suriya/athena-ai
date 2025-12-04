@@ -939,7 +939,7 @@ const Sidebar = ({
               onClick={enhancedStartNewChat}
             >
               <FileText className="w-3 h-3" />
-              <span className="text-xs">New Page</span>
+              <span className="text-xs">New journal</span>
             </div>
             <div
               className="flex items-center space-x-1.5 text-gray-500 hover:bg-gray-100 rounded p-1 cursor-pointer"

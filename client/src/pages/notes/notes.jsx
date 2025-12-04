@@ -26,7 +26,7 @@ const Notes = ({ isDarkMode, onThemeToggle }) => {
   const createNewNote = () => {
     const newNote = {
       id: Date.now(),
-      title: 'New Page',
+      title: 'New journal',
       content: '',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
