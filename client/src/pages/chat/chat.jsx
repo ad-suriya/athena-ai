@@ -1140,898 +1140,312 @@ Please execute the task as soon as you can - an artifact would be great if it ma
     };
     document.body.appendChild(script);
   };
-
-  return (
-    <div className="h-screen flex overflow-hidden bg-[#F8F8F7]">
-      {isMobile && showSidebarOverlay && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40"
-          onClick={() => {
-            setShowSidebarOverlay(false);
-            setIsSidebarVisible(false);
-          }}
-        />
-      )}
-
-      <Sidebar
-        ref={sidebarRef}
-        isSidebarVisible={isSidebarVisible}
-        isMobile={isMobile}
-        showSidebarOverlay={showSidebarOverlay}
-        toggleSidebar={toggleSidebar}
-        userConversations={userConversations}
-        currentConversationId={currentConversationId}
-        loadConversation={loadConversation}
-        startNewChat={startNewChat}
-        currentView={currentView}
-        setCurrentView={setCurrentView}
-        user={auth.currentUser}
-        setShowSidebarOverlay={setShowSidebarOverlay}
-      />
+ return (
+    <div className="h-screen flex overflow-hidden bg-[#F5D9D1]/30">
+      <Sidebar isSidebarVisible={isSidebarVisible} />
 
       <div className="flex-1 flex flex-col h-full overflow-hidden">
-        {isMobile && (
-          <div className="bg-[#F8F8F7] backdrop-blur-sm px-4 py-2 flex items-center justify-between h-[65px] sticky top-0 z-30">
-            {!showSidebarOverlay && !isSidebarVisible && (
+        {/* Header */}
+        <div className="bg-white/80 backdrop-blur-sm px-4 py-2 flex items-center justify-between h-[65px] border-b border-[#E65C52]/10">
+          <div className="flex items-center gap-2">
+            {!isSidebarVisible && (
               <button
                 onClick={toggleSidebar}
-                className="p-2 rounded spotlight-button hover:bg-gray-200 transition-colors menu-button shadow-[0_0_4px_rgba(0,0,0,0.1)]"
+                className="p-2 rounded-full hover:bg-[#F5D9D1] transition-colors"
               >
-                <PanelLeft className="w-5 h-5 text-gray-600" />
+                <PanelLeft className="w-5 h-5 text-[#E65C52]" />
               </button>
             )}
-            {currentConversationId === null && (
-              <div className="relative z-[60]">
-                <NotificationAppProfile
-                  user={auth.currentUser}
-                  isMobile={isMobile}
-                  setShowSidebarOverlay={setShowSidebarOverlay}
-                  setIsSidebarVisible={setIsSidebarVisible}
-                />
-              </div>
+            {messages.length === 0 && (
+              <>
+                <AppLogo size={45} />
+                <div className="font-semibold text-lg text-[#E14C42]">Athena AI</div>
+              </>
             )}
           </div>
-        )}
+          {messages.length === 0 && <NotificationAppProfile isMobile={isMobile} />}
+        </div>
 
-        {!isMobile && (
-          <div className="bg-[#F8F8F7] backdrop-blur-sm px-4 py-2 flex items-center justify-between h-[65px]">
-            <div className="flex items-center gap-2">
-              {!isSidebarVisible && (
-                <button
-                  onClick={toggleSidebar}
-                  className="p-2 rounded-full hover:bg-gray-200 transition-colors menu-button shadow-[0_0_4px_rgba(0,0,0,0.1)]"
-                >
-                  <PanelLeft className="w-5 h-5 text-gray-600" />
-                </button>
-              )}
-              {currentConversationId === null && (
-                <>
-                  <AppLogo size={45} />
-                  <div className="font-semibold text-lg">Athena AI</div>
-                </>
-              )}
-            </div>
-            {currentConversationId === null && (
-              <div className="flex items-center gap-2">
-                <NotificationAppProfile
-                  user={auth.currentUser}
-                  isMobile={isMobile}
-                  setShowSidebarOverlay={setShowSidebarOverlay}
-                  setIsSidebarVisible={setIsSidebarVisible}
-                />
-              </div>
-            )}
-          </div>
-        )}
-
-        {currentView === 'settings' ? (
-          <SettingsPage onBack={() => setCurrentView('chat')} />
-        ) : currentView === 'profile' ? (
-          <ProfilePage onBack={() => setCurrentView('chat')} />
-        ) : (
-          <div className="flex flex-col h-full overflow-hidden bg-[#F8F8F7]">
-            <div className="flex-1 p-4 md:p-6 overflow-y-auto flex flex-col items-center bg-[#F8F8F7]">
-              <div className="w-full max-w-4xl">
-                {messages.length === 0 ? (
-                  <div className="h-full flex flex-col items-center justify-center text-center py-12">
-                    <h1 className="text-2xl md:text-4xl font-semibold mb-2">
-                      Hi, {auth.currentUser?.displayName?.split(' ')[0] || 'there'}!
-                    </h1>
-                    <p className="text-gray-500 text-lg md:text-xl mb-8">
-                      How can I assist you today?
-                    </p>
-
-                    <form
-                      onSubmit={handleSubmit}
-                      className="w-full max-w-2xl mx-auto bg-white border border-gray-300 rounded-xl px-4 py-4 shadow-sm"
-                    >
-                      <div className="flex flex-col gap-3">
-                        <input
-                          ref={inputRef}
-                          type="text"
-                          value={inputValue}
-                          onChange={(e) => setInputValue(e.target.value)}
-                          placeholder="Ask anything"
-                          className="w-full bg-transparent focus:outline-none text-gray-700 placeholder-gray-400 text-base min-h-[40px] py-2"
-                          disabled={isLoading}
-                          autoFocus
-                        />
-
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <div className="relative" ref={attachmentPanelRef}>
-                              <Tooltip text="Attach files">
-                                <button
-                                  type="button"
-                                  className={`p-2 rounded spotlight-button hover:bg-gray-100 transition-colors attachment-button ${
-                                    activeUploadPanel === 'attachment'
-                                      ? 'text-[#0E0E28] bg-[#0E0E28]/10 shadow-[0_0_8px_rgba(59,130,246,0.5)]'
-                                      : 'text-gray-500 shadow-[0_0_4px_rgba(0,0,0,0.1)]'
-                                  }`}
-                                  onClick={() => toggleUploadPanel('attachment')}
-                                >
-                                  <Paperclip className="w-5 h-5" />
-                                </button>
-                              </Tooltip>
-                              {activeUploadPanel === 'attachment' && (
-                                <div className="absolute bottom-full left-0 mb-2 bg-white rounded-lg shadow-lg p-2 z-10 w-48 border border-gray-200">
-                                  <div className="flex flex-col gap-1">
-                                    <label className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:shadow-[0_0_4px_rgba(0,0,0,0.1)] rounded cursor-pointer">
-                                      <FileText className="w-4 h-4" />
-                                      <span>Upload File</span>
-                                      <input
-                                        type="file"
-                                        className="hidden"
-                                        onChange={(e) => {
-                                          handleFilesUpload(e.target.files);
-                                          setActiveUploadPanel(null);
-                                        }}
-                                        multiple
-                                      />
-                                    </label>
-                                    <label className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:shadow-[0_0_4px_rgba(0,0,0,0.1)] rounded cursor-pointer">
-                                      <ImageIcon className="w-4 h-4" />
-                                      <span>Upload Image</span>
-                                      <input
-                                        type="file"
-                                        className="hidden"
-                                        accept="image/*"
-                                        onChange={(e) => {
-                                          handleImagesUpload(e.target.files);
-                                          setActiveUploadPanel(null);
-                                        }}
-                                        multiple
-                                      />
-                                    </label>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-
-                            <ToggleButtons onModeChange={setActiveMode} />
-                          </div>
-
-                          <div className="flex items-center gap-2">
-                            <div className="relative" ref={modelDropdownRef}>
-                              <Tooltip text="Search options">
-                                <button
-                                  type="button"
-                                  onClick={() => setShowSearchOptions(!showSearchOptions)}
-                                  className="p-2 rounded-full text-gray-500 hover:bg-gray-100 transition-colors"
-                                >
-                                  <Globe className="w-5 h-5" />
-                                </button>
-                              </Tooltip>
-
-                              {showSearchOptions && (
-                                <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-lg z-50 border border-gray-200">
-                                  <div className="p-3 border-b border-gray-200">
-                                    <h3 className="text-sm font-medium text-gray-900">Search options</h3>
-                                  </div>
-                                  <div className="p-2">
-                                    {searchOptions.map((option) => {
-                                      const Icon = option.icon;
-                                      return (
-                                        <button
-                                          key={option.id}
-                                          className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 rounded-md flex items-start gap-3"
-                                          onClick={() => {
-                                            setActiveAction('search');
-                                            setInputValue(`[${option.label}] `);
-                                            setShowSearchOptions(false);
-                                            inputRef.current.focus();
-                                          }}
-                                        >
-                                          <div className="p-1.5 rounded-md bg-gray-100 text-gray-600">
-                                            <Icon className="w-4 h-4" />
-                                          </div>
-                                          <div className="flex-1">
-                                            <div className="font-medium text-gray-900">{option.label}</div>
-                                            <div className="text-xs text-gray-500">{option.description}</div>
-                                          </div>
-                                        </button>
-                                      );
-                                    })}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-
-                            <div className="relative" ref={modelDropdownRef}>
-                              <button
-                                type="button"
-                                onClick={() => setShowModelDropdown(!showModelDropdown)}
-                                className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors shadow-[0_0_4px_rgba(0,0,0,0.1)]"
-                              >
-                                <span>{selectedModel}</span>
-                                <ChevronDown className="w-4 h-4" />
-                              </button>
-                              {showModelDropdown && (
-                                <div className="absolute bottom-full right-0 mb-2 bg-white rounded-lg shadow-lg py-1 z-20 border border-gray-200 min-w-[120px]">
-                                  {['GPT', 'Minerva', 'Gemini'].map((model) => (
-                                    <button
-                                      key={model}
-                                      type="button"
-                                      onClick={() => {
-                                        setSelectedModel(model);
-                                        setShowModelDropdown(false);
-                                      }}
-                                      className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 transition-colors shadow-[0_0_4px_rgba(0,0,0,0.1)] ${
-                                        selectedModel === model
-                                          ? 'text-blue-600 bg-blue-50'
-                                          : 'text-gray-700'
-                                      }`}
-                                    >
-                                      {model}
-                                    </button>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-
-                            {renderInputButton()}
-                          </div>
-                        </div>
-                      </div>
-                    </form>
-
-                    <div className="w-full max-w-2xl mt-6">
-                      <div className="flex flex-wrap justify-center gap-2">
-                        {/* <SmartActionButton
-                          icon={
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="16"
-                              height="16"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            >
-                              <circle cx="11" cy="11" r="8"></circle>
-                              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                            </svg>
-                          }
-                          label="Search"
-                          active={activeAction === 'search'}
-                          onClick={() => handleActionClick('search')}
-                          isSearch={true}
-                        />
-                        <SmartActionButton
-                          icon={<Layers className="w-4 h-4" />}
-                          label="Deep Research"
-                          active={activeAction === 'deepResearch'}
-                          onClick={() => handleActionClick('deepResearch')}
-                        />
-                        <SmartActionButton
-                          icon={<Zap className="w-4 h-4" />}
-                          label="Think"
-                          active={activeAction === 'think'}
-                          onClick={() => handleActionClick('think')}
-                        /> */}
-                        {categories.map((category) => {
-                          const Icon = category.icon;
-                          return (
-                            <button
-                              key={category.id}
-                              onClick={() => handleCategoryClick(category.id)}
-                              className={`
-                                flex items-center gap-2 px-3 py-2 rounded-lg transition-all text-sm font-medium
-                                ${selectedCategory === category.id 
-                                  ? 'bg-gray-900 text-white shadow-[0_0_8px_rgba(0,0,0,0.3)]' 
-                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-[0_0_4px_rgba(0,0,0,0.1)]'
-                                }
-                              `}
-                            >
-                              <Icon className={`w-4 h-4 ${selectedCategory === category.id ? 'text-white' : 'text-gray-600'}`} />
-                              <span>{category.label}</span>
-                            </button>
-                          );
-                        })}
-                      </div>
-
-                      {showCategoryPanel && selectedCategory && (
-                        <div className="relative w-full mt-2">
-                          <div className="absolute left-0 right-0 mx-auto border border-gray-200 rounded-xl shadow-lg z-10 overflow-hidden bg-white" style={{ width: 'calc(100% - 2rem)' }}>
-                            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-300 bg-gray-50">
-                              <div className="flex items-center gap-2">
-                                {React.createElement(categories.find((c) => c.id === selectedCategory)?.icon, { className: 'w-4 h-4 text-gray-600' })}
-                                <span className="font-medium text-gray-900">
-                                  {categories.find((c) => c.id === selectedCategory)?.label}
-                                </span>
-                              </div>
-                              <button
-                                onClick={() => {
-                                  setShowCategoryPanel(false);
-                                  setSelectedCategory(null);
-                                }}
-                                className="text-gray-400 hover:text-gray-600 hover:shadow-[0_0_4px_rgba(0,0,0,0.1)] p-1"
-                              >
-                                <X className="w-4 h-4" />
-                              </button>
-                            </div>
-                            <div className="py-2">
-                              {categoryOptions[selectedCategory]?.map((option, index) => (
-                                <button
-                                  key={index}
-                                  onClick={() => handleCategoryOptionSelect(option)}
-                                  className="w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-100 hover:shadow-[0_0_4px_rgba(0,0,0,0.1)] transition-colors border-b border-gray-300 last:border-b-0"
-                                >
-                                  <span className="text-sm leading-relaxed">{option}</span>
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      <div className="w-full mt-6">
-                        <UpcomingEvents userId={auth.currentUser?.uid} />
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-6 md:space-y-8 py-2 md:py-4">
-                    {messages.map((message, index) => (
-                      <div
-                        key={index}
-                        className={`flex animate-fade duration-300 ${
-                          message.role === 'user' ? 'justify-end' : 'justify-start'
-                        }`}
-                      >
-                        <div
-                          className={`message-container max-w-full md:max-w-4xl rounded-2xl ${
-                            message.role === 'user'
-                              ? 'bg-[#1a1a1a] text-white p-3 md:p-5'
-                              : 'bg-white/90 backdrop-blur-sm border border-gray-200 shadow-sm p-3 md:p-5 relative'
-                          }`}
-                        >
-                          {message.role === 'user' ? (
-                            <div className="flex flex-col gap-3">
-                              <div className="text-sm whitespace-pre-wrap">
-                                {formatMessageContent(message.content)}
-                              </div>
-                              <div className="flex items-center justify-end gap-2 mt-2 pt-2 border-t border-gray-600">
-                                <Tooltip text="Copy">
-                                  <CopyButton1
-                                    text={message.content}
-                                    onCopy={() =>
-                                      console.log('Copy clicked for user message index:', index)
-                                    }
-                                  />
-                                </Tooltip>
-                                <Tooltip text="Edit">
-                                  <button
-                                    className={`p-1.5 rounded-md transition-colors ${
-                                      editingMessageId === index
-                                        ? 'text-gray-300 bg-gray-700'
-                                        : 'text-gray-300 bg-gray-700'
-                                    }`}
-                                    onClick={() => {
-                                      console.log('Edit clicked for user message index:', index);
-                                      handleEditMessage(index);
-                                    }}
-                                  >
-                                    <Edit className="w-4 h-4" />
-                                  </button>
-                                </Tooltip>
-                              </div>
-                              {editingMessageId === index && (
-                                <div className="mt-4">
-                                  <MessageEditor
-                                    content={message.content}
-                                    onSave={(newContent) => handleSaveEdit(index, newContent)}
-                                    onCancel={handleCancelEdit}
-                                  />
-                                </div>
-                              )}
-                            </div>
-                          ) : (
-                            <div className="flex flex-col gap-3">
-                              <div className="flex justify-between items-start gap-4">
-                                <div className="flex-1 pr-4">
-                                  <div className="text-sm whitespace-pre-wrap">
-                                    {formatMessageContent(message.content)}
-                                  </div>
-                                  {extractUrls(message.content).map((url) => {
-                                    const preview = linkPreviews[url];
-                                    return preview ? (
-                                      <div
-                                        key={url}
-                                        className="mt-2 p-4 border rounded-lg bg-gray-50 max-w-full"
-                                      >
-                                        {preview.image && (
-                                          <img
-                                            src={preview.image}
-                                            alt={preview.title}
-                                            className="w-full h-32 sm:h-48 md:h-64 object-cover rounded-t-lg"
-                                          />
-                                        )}
-                                        <div className="p-4">
-                                          <h4 className="text-base font-bold link-preview-text">
-                                            {preview.title}
-                                          </h4>
-                                          <p className="text-sm text-gray-600 link-preview-text">
-                                            {preview.description}
-                                          </p>
-                                          <a
-                                            href={preview.url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-sm text-blue-500 link-preview-text"
-                                          >
-                                            {preview.url}
-                                          </a>
-                                        </div>
-                                      </div>
-                                    ) : null;
-                                  })}
-                                </div>
-                              </div>
-                              <div className="flex items-center justify-end gap-2 mt-2 pt-2 border-t border-gray-100">
-                                <Tooltip text="Regenerate">
-                                  <button
-                                    className={`p-1.5 rounded-md text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors shadow-[0_0_4px_rgba(0,0,0,0.1)] ${
-                                      index === 0 || messages[index - 1].role !== 'user'
-                                        ? 'opacity-50 cursor-not-allowed'
-                                        : ''
-                                    }`}
-                                    onClick={() => {
-                                      console.log('Regenerate clicked for index:', index);
-                                      handleRegenerate(index);
-                                    }}
-                                    disabled={index === 0 || messages[index - 1].role !== 'user'}
-                                  >
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      width="16"
-                                      height="16"
-                                      viewBox="0 0 24 24"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      strokeWidth="2"
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                    >
-                                      <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
-                                      <path d="M21 3v5h-5" />
-                                      <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
-                                      <path d="M8 16H3v5" />
-                                    </svg>
-                                  </button>
-                                </Tooltip>
-                                <Tooltip text="Copy">
-                                  <CopyButton
-                                    text={message.content}
-                                    onCopy={() => console.log('Copy clicked for index:', index)}
-                                  />
-                                </Tooltip>
-                                <Tooltip text="Read Aloud">
-                                  <ReadAloudButton
-                                    text={message.content}
-                                    onStart={() =>
-                                      console.log('Read Aloud started for index:', index)
-                                    }
-                                  />
-                                </Tooltip>
-                                <Tooltip text="Like">
-                                  <button
-                                    className={`p-1.5 rounded-md transition-colors shadow-[0_0_4px_rgba(0,0,0,0.1)] ${
-                                      messageRatings[index] === 'positive'
-                                        ? 'text-green-500 bg-green-50'
-                                        : messageRatings[index] === 'negative'
-                                        ? 'hidden'
-                                        : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
-                                    }`}
-                                    onClick={() => {
-                                      console.log('Like clicked for index:', index);
-                                      handleRateMessage(index, true);
-                                    }}
-                                    disabled={editingMessageId === index}
-                                  >
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      width="16"
-                                      height="16"
-                                      viewBox="0 0 24 24"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      strokeWidth="2"
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                    >
-                                      <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
-                                    </svg>
-                                  </button>
-                                </Tooltip>
-                                <Tooltip text="Unlike">
-                                  <button
-                                    className={`p-1.5 rounded-md transition-colors shadow-[0_0_4px_rgba(0,0,0,0.1)] ${
-                                      messageRatings[index] === 'negative'
-                                        ? 'text-red-500 bg-red-50'
-                                        : messageRatings[index] === 'positive'
-                                        ? 'hidden'
-                                        : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
-                                    }`}
-                                    onClick={() => {
-                                      console.log('Unlike clicked for index:', index);
-                                      handleRateMessage(index, false);
-                                    }}
-                                    disabled={editingMessageId === index}
-                                  >
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      width="16"
-                                      height="16"
-                                      viewBox="0 0 24 24"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      strokeWidth="2"
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                    >
-                                      <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17" />
-                                    </svg>
-                                  </button>
-                                </Tooltip>
-                                <Tooltip text="More options">
-                                  <button
-                                    className="p-1.5 rounded-md text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors shadow-[0_0_4px_rgba(0,0,0,0.1)]"
-                                    onClick={() => {
-                                      setActiveAction(
-                                        activeAction === `options-${index}` ? null : `options-${index}`
-                                      );
-                                    }}
-                                  >
-                                    <MoreVertical className="w-4 h-4" />
-                                  </button>
-                                </Tooltip>
-                                {activeAction === `options-${index}` && (
-                                  <div
-                                    className="absolute top-full right-0 mt-2 bg-white rounded-lg shadow-lg py-1 z-50 border border-gray-200 more-options-dropdown"
-                                    style={{ minWidth: '200px' }}
-                                  >
-                                    <button
-                                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors shadow-[0_0_4px_rgba(0,0,0,0.1)] flex items-center"
-                                      onClick={() => handleReportIssue(index)}
-                                    >
-                                      <span>Report Issue</span>
-                                    </button>
-                                    <button
-                                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors shadow-[0_0_4px_rgba(0,0,0,0.1)] flex items-center"
-                                      onClick={() => {
-                                        exportToPDF(message.content);
-                                        setActiveAction(null);
-                                      }}
-                                    >
-                                      <span>Export to PDF</span>
-                                    </button>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                    {isLoading && (
-                      <div className="flex justify-start animate-fade duration-300">
-                        <div className="max-w-full md:max-w-4xl p-3 md:p-5 rounded-2xl bg-white/90 backdrop-blur-sm border border-gray-200 shadow-sm">
-                          <p className="text-sm">Thinking...</p>
-                        </div>
-                      </div>
-                    )}
-                    <div ref={messagesEndRef} />
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {messages.length > 0 && (
-              <div className="sticky bottom-0 p-4 bg-transparent">
-                <div className="max-w-4xl mx-auto">
-                  {errorMessage && (
-                    <div className="bg-red-50/90 border border-red-200 rounded-lg p-3 mb-4 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-red-700">{errorMessage}</span>
-                      </div>
-                      <button
-                        className="text-red-400 hover:text-red-600 shadow-[0_0_4px_rgba(0,0,0,0.1)]"
-                        onClick={() => setErrorMessage(null)}
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  )}
-                  {recordingError && (
-                    <div className="bg-red-50/90 border border-red-200 rounded-lg p-3 mb-4 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-red-700">{recordingError}</span>
-                      </div>
-                      <button
-                        className="text-red-400 hover:text-red-600 shadow-[0_0_4px_rgba(0,0,0,0.1)]"
-                        onClick={() => setRecordingError(null)}
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  )}
+        {/* Main Content */}
+        <div className="flex flex-col h-full overflow-hidden">
+          <div className="flex-1 p-4 md:p-6 overflow-y-auto flex flex-col items-center">
+            <div className="w-full max-w-4xl">
+              {messages.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center text-center py-12">
+                  <h1 className="text-2xl md:text-4xl font-semibold mb-2 text-[#E14C42]">
+                    Hi there!
+                  </h1>
+                  <p className="text-gray-600 text-lg md:text-xl mb-8">
+                    How can I assist you today?
+                  </p>
 
                   <form
                     onSubmit={handleSubmit}
-                    className="bg-white border border-gray-300 rounded-xl px-4 py-4 shadow-sm relative"
+                    className="w-full max-w-2xl mx-auto bg-white border-2 border-[#E65C52]/20 rounded-xl px-4 py-4 shadow-lg hover:shadow-xl hover:shadow-[#E65C52]/10 transition-all"
                   >
-                    <div className="absolute top-2 right-2 flex items-center gap-1">
-                      <Tooltip text="Share">
-                        <button
-                          type="button"
-                          className="p-1.5 rounded-md text-gray-500 hover:bg-gray-100 transition-colors"
-                          onClick={() => {
-                            console.log('Share clicked');
-                            navigator.clipboard.writeText(window.location.href);
-                            alert('Chat link copied to clipboard!');
-                          }}
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <circle cx="18" cy="5" r="3"></circle>
-                            <circle cx="6" cy="12" r="3"></circle>
-                            <circle cx="18" cy="19" r="3"></circle>
-                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-                          </svg>
-                        </button>
-                      </Tooltip>
-
-                      <div className="relative">
-                        <Tooltip text="More options">
-                          <button
-                            type="button"
-                            className="p-1.5 rounded-md text-gray-500 hover:bg-gray-100 transition-colors"
-                            onClick={() => setActiveAction(activeAction === 'message-options' ? null : 'message-options')}
-                          >
-                            <MoreVertical className="w-4 h-4" />
-                          </button>
-                        </Tooltip>
-
-                        {activeAction === 'message-options' && (
-                          <div className="absolute right-0 top-full mt-1 bg-white rounded-md shadow-lg py-1 z-10 border border-gray-200 w-40">
-                            <button
-                              type="button"
-                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                              onClick={() => {
-                                console.log('Archive clicked');
-                                if (currentConversationId) {
-                                  const userId = auth.currentUser?.uid;
-                                  updateDoc(doc(db, 'users', userId, 'conversations', currentConversationId), {
-                                    archived: true,
-                                  }).then(() => {
-                                    setUserConversations(prev => 
-                                      prev.map(conv => 
-                                        conv.id === currentConversationId ? {...conv, archived: true} : conv
-                                      )
-                                    );
-                                    setActiveAction(null);
-                                    startNewChat();
-                                  });
-                                }
-                              }}
-                            >
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              >
-                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                                <line x1="9" y1="10" x2="15" y2="10"></line>
-                                <line x1="9" y1="14" x2="15" y2="14"></line>
-                              </svg>
-                              <span>Archive</span>
-                            </button>
-                            <button
-                              type="button"
-                              className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-                              onClick={() => {
-                                console.log('Delete clicked');
-                                if (currentConversationId) {
-                                  if (window.confirm('Are you sure you want to delete this conversation?')) {
-                                    const userId = auth.currentUser?.uid;
-                                    deleteDoc(doc(db, 'users', userId, 'conversations', currentConversationId))
-                                      .then(() => {
-                                        setUserConversations(prev => 
-                                          prev.filter(conv => conv.id !== currentConversationId)
-                                        );
-                                        setActiveAction(null);
-                                        startNewChat();
-                                      });
-                                  }
-                                }
-                              }}
-                            >
-                              <Trash className="w-4 h-4" />
-                              <span>Delete</span>
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
                     <div className="flex flex-col gap-3">
                       <input
                         ref={inputRef}
                         type="text"
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
-                        placeholder="Ask anything"
+                        placeholder="Ask anything..."
                         className="w-full bg-transparent focus:outline-none text-gray-700 placeholder-gray-400 text-base min-h-[40px] py-2"
                         disabled={isLoading}
                         autoFocus
                       />
+
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <div className="relative" ref={attachmentPanelRef}>
-                            <button
-                              type="button"
-                              className={`p-2 rounded spotlight-button hover:bg-gray-100 transition-colors attachment-button ${
-                                activeUploadPanel === 'attachment'
-                                  ? 'text-[#0E0E28] bg-[#0E0E28]/10 shadow-[0_0_8px_rgba(59,130,246,0.5)]'
-                                  : 'text-gray-500 shadow-[0_0_4px_rgba(0,0,0,0.1)]'
-                              }`}
-                              onClick={() => toggleUploadPanel('attachment')}
-                            >
-                              <Paperclip className="w-5 h-5" />
-                            </button>
+                            <Tooltip text="Attach files">
+                              <button
+                                type="button"
+                                className="p-2 rounded-lg text-[#E65C52] hover:bg-[#F5D9D1] transition-colors"
+                                onClick={() => setActiveUploadPanel(activeUploadPanel ? null : 'attachment')}
+                              >
+                                <Paperclip className="w-5 h-5" />
+                              </button>
+                            </Tooltip>
                             {activeUploadPanel === 'attachment' && (
-                              <div className="absolute bottom-full left-0 mb-2 bg-white rounded-lg shadow-lg p-2 z-10 w-48 border border-gray-200">
+                              <div className="absolute bottom-full left-0 mb-2 bg-white rounded-lg shadow-xl border-2 border-[#E65C52]/20 p-2 z-10 w-48">
                                 <div className="flex flex-col gap-1">
-                                  <label className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:shadow-[0_0_4px_rgba(0,0,0,0.1)] rounded cursor-pointer">
-                                    <FileText className="w-4 h-4" />
+                                  <label className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-[#F5D9D1] rounded cursor-pointer">
+                                    <FileText className="w-4 h-4 text-[#E65C52]" />
                                     <span>Upload File</span>
-                                    <input
-                                      type="file"
-                                      className="hidden"
-                                      onChange={(e) => {
-                                        handleFilesUpload(e.target.files);
-                                        setActiveUploadPanel(null);
-                                      }}
-                                      multiple
-                                    />
+                                    <input type="file" className="hidden" multiple />
                                   </label>
-                                  <label className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:shadow-[0_0_4px_rgba(0,0,0,0.1)] rounded cursor-pointer">
-                                    <ImageIcon className="w-4 h-4" />
+                                  <label className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-[#F5D9D1] rounded cursor-pointer">
+                                    <ImageIcon className="w-4 h-4 text-[#E65C52]" />
                                     <span>Upload Image</span>
-                                    <input
-                                      type="file"
-                                      className="hidden"
-                                      accept="image/*"
-                                      onChange={(e) => {
-                                        handleImagesUpload(e.target.files);
-                                        setActiveUploadPanel(null);
-                                      }}
-                                      multiple
-                                    />
+                                    <input type="file" className="hidden" accept="image/*" multiple />
                                   </label>
                                 </div>
                               </div>
                             )}
                           </div>
 
-                          <ToggleButtons onModeChange={setActiveMode} />
+                          <ToggleButtons />
                         </div>
+
                         <div className="flex items-center gap-2">
                           <div className="relative" ref={modelDropdownRef}>
                             <button
                               type="button"
                               onClick={() => setShowModelDropdown(!showModelDropdown)}
-                              className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors shadow-[0_0_4px_rgba(0,0,0,0.1)]"
+                              className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-[#E65C52] hover:bg-[#F5D9D1] rounded-lg transition-colors border border-[#E65C52]/20"
                             >
                               <span>{selectedModel}</span>
                               <ChevronDown className="w-4 h-4" />
-          </button>
-          {showModelDropdown && (
-            <div className="absolute bottom-full right-0 mb-2 bg-white rounded-lg shadow-lg py-1 z-20 border border-gray-200 min-w-[120px]">
-              {['GPT', 'Minerva', 'Gemini'].map((model) => (
-                <button
-                  key={model}
-                  type="button"
-                  onClick={() => {
-                    setSelectedModel(model);
-                    setShowModelDropdown(false);
-                  }}
-                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 transition-colors shadow-[0_0_4px_rgba(0,0,0,0.1)] ${
-                    selectedModel === model
-                      ? 'text-blue-600 bg-blue-50'
-                      : 'text-gray-700'
-                  }`}
-                >
-                  {model}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+                            </button>
+                            {showModelDropdown && (
+                              <div className="absolute bottom-full right-0 mb-2 bg-white rounded-lg shadow-xl border-2 border-[#E65C52]/20 py-1 z-20 min-w-[120px]">
+                                {['GPT', 'Minerva', 'Gemini'].map((model) => (
+                                  <button
+                                    key={model}
+                                    type="button"
+                                    onClick={() => {
+                                      setSelectedModel(model);
+                                      setShowModelDropdown(false);
+                                    }}
+                                    className={`w-full text-left px-4 py-2 text-sm hover:bg-[#F5D9D1] transition-colors ${
+                                      selectedModel === model
+                                        ? 'text-[#E65C52] bg-[#F5D9D1]/50 font-medium'
+                                        : 'text-gray-700'
+                                    }`}
+                                  >
+                                    {model}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
 
-          <Tooltip text="Browse files">
-          </Tooltip>
                           {renderInputButton()}
                         </div>
                       </div>
                     </div>
                   </form>
-                  {isRecording && (
-                    <div className="mt-2 text-center">
-                      <VoiceRecordingAnimation audioLevel={audioLevel} />
-                      <p className="text-sm text-red-500 mt-1">Recording... Speak now</p>
+
+                  <div className="w-full max-w-2xl mt-6">
+                    <div className="flex flex-wrap justify-center gap-2">
+                      {categories.map((category) => {
+                        const Icon = category.icon;
+                        return (
+                          <button
+                            key={category.id}
+                            onClick={() => handleCategoryClick(category.id)}
+                            className={`
+                              flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all text-sm font-medium border-2
+                              ${selectedCategory === category.id 
+                                ? 'bg-gradient-to-r from-[#E65C52] to-[#E14C42] text-white border-transparent shadow-lg shadow-[#E65C52]/30' 
+                                : 'bg-white text-gray-700 border-[#E65C52]/20 hover:bg-[#F5D9D1] hover:border-[#E65C52]/40'
+                              }
+                            `}
+                          >
+                            <Icon />
+                            <span>{category.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {showCategoryPanel && selectedCategory && (
+                      <div className="relative w-full mt-4">
+                        <div className="absolute left-0 right-0 mx-auto border-2 border-[#E65C52]/20 rounded-xl shadow-xl z-10 overflow-hidden bg-white">
+                          <div className="flex items-center justify-between px-4 py-3 border-b-2 border-[#E65C52]/20 bg-gradient-to-r from-[#F5D9D1]/50 to-white">
+                            <div className="flex items-center gap-2">
+                              {React.createElement(categories.find((c) => c.id === selectedCategory)?.icon)}
+                              <span className="font-medium text-[#E14C42]">
+                                {categories.find((c) => c.id === selectedCategory)?.label}
+                              </span>
+                            </div>
+                            <button
+                              onClick={() => {
+                                setShowCategoryPanel(false);
+                                setSelectedCategory(null);
+                              }}
+                              className="text-gray-400 hover:text-[#E65C52] hover:bg-[#F5D9D1] rounded-full p-1"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                          <div className="py-2">
+                            {categoryOptions[selectedCategory]?.map((option, index) => (
+                              <button
+                                key={index}
+                                onClick={() => handleCategoryOptionSelect(option)}
+                                className="w-full text-left px-4 py-3 text-gray-700 hover:bg-[#F5D9D1] transition-colors border-b border-[#E65C52]/10 last:border-b-0"
+                              >
+                                <span className="text-sm leading-relaxed">{option}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-6 md:space-y-8 py-2 md:py-4">
+                  {messages.map((message, index) => (
+                    <div
+                      key={index}
+                      className={`flex ${
+                        message.role === 'user' ? 'justify-end' : 'justify-start'
+                      }`}
+                    >
+                      <div
+                        className={`max-w-full md:max-w-4xl rounded-2xl ${
+                          message.role === 'user'
+                            ? 'bg-gradient-to-r from-[#E65C52] to-[#E14C42] text-white p-3 md:p-5 shadow-lg'
+                            : 'bg-white border-2 border-[#E65C52]/20 shadow-md p-3 md:p-5'
+                        }`}
+                      >
+                        <div className="text-sm whitespace-pre-wrap">
+                          {message.content}
+                        </div>
+                        {message.role === 'assistant' && (
+                          <div className="flex items-center justify-end gap-2 mt-3 pt-3 border-t border-[#E65C52]/10">
+                            <Tooltip text="Copy">
+                              <CopyButton text={message.content} />
+                            </Tooltip>
+                            <Tooltip text="Read Aloud">
+                              <ReadAloudButton text={message.content} />
+                            </Tooltip>
+                            <Tooltip text="Like">
+                              <button
+                                className={`p-1.5 rounded-md transition-colors ${
+                                  messageRatings[index] === 'positive'
+                                    ? 'text-[#E65C52] bg-[#F5D9D1]'
+                                    : 'text-gray-400 hover:bg-[#F5D9D1] hover:text-[#E65C52]'
+                                }`}
+                                onClick={() => handleRateMessage(index, true)}
+                              >
+                                👍
+                              </button>
+                            </Tooltip>
+                            <Tooltip text="Dislike">
+                              <button
+                                className={`p-1.5 rounded-md transition-colors ${
+                                  messageRatings[index] === 'negative'
+                                    ? 'text-[#E65C52] bg-[#F5D9D1]'
+                                    : 'text-gray-400 hover:bg-[#F5D9D1] hover:text-[#E65C52]'
+                                }`}
+                                onClick={() => handleRateMessage(index, false)}
+                              >
+                                👎
+                              </button>
+                            </Tooltip>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  {isLoading && (
+                    <div className="flex justify-start">
+                      <div className="max-w-full md:max-w-4xl p-3 md:p-5 rounded-2xl bg-white border-2 border-[#E65C52]/20">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-[#E65C52] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                          <div className="w-2 h-2 bg-[#E65C52] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                          <div className="w-2 h-2 bg-[#E65C52] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                        </div>
+                      </div>
                     </div>
                   )}
+                  <div ref={messagesEndRef} />
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
-        )}
+
+          {/* Bottom Input (when conversation exists) */}
+          {messages.length > 0 && (
+            <div className="sticky bottom-0 p-4 bg-transparent">
+              <div className="max-w-4xl mx-auto">
+                <form
+                  onSubmit={handleSubmit}
+                  className="bg-white border-2 border-[#E65C52]/20 rounded-xl px-4 py-4 shadow-lg hover:shadow-xl hover:shadow-[#E65C52]/10 transition-all"
+                >
+                  <div className="flex flex-col gap-3">
+                    <input
+                      ref={inputRef}
+                      type="text"
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      placeholder="Ask anything..."
+                      className="w-full bg-transparent focus:outline-none text-gray-700 placeholder-gray-400 text-base min-h-[40px] py-2"
+                      disabled={isLoading}
+                    />
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          className="p-2 rounded-lg text-[#E65C52] hover:bg-[#F5D9D1] transition-colors"
+                        >
+                          <Paperclip className="w-5 h-5" />
+                        </button>
+                        <ToggleButtons />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-[#E65C52] hover:bg-[#F5D9D1] rounded-lg transition-colors border border-[#E65C52]/20"
+                        >
+                          <span>{selectedModel}</span>
+                          <ChevronDown className="w-4 h-4" />
+                        </button>
+                        {renderInputButton()}
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-
-      {isReportModalOpen && (
-  <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
-    <ReportIssueModal
-      isOpen={isReportModalOpen}
-      onClose={() => setIsReportModalOpen(false)}
-      message={messages[selectedMessageIndex]?.content || ''}
-    />
-  </div>
-)}
-
-{/* Add this new panel component */}
-{showFileCategoryPanel && (
-  <div className="fixed inset-0 z-[100]">
-    <FileCategoryPanel 
-      onClose={() => setShowFileCategoryPanel(false)}
-      onSelectFile={(file) => {
-        setInputValue(`[File] ${file.name}`);
-        setShowFileCategoryPanel(false);
-      }}
-    />
-  </div>
-)}
     </div>
-    
   );
 };
 

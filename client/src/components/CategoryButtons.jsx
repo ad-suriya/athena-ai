@@ -93,14 +93,14 @@ Please execute the task as soon as you can - an artifact would be great if it ma
               key={category.id}
               onClick={() => handleCategoryClick(category.id)}
               className={`
-                flex items-center gap-2 px-3 py-2 rounded-lg transition-all text-sm font-medium
+                flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all text-sm font-medium border-2
                 ${selected === category.id 
-                  ? 'bg-gray-900 text-white' 
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-gradient-to-r from-[#E65C52] to-[#E14C42] text-white border-transparent shadow-lg shadow-[#E65C52]/30' 
+                  : 'bg-white text-gray-700 border-[#E65C52]/20 hover:bg-[#F5D9D1] hover:border-[#E65C52]/40'
                 }
               `}
             >
-              <Icon className="w-4 h-4" />
+              <Icon className={`w-4 h-4 ${selected === category.id ? 'text-white' : 'text-[#E65C52]'}`} />
               <span>{category.label}</span>
             </button>
           );
@@ -108,17 +108,17 @@ Please execute the task as soon as you can - an artifact would be great if it ma
       </div>
 
       {showPanel && selected && (
-        <div className="absolute top-full left-6 right-6 mt-1 border border-gray-200 rounded-xl shadow-lg z-10 overflow-hidden" style={{ backgroundColor: '#F8F8F7' }}>
-          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-300 bg-gray-50">
+        <div className="absolute top-full left-6 right-6 mt-1 border-2 border-[#E65C52]/20 rounded-xl shadow-xl z-10 overflow-hidden bg-white">
+          <div className="flex items-center justify-between px-4 py-3 border-b-2 border-[#E65C52]/20 bg-gradient-to-r from-[#F5D9D1]/50 to-white">
             <div className="flex items-center gap-2">
-              {React.createElement(categories.find((c) => c.id === selected)?.icon, { className: 'w-4 h-4 text-gray-600' })}
-              <span className="font-medium text-gray-900">
+              {React.createElement(categories.find((c) => c.id === selected)?.icon, { className: 'w-4 h-4 text-[#E65C52]' })}
+              <span className="font-medium text-[#E14C42]">
                 {categories.find((c) => c.id === selected)?.label}
               </span>
             </div>
             <button
               onClick={() => setShowPanel(false)}
-              className="text-gray-400 hover:text-gray-600 p-1"
+              className="text-gray-400 hover:text-[#E65C52] hover:bg-[#F5D9D1] rounded-full p-1 transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -132,7 +132,7 @@ Please execute the task as soon as you can - an artifact would be great if it ma
                   onOptionSelect?.(message);
                   setShowPanel(false);
                 }}
-                className="w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors border-b border-gray-300 last:border-b-0"
+                className="w-full text-left px-4 py-3 text-gray-700 hover:bg-[#F5D9D1] transition-colors border-b border-[#E65C52]/10 last:border-b-0"
               >
                 <span className="text-sm leading-relaxed">{option}</span>
               </button>
@@ -142,4 +142,5 @@ Please execute the task as soon as you can - an artifact would be great if it ma
       )}
     </div>
   );
+
 }
