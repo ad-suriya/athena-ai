@@ -1397,7 +1397,7 @@ Please execute the task as soon as you can - an artifact would be great if it ma
 
                     <div className="w-full max-w-2xl mt-6">
                       <div className="flex flex-wrap justify-center gap-2">
-                        <SmartActionButton
+                        {/* <SmartActionButton
                           icon={
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
@@ -1430,7 +1430,7 @@ Please execute the task as soon as you can - an artifact would be great if it ma
                           label="Think"
                           active={activeAction === 'think'}
                           onClick={() => handleActionClick('think')}
-                        />
+                        /> */}
                         {categories.map((category) => {
                           const Icon = category.icon;
                           return (
