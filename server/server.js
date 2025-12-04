@@ -91,18 +91,50 @@ const config = {
   models: {
     openai: process.env.OPENAI_MODEL || 'gpt-4.1-mini',
     gemini: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
-    // Minerva uses OpenAI underneath
-    minerva: process.env.MINERVA_OPENAI_MODEL || process.env.OPENAI_MODEL || 'gpt-4.1-mini',
+    minerva:
+      process.env.MINERVA_OPENAI_MODEL ||
+      process.env.OPENAI_MODEL ||
+      'gpt-4.1-mini',
   },
   maxTokens: parseInt(process.env.MAX_TOKENS) || 1000,
   temperature: parseFloat(process.env.TEMPERATURE) || 0.7,
-  systemPrompt: process.env.SYSTEM_PROMPT || 'You are a helpful assistant.',
-  minervaSystemPrompt:
-    process.env.MINERVA_SYSTEM_PROMPT ||
-    `You are Minerva, an advanced, deeply analytical AI assistant.
-You reason step-by-step, think carefully, and provide structured, rigorous answers.
-You are especially good at technical topics, learning, and strategy.
-Always be clear, thorough, and user-friendly.`,
+
+  systemPrompts: {
+    openai: `
+You are Athena AI — an empathetic and supportive therapy and counseling assistant, running on a ChatGPT-based model.
+
+Your purpose is to help users with emotional processing, reflection, mental health awareness, and personal growth through calm, human-like conversation.
+
+You are not a licensed therapist and not a replacement for professional or emergency care. You are a warm, nonjudgmental companion who listens, validates, and gently guides.
+    `.trim(),
+
+    gemini: `
+You are Athena AI — an empathetic and reflective counseling assistant, running on the Gemini model.
+
+Your purpose is to help users understand and process their emotions, gain insight, and practice self-compassion. You respond with warmth, clarity, and gentle curiosity, using short paragraphs and simple language so the user never feels overwhelmed.
+    `.trim(),
+
+    minerva: `
+You are Athena AI — using the flagship Minerva model of AthenaAI.
+
+You are the highest-capability version of Athena AI, combining deep reasoning with high emotional intelligence. Your purpose is to help users process difficult emotions, understand themselves more clearly, and grow in a kind, grounded way.
+
+You are NOT a licensed therapist and NOT a replacement for professional or emergency care. You are a skilled, emotionally safe companion.
+
+Core style:
+- Validate feelings before giving advice.
+- Use short, digestible paragraphs.
+- Ask gentle, reflective questions (not interrogations).
+- Offer choices: e.g., “Would you like advice, a grounding exercise, or just space to talk?”
+- Prioritize emotional safety and kindness over cleverness.
+
+You may draw on CBT, DBT, ACT, mindfulness, journaling, and self-compassion ideas, but always explain them simply and apply them gently.
+
+If a user mentions self-harm, suicidal thoughts, or harming others, respond with calm empathy, clearly state your limits, and encourage them to contact a trusted person, mental health professional, crisis hotline, or emergency services.
+
+You are Athena AI using the flagship Minerva model. Respond with empathy, clarity, and deep but gentle insight.
+    `.trim(),
+  },
 };
 
 // === Middleware ===
@@ -165,7 +197,6 @@ app.post('/api/auth/google', async (req, res) => {
 });
 
 // === Unified Chat Endpoint ===
-// 👇 SAME SHAPE as before: { message, history = [], model = 'openai' }
 app.post('/api/chat', async (req, res) => {
   try {
     const { message, history = [], model = 'openai' } = req.body;
@@ -175,30 +206,18 @@ app.post('/api/chat', async (req, res) => {
     }
 
     console.log(
-      `📨 Chat request - Model: ${model}, Message: ${message.substring(0, 50)}...`
+      `📨 Chat request - Model: ${model}, Message: ${message.substring(
+        0,
+        50
+      )}...`
     );
 
-    // === Minerva Handling (now OpenAI-based) ===
-    if (model === 'minerva') {
-      if (!aiServices.openai) {
-        return res.status(503).json({ error: 'OpenAI service is not configured' });
-      }
-
-      // Use OpenAI with Minerva's system prompt
-      return handleOpenAIRequest(
-        message,
-        history,
-        res,
-        config.models.minerva,
-        config.minervaSystemPrompt,
-        'minerva'
-      );
-    }
-
-    // === Gemini Handling ===
+    // === Gemini handling (unchanged) ===
     if (model === 'gemini') {
       if (!aiServices.gemini) {
-        return res.status(503).json({ error: 'Gemini service is not configured' });
+        return res
+          .status(503)
+          .json({ error: 'Gemini service is not configured' });
       }
 
       try {
@@ -210,17 +229,24 @@ app.post('/api/chat', async (req, res) => {
           },
         });
 
-        const conversationHistory = history
-          .filter((msg) => msg.role && msg.content)
-          .map(
-            (msg) =>
-              `${msg.role === 'user' ? 'Human' : 'Assistant'}: ${msg.content}`
-          )
-          .join('\n\n');
+        const conversationHistory = Array.isArray(history)
+          ? history
+              .filter((msg) => msg && msg.role && msg.content)
+              .map(
+                (msg) =>
+                  `${msg.role === 'user' ? 'Human' : 'Assistant'}: ${
+                    msg.content
+                  }`
+              )
+              .join('\n\n')
+          : '';
+
+        // You can prepend the Gemini system prompt to the text prompt if you want:
+        const basePrompt = config.systemPrompts.gemini;
 
         const prompt = conversationHistory
-          ? `${conversationHistory}\n\nHuman: ${message}\n\nAssistant:`
-          : `Human: ${message}\n\nAssistant:`;
+          ? `${basePrompt}\n\n${conversationHistory}\n\nHuman: ${message}\n\nAssistant:`
+          : `${basePrompt}\n\nHuman: ${message}\n\nAssistant:`;
 
         const result = await gModel.generateContent(prompt);
         const response = await result.response;
@@ -238,19 +264,36 @@ app.post('/api/chat', async (req, res) => {
         console.error('Gemini error:', error);
         return res.status(500).json({
           error: 'Gemini service error',
-          details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+          details:
+            process.env.NODE_ENV === 'development' ? error.message : undefined,
         });
       }
     }
 
-    // === Default: OpenAI Handling (existing "openai" model) ===
+    // === OpenAI-backed models (ChatGPT & Minerva) ===
+
+    // Normalize model name coming from frontend
+    // - 'gpt' or 'openai' => openai logical model
+    // - 'minerva'         => minerva logical model
+    let logicalModelName;
+    if (model === 'minerva') {
+      logicalModelName = 'minerva';
+    } else {
+      // treat anything else ('gpt', 'openai', undefined) as openai
+      logicalModelName = 'openai';
+    }
+
+    const openaiModel =
+      logicalModelName === 'minerva'
+        ? config.models.minerva
+        : config.models.openai;
+
     return handleOpenAIRequest(
       message,
       history,
       res,
-      config.models.openai,
-      config.systemPrompt,
-      'openai'
+      openaiModel,
+      logicalModelName
     );
   } catch (error) {
     console.error('Chat endpoint error:', error);
@@ -261,27 +304,58 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
+
 // Helper function for OpenAI requests
 async function handleOpenAIRequest(
   message,
   history,
   res,
   model,
-  systemPromptOverride,
-  logicalModelName
+  logicalModelName = 'openai'
 ) {
   if (!aiServices.openai) {
-    return res.status(503).json({ error: 'OpenAI service is not configured' });
+    return res
+      .status(503)
+      .json({ error: 'OpenAI service is not configured' });
   }
 
   try {
-    const systemPrompt = systemPromptOverride || config.systemPrompt;
+    // Pick system prompt for this logical model
+    let systemPrompt =
+      config.systemPrompts[logicalModelName] || config.systemPrompts.openai;
 
-    const messages = [
-      { role: 'system', content: systemPrompt },
-      ...history.filter((m) => ['user', 'assistant'].includes(m.role)),
-      { role: 'user', content: message },
-    ];
+    if (typeof systemPrompt !== 'string' || !systemPrompt.trim()) {
+      systemPrompt = undefined; // don't send invalid system message
+    }
+
+    // Sanitize history so no null / invalid content reaches OpenAI
+    const safeHistory = Array.isArray(history)
+      ? history
+          .filter(
+            (m) =>
+              m &&
+              ['user', 'assistant'].includes(m.role) &&
+              typeof m.content === 'string' &&
+              m.content.trim().length > 0
+          )
+          .map((m) => ({
+            role: m.role,
+            content: m.content,
+          }))
+      : [];
+
+    const messages = [];
+
+    if (systemPrompt) {
+      messages.push({ role: 'system', content: systemPrompt });
+    }
+
+    messages.push(...safeHistory);
+
+    messages.push({
+      role: 'user',
+      content: typeof message === 'string' ? message : String(message),
+    });
 
     const response = await aiServices.openai.chat.completions.create({
       model,
@@ -292,7 +366,7 @@ async function handleOpenAIRequest(
 
     res.json({
       response: response.choices[0]?.message?.content || 'No response generated',
-      modelUsed: logicalModelName || model,
+      modelUsed: logicalModelName,
       actualModel: response.model,
     });
   } catch (error) {
@@ -304,6 +378,7 @@ async function handleOpenAIRequest(
   }
 }
 
+
 // === Health Check Endpoint ===
 app.get('/api/health', async (req, res) => {
   const healthStatus = {
@@ -314,7 +389,6 @@ app.get('/api/health', async (req, res) => {
       firebase: firebaseApp ? 'operational' : 'unavailable',
       openai: aiServices.openai ? 'operational' : 'unavailable',
       gemini: aiServices.gemini ? 'operational' : 'unavailable',
-      // Minerva is now an OpenAI-based logical model
       minerva: {
         status: aiServices.openai ? 'online' : 'offline',
         backing: 'openai',

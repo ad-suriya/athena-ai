@@ -17,10 +17,14 @@ import {
   Trash2,
   Archive,
   Calendar,
+<<<<<<< HEAD
   User,
   LogOut,
   Settings,
   HelpCircle
+=======
+  User
+>>>>>>> 0dc85a78d542c7aab6b71b26ee29968d10e0e318
 } from "lucide-react";
 
 // Tooltip Component remains the same
@@ -49,7 +53,11 @@ const Tooltip = ({ children, text, position = "top" }) => {
   );
 };
 
+<<<<<<< HEAD
 // Enhanced Conversation Panel Component remains the same
+=======
+// Enhanced Conversation Panel Component
+>>>>>>> 0dc85a78d542c7aab6b71b26ee29968d10e0e318
 const ConversationPanel = ({ 
   isOpen, 
   onClose, 
@@ -511,24 +519,39 @@ const Sidebar = ({
           backdropFilter: 'blur(20px)',
         }}
       >
+<<<<<<< HEAD
         {/* User Profile - Moved up */}
         <div className="px-4 py-3 border-b border-[#FFE7E5]/50 flex-shrink-0">
           <div className="flex items-center gap-2">
+=======
+        {/* User Profile */}
+        <div className="px-6 py-4 border-b border-[#FFE7E5]/50">
+          <div className="flex items-center gap-3">
+>>>>>>> 0dc85a78d542c7aab6b71b26ee29968d10e0e318
             <div className="relative">
               <div className="w-10 h-10 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center">
                 <User className="w-5 h-5 text-gray-600" />
               </div>
               <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
             </div>
+<<<<<<< HEAD
             <div className="flex-1 min-w-0">
               <h3 className="text-sm font-semibold text-[#2B3440] truncate">{user?.displayName || "Welcome"}</h3>
               <p className="text-xs text-gray-500">Premium Member</p>
+=======
+            <div className="flex-1">
+              <h3 className="text-sm font-semibold text-[#2B3440]">{user?.displayName || "Welcome"}</h3>
+>>>>>>> 0dc85a78d542c7aab6b71b26ee29968d10e0e318
             </div>
             <div className="flex items-center gap-1">
               <Tooltip text="Conversation History" position="top">
                 <button
                   onClick={toggleConversation}
+<<<<<<< HEAD
                   className="p-1.5 hover:bg-[#FFE7E5] rounded-lg transition-colors"
+=======
+                  className="p-2 hover:bg-[#FFE7E5] rounded-lg transition-colors"
+>>>>>>> 0dc85a78d542c7aab6b71b26ee29968d10e0e318
                 >
                   <Clock className="w-4 h-4 text-gray-500" />
                 </button>
@@ -537,16 +560,70 @@ const Sidebar = ({
                 <Tooltip text="Collapse sidebar" position="top">
                   <button
                     onClick={toggleSidebar}
+<<<<<<< HEAD
                     className="p-1.5 hover:bg-[#FFE7E5] rounded-lg transition-colors"
+=======
+                    className="p-2 hover:bg-[#FFE7E5] rounded-lg transition-colors"
+>>>>>>> 0dc85a78d542c7aab6b71b26ee29968d10e0e318
                   >
                     <ChevronsRight className="w-4 h-4 text-gray-500 rotate-180" />
                   </button>
                 </Tooltip>
               )}
+<<<<<<< HEAD
+=======
             </div>
           </div>
         </div>
 
+        {/* Main Navigation */}
+        <div className="flex-1 px-4 py-4 overflow-y-auto">
+          <div className="space-y-1">
+            {navigationItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => handleNavClick(item.id)}
+                className={`
+                  w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
+                  ${activeNav === item.id 
+                    ? 'bg-[#FF6F61]/10 text-[#FF6F61]' 
+                    : 'text-[#2B3440] hover:bg-[#FFE7E5]'
+                  }
+                `}
+              >
+                <item.icon className={`w-5 h-5 ${activeNav === item.id ? 'text-[#FF6F61]' : 'text-gray-500'}`} />
+                <span className="text-sm font-medium">{item.label}</span>
+                {activeNav === item.id && (
+                  <div className="ml-auto w-1 h-6 bg-[#FF6F61] rounded-full"></div>
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* Quick Actions */}
+          <div className="mt-8 px-2">
+            <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Quick Actions</p>
+            <div className="space-y-2">
+              <button 
+                onClick={enhancedStartNewChat}
+                className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-[#2B3440] hover:bg-[#FFE7E5] rounded-lg transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                New Journal Entry
+              </button>
+              <button 
+                onClick={() => handleNavigate('calendar')}
+                className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-[#2B3440] hover:bg-[#FFE7E5] rounded-lg transition-colors"
+              >
+                <Calendar className="w-4 h-4" />
+                Schedule Session
+              </button>
+>>>>>>> 0dc85a78d542c7aab6b71b26ee29968d10e0e318
+            </div>
+          </div>
+        </div>
+
+<<<<<<< HEAD
         {/* Main Navigation - Scrollable Area */}
         <div className="flex-1 overflow-y-auto min-h-0 py-3">
           <div className="px-3">
@@ -593,6 +670,23 @@ const Sidebar = ({
               </div>
             </div>
           </div>
+=======
+        {/* Footer Actions */}
+        <div className="px-4 py-4 border-t border-[#FFE7E5]/50">
+          <button
+            onClick={() => handleNavigate('settings')}
+            className="w-full flex items-center gap-3 px-3 py-2 hover:bg-[#FFE7E5] rounded-xl transition-colors"
+          >
+            <div className="w-8 h-8 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center">
+              <User className="w-4 h-4 text-gray-600" />
+            </div>
+            <div className="flex-1 text-left">
+              <p className="text-sm font-medium text-[#2B3440]">My Profile</p>
+              <p className="text-xs text-gray-500">View & edit profile</p>
+            </div>
+            <ChevronDown className="w-4 h-4 text-gray-400" />
+          </button>
+>>>>>>> 0dc85a78d542c7aab6b71b26ee29968d10e0e318
         </div>
 
         {/* Footer Actions - Now visible and positioned below profile */}
