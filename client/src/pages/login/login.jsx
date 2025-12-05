@@ -13,93 +13,17 @@ import {
 } from '../../firebase.js';
 import logoLight from '../../assets/logo-01.png';
 import aiLogo from '../../assets/logo-07.png';
+import budhaImage from '../../assets/budha.png'; // Import the budha.png image
 
 const Login = ({ setIsAuthenticated }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [currentUseCaseIndex, setCurrentUseCaseIndex] = useState(0);
   const navigate = useNavigate();
 
   const CORRECT_EMAIL = 'admin@yudle.com'; 
   const CORRECT_PASSWORD = "Sai_Ani_Sur_2006_2025";
-
-  const contentExamples = [
-    {
-      title: "Sales Funnel Visualization",
-      description: "Create visual representations of your sales data.",
-      content: {
-        user: "Hi yudle! Can you visualize my sales funnel from awareness to purchase using bar graphs?",
-        response: "Here's your sales funnel.",
-        chart: {
-          title: "Sales funnel",
-          data: [
-            { stage: "Ad view", value: 400, color: "#4F9CF9" },
-            { stage: "Email open", value: 250, color: "#7DB46C" },
-            { stage: "Website visit", value: 150, color: "#FFB84D" },
-            { stage: "Product Demo", value: 100, color: "#B19CD9" },
-            { stage: "Purchase", value: 50, color: "#FF6B8A" }
-          ]
-        }
-      }
-    },
-    {
-      title: "Code Optimization",
-      description: "Identify code optimizations and performance improvements.",
-      content: {
-        user: "Identify code optimizations and performance improvements.",
-        response: "All set. Here's the optimized code.",
-        code: `import random
-
-class Neuron:
-    def __init__(self, num_inputs):
-        self.weights = [random.random() for _ in range(num_inputs)]
-        self.bias = random.random()
-    
-    def activate(self, inputs):
-        activation = sum(w * i for w, i in zip(self.weights, inputs))
-        return 1 / (1 + math.exp(-activation))
-
-class NeuralNetwork:
-    def __init__(self, num_inputs, num_hidden, num_outputs):
-        self.hidden_layer = [Neuron(num_inputs) for _ in range(num_hidden)]`
-      }
-    },
-    {
-      title: "Content Calendar",
-      description: "Create marketing content calendars and schedules.",
-      content: {
-        user: "yudle, make a content calendar for my marketing campaign.",
-        response: "Of course. Here's the calendar!",
-        calendar: {
-          title: "Marketing Calendar",
-          days: [
-            { date: "2", day: "Mon", content: null },
-            { date: "3", day: "Tue", content: { type: "Instagram", desc: "behind the scenes image + caption", color: "#E1306C" } },
-            { date: "4", day: "Wed", content: { type: "Youtube", desc: "Product Tutorial Video", color: "#FF0000" } },
-            { date: "5", day: "Thu", content: { type: "Blog", desc: "10 Tips for Productiveness", color: "#4285F4" } },
-            { date: "6", day: "Fri", content: null },
-            { date: "9", day: "Mon", content: null },
-            { date: "10", day: "Tue", content: null },
-            { date: "11", day: "Wed", content: { type: "LinkedIn", desc: "Product announcement", color: "#0077B5" } },
-            { date: "12", day: "Thu", content: { type: "Newsletter", desc: "Monthly Recap Email Digest", color: "#FF6B35" } },
-            { date: "13", day: "Fri", content: null },
-            { date: "16", day: "Mon", content: null },
-            { date: "17", day: "Tue", content: { type: "Instagram", desc: "Behind the scenes image + Caption", color: "#E1306C" } },
-            { date: "18", day: "Wed", content: null },
-            { date: "19", day: "Thu", content: null },
-            { date: "20", day: "Fri", content: null },
-            { date: "23", day: "Mon", content: null },
-            { date: "24", day: "Tue", content: null },
-            { date: "25", day: "Wed", content: null },
-            { date: "26", day: "Thu", content: null },
-            { date: "27", day: "Fri", content: null }
-          ]
-        }
-      }
-    }
-  ];
 
   const handleGoogleLogin = async () => {
     setIsLoading(true);
@@ -175,16 +99,6 @@ class NeuralNetwork:
       setIsLoading(false);
     }, 500);
   };
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentUseCaseIndex((prevIndex) => 
-        prevIndex === contentExamples.length - 1 ? 0 : prevIndex + 1
-      );
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [contentExamples.length]);
 
   return (
     <div className="login-page">
@@ -278,90 +192,18 @@ class NeuralNetwork:
         </div>
       </div>
 
-      {/* Right Side - Interactive Content Examples */}
+      {/* Right Side - Buddha Image Display */}
       <div className="showcase-section">
-        <div className="showcase-content">
-          <div className="content-example-container">
-            <div className="chat-message user-message">
-              <div className="user-avatar">👤</div>
-              <div className="message-content" style={{outline: 'none', userSelect: 'none', WebkitTapHighlightColor: 'transparent'}}>
-                {contentExamples[currentUseCaseIndex].content.user}
-              </div>
-            </div>
-            
-            <div className="chat-message ai-message">
-              <div className="ai-avatar">
-                <img src={aiLogo} alt="Athena AI" className="ai-logo" />
-              </div>
-              <div className="message-content" style={{outline: 'none', userSelect: 'none', WebkitTapHighlightColor: 'transparent'}}>
-                <div className="response-text">{contentExamples[currentUseCaseIndex].content.response}</div>
-                
-                {contentExamples[currentUseCaseIndex].content.code && (
-                  <div className="code-widget">
-                    <pre><code>{contentExamples[currentUseCaseIndex].content.code}</code></pre>
-                  </div>
-                )}
-                
-                {contentExamples[currentUseCaseIndex].content.chart && (
-                  <div className="chart-widget">
-                    <h3>{contentExamples[currentUseCaseIndex].content.chart.title}</h3>
-                    <div className="chart-container">
-                      <div className="chart-bars">
-                        {contentExamples[currentUseCaseIndex].content.chart.data.map((item, index) => (
-                          <div key={index} className="chart-bar">
-                            <div className="bar-value">{item.value}</div>
-                            <div 
-                              className="bar" 
-                              style={{
-                                height: `${(item.value / 400) * 120}px`,
-                                backgroundColor: item.color
-                              }}
-                            ></div>
-                            <div className="bar-label">{item.stage}</div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {contentExamples[currentUseCaseIndex].content.calendar && (
-                  <div className="calendar-widget">
-                    <div className="calendar-header">
-                      <div className="calendar-day">Mon</div>
-                      <div className="calendar-day">Tue</div>
-                      <div className="calendar-day">Wed</div>
-                      <div className="calendar-day">Thu</div>
-                      <div className="calendar-day">Fri</div>
-                    </div>
-                    <div className="calendar-grid">
-                      {contentExamples[currentUseCaseIndex].content.calendar.days.map((day, index) => (
-                        <div key={index} className="calendar-cell">
-                          <div className="calendar-date">{day.date}</div>
-                          {day.content && (
-                            <div className="calendar-event" style={{ backgroundColor: day.content.color }}>
-                              <div className="event-type">{day.content.type}</div>
-                              <div className="event-desc">{day.content.desc}</div>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
+        <div className="image-display-container">
+          <img 
+            src={budhaImage} 
+            alt="Buddha" 
+            className="budha-image"
+          />
+          <div className="image-caption">
+            <h3>Welcome to Athena AI</h3>
+            <p>Experience wisdom and intelligence combined</p>
           </div>
-        </div>
-        
-        <div className="content-indicators">
-          {contentExamples.map((_, index) => (
-            <div
-              key={index}
-              className={`indicator ${index === currentUseCaseIndex ? 'active' : ''}`}
-              onClick={() => setCurrentUseCaseIndex(index)}
-            />
-          ))}
         </div>
       </div>
     </div>

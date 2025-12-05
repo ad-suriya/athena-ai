@@ -897,3 +897,59 @@ button, a, input, div {
 input, textarea, button, select, div, a {
   -webkit-tap-highlight-color: rgba(0,0,0,0);
 }
+/* Image Display Styles */
+.image-display-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 2rem;
+}
+
+.budha-image {
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.image-caption {
+  margin-top: 2rem;
+  text-align: center;
+  color: #333;
+}
+
+.image-caption h3 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.image-caption p {
+  font-size: 1rem;
+  color: #666;
+  max-width: 400px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .budha-image {
+    max-height: 60vh;
+  }
+}
+
+@media (max-width: 768px) {
+  .image-display-container {
+    padding: 1rem;
+  }
+  
+  .budha-image {
+    max-height: 50vh;
+  }
+  
+  .image-caption h3 {
+    font-size: 1.5rem;
+  }
+}
