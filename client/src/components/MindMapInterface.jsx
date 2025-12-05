@@ -14,8 +14,7 @@ content: "A Mental Clarity Map is a simple tool that helps someone who feels ove
       tags: ["telegram", "article"],
       type: "main",
       expanded: true,
-      likes: 12,
-      comments: 3
+     
     },
     {
       id: 2,
@@ -26,8 +25,7 @@ content: "A Mental Clarity Map is a simple tool that helps someone who feels ove
       tags: ["telegram", "article"],
       type: "secondary",
       expanded: true,
-      likes: 8,
-      comments: 1
+      
     },
     {
       id: 3,
@@ -38,8 +36,7 @@ content: "A Mental Clarity Map is a simple tool that helps someone who feels ove
       tags: ["telegram", "article"],
       type: "secondary",
       expanded: true,
-      likes: 5,
-      comments: 0
+     
     },
     {
       id: 4,
@@ -50,8 +47,7 @@ content: "A Mental Clarity Map is a simple tool that helps someone who feels ove
       tags: ["notion"],
       type: "note",
       expanded: false,
-      likes: 2,
-      comments: 0
+      
     },
     {
       id: 5,
@@ -62,8 +58,7 @@ content: "A Mental Clarity Map is a simple tool that helps someone who feels ove
       tags: ["obsidian", "article"],
       type: "ai",
       expanded: true,
-      likes: 15,
-      comments: 7
+      
     }
   ]);
 
@@ -534,11 +529,11 @@ content: "A Mental Clarity Map is a simple tool that helps someone who feels ove
                         onClick={() => likeNode(node.id)}
                         className="flex items-center gap-1 hover:text-red-500"
                       >
-                        <Heart size={10} />
+                        
                         {node.likes}
                       </button>
                       <button className="flex items-center gap-1 hover:text-blue-500">
-                        <MessageCircle size={10} />
+                        
                         {node.comments}
                       </button>
                     </div>
