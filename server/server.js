@@ -270,16 +270,12 @@ app.post('/api/chat', async (req, res) => {
       }
     }
 
-    // === OpenAI-backed models (ChatGPT & Minerva) ===
 
-    // Normalize model name coming from frontend
-    // - 'gpt' or 'openai' => openai logical model
-    // - 'minerva'         => minerva logical model
+
     let logicalModelName;
     if (model === 'minerva') {
       logicalModelName = 'minerva';
     } else {
-      // treat anything else ('gpt', 'openai', undefined) as openai
       logicalModelName = 'openai';
     }
 
@@ -405,7 +401,7 @@ app.get('/api/health', async (req, res) => {
   res.json(healthStatus);
 });
 
-// === Minerva Status Endpoint (kept for compatibility, but now OpenAI-backed) ===
+// === Minerva Status Endpoint ===
 app.get('/api/minerva-status', async (req, res) => {
   try {
     res.json({

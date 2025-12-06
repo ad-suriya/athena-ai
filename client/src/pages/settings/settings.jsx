@@ -329,13 +329,10 @@ const Settings = () => {
                         <div className="w-3 h-3 rounded-sm mt-0.5" style={{ backgroundColor: '#E25752' }} />
                         <span>Red = Logged in today</span>
                       </li>
-                      <li className="flex items-start gap-2">
-                        <div className="w-3 h-3 rounded-sm mt-0.5" style={{ backgroundColor: '#FCF4F1', border: '1px solid #E5E7EB' }} />
-                        <span>Light = No login</span>
-                      </li>
+                      
                       <li className="flex items-start gap-2">
                         <div className="w-3 h-3 rounded-sm mt-0.5" style={{ backgroundColor: '#EEEEEE', border: '1px solid #D1D5DB' }} />
-                        <span>Gray = Future date</span>
+                        <span>Gray = No login</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="mt-0.5">•</span>
