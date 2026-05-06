@@ -198,6 +198,6 @@ Achievement: Top 5 Finalist
 
 ## 👥 Team
 
-- Suriya  
 - Sai Prashanth M  
 - Sree Anirudh Alwar
+- Suriya  
