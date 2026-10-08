@@ -34,6 +34,14 @@ and, for conversations, against the live Firestore project (read-only document c
 
 ### Live Firestore inventory (read-only, counts only)
 
+> **Project mismatch found during the audit.** `server/.env` pointed at Firebase project
+> `yudle-ai`, while `client/.env` (Auth + client Firestore) uses `athena-abafd`.
+> ID tokens from one project cannot be verified by the other, so the API returns 401
+> until both point to the same project. `athena-abafd` is the canonical Athena project.
+> The counts below were taken from **`yudle-ai`**. The `athena-abafd` inventory is in
+> section 4 once the server credentials are corrected. The migration design below
+> holds for either project.
+
 | Collection                                   | Documents |
 |----------------------------------------------|-----------|
 | `users`                                      | 17        |

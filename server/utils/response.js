@@ -13,7 +13,7 @@ const validationError = (res, message, fields = {}) =>
   res.status(422).json({ success: false, error: { code: 'VALIDATION_ERROR', message, fields } });
 
 const notFound = (res, message = 'Resource not found') =>
-  res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message } });
+  res.status(404).json({ success: false, error: { code: 'RESOURCE_NOT_FOUND', message } });
 
 const unauthorized = (res, message = 'Unauthorized') =>
   res.status(401).json({ success: false, error: { code: 'UNAUTHORIZED', message } });
