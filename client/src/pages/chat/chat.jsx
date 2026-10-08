@@ -900,7 +900,7 @@ Please execute the task as soon as you can - an artifact would be great if it ma
         };
       }
 
-      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'POST',
         headers: {
@@ -1005,6 +1005,12 @@ Please execute the task as soon as you can - an artifact would be great if it ma
       if (!conversationId) {
         conversationId = await createNewConversation(userId, message);
         setCurrentConversationId(conversationId);
+        
+        // Refresh conversations list to update sidebar immediately
+        getUserConversations(userId).then(conversations => {
+          setUserConversations(conversations);
+        }).catch(console.error);
+
         if (isMobile) {
           setShowSidebarOverlay(false);
           setIsSidebarVisible(false);
@@ -1048,7 +1054,7 @@ Please execute the task as soon as you can - an artifact would be great if it ma
         };
       }
 
-      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'POST',
         headers: {
@@ -1402,37 +1408,7 @@ Please execute the task as soon as you can - an artifact would be great if it ma
                               )}
                             </div>
 
-                            <div className="relative" ref={modelDropdownRef}>
-                              <button
-                                type="button"
-                                onClick={() => setShowModelDropdown(!showModelDropdown)}
-                                className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-[#E65C52] hover:bg-[#F5D9D1] rounded-lg transition-colors border border-[#E65C52]/20"
-                              >
-                                <span>{selectedModel}</span>
-                                <ChevronDown className="w-4 h-4" />
-                              </button>
-                              {showModelDropdown && (
-                                <div className="absolute bottom-full right-0 mb-2 bg-white rounded-lg shadow-xl py-1 z-20 border-2 border-[#E65C52]/20 min-w-[120px]">
-                                  {['GPT', 'Minerva', 'Gemini'].map((model) => (
-                                    <button
-                                      key={model}
-                                      type="button"
-                                      onClick={() => {
-                                        setSelectedModel(model);
-                                        setShowModelDropdown(false);
-                                      }}
-                                      className={`w-full text-left px-4 py-2 text-sm hover:bg-[#F5D9D1] transition-colors ${
-                                        selectedModel === model
-                                          ? 'text-[#E14C42] bg-[#F5D9D1]/50 font-medium'
-                                          : 'text-gray-700'
-                                      }`}
-                                    >
-                                      {model}
-                                    </button>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
+                            {/* Model Dropdown Removed */}
 
                             {renderInputButton()}
                           </div>
@@ -2040,37 +2016,7 @@ Please execute the task as soon as you can - an artifact would be great if it ma
                           <ToggleButtons onModeChange={setActiveMode} />
                         </div>
                         <div className="flex items-center gap-2">
-                          <div className="relative" ref={modelDropdownRef}>
-                            <button
-                              type="button"
-                              onClick={() => setShowModelDropdown(!showModelDropdown)}
-                              className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-[#E65C52] hover:bg-[#F5D9D1] rounded-lg transition-colors border border-[#E65C52]/20"
-                            >
-                              <span>{selectedModel}</span>
-                              <ChevronDown className="w-4 h-4" />
-                            </button>
-                            {showModelDropdown && (
-                              <div className="absolute bottom-full right-0 mb-2 bg-white rounded-lg shadow-xl py-1 z-20 border-2 border-[#E65C52]/20 min-w-[120px]">
-                                {['GPT', 'Minerva', 'Gemini'].map((model) => (
-                                  <button
-                                    key={model}
-                                    type="button"
-                                    onClick={() => {
-                                      setSelectedModel(model);
-                                      setShowModelDropdown(false);
-                                    }}
-                                    className={`w-full text-left px-4 py-2 text-sm hover:bg-[#F5D9D1] transition-colors ${
-                                      selectedModel === model
-                                        ? 'text-[#E14C42] bg-[#F5D9D1]/50 font-medium'
-                                        : 'text-gray-700'
-                                    }`}
-                                  >
-                                    {model}
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                          </div>
+                          {/* Model Dropdown Removed */}
 
                           {renderInputButton()}
                         </div>

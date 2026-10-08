@@ -1,16 +1,14 @@
 require('dotenv').config();
-const fetch = require('node-fetch'); // still here in case you use it elsewhere
 const express = require('express');
 const cors = require('cors');
-const { OpenAI } = require('openai');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
 const admin = require('firebase-admin');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const { VertexAI } = require('@google-cloud/vertexai');
 
 const app = express();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 5001;
 
 // === Enhanced Security Middleware ===
 app.use(helmet());
@@ -27,7 +25,6 @@ app.use(limiter);
 // === Firebase Admin SDK Initialization ===
 const initializeFirebase = () => {
   try {
-    // Handle Firebase private key formatting for different environments
     const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
 
     if (!privateKey) {
@@ -53,89 +50,50 @@ const initializeFirebase = () => {
 
 const firebaseApp = initializeFirebase();
 
+// === Configuration ===
+const config = {
+  geminiModel: process.env.GEMINI_MODEL || 'gemini-1.5-flash-001',
+  maxTokens: parseInt(process.env.MAX_TOKENS) || 1000,
+  temperature: parseFloat(process.env.TEMPERATURE) || 0.7,
+  systemPrompt: `
+You are Athena AI — an empathetic and reflective counseling assistant, running on the Gemini model.
+
+Your purpose is to help users understand and process their emotions, gain insight, and practice self-compassion. You respond with warmth, clarity, and gentle curiosity, using short paragraphs and simple language so the user never feels overwhelmed.
+  `.trim()
+};
+
 // === AI Service Initialization ===
 const initializeAIServices = () => {
   const services = {
-    openai: null,
     gemini: null,
   };
 
-  // OpenAI Initialization
-  if (process.env.OPENAI_API_KEY) {
-    services.openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-    console.log('✅ OpenAI initialized');
-  } else {
-    console.warn('⚠️ OPENAI_API_KEY not found');
-  }
-
-  // Gemini Initialization
-  if (process.env.GEMINI_API_KEY) {
+  if (process.env.VERTEX_PROJECT_ID && process.env.VERTEX_LOCATION) {
     try {
-      services.gemini = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-      console.log('✅ Gemini AI initialized');
+      const vertex_ai = new VertexAI({
+        project: process.env.VERTEX_PROJECT_ID,
+        location: process.env.VERTEX_LOCATION
+      });
+
+      services.gemini = vertex_ai.preview.getGenerativeModel({
+        model: config.geminiModel,
+        generationConfig: {
+          maxOutputTokens: config.maxTokens,
+          temperature: config.temperature,
+        },
+      });
+      console.log('✅ Vertex AI initialized');
     } catch (error) {
-      console.error('❌ Gemini initialization error:', error);
+      console.error('❌ Vertex AI initialization error:', error);
     }
   } else {
-    console.warn('⚠️ GEMINI_API_KEY not found');
+    console.warn('⚠️ VERTEX_PROJECT_ID or VERTEX_LOCATION not found');
   }
 
   return services;
 };
 
 const aiServices = initializeAIServices();
-
-// === Configuration ===
-// Now Minerva is just another OpenAI model (no separate server)
-const config = {
-  models: {
-    openai: process.env.OPENAI_MODEL || 'gpt-4.1-mini',
-    gemini: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
-    minerva:
-      process.env.MINERVA_OPENAI_MODEL ||
-      process.env.OPENAI_MODEL ||
-      'gpt-4.1-mini',
-  },
-  maxTokens: parseInt(process.env.MAX_TOKENS) || 1000,
-  temperature: parseFloat(process.env.TEMPERATURE) || 0.7,
-
-  systemPrompts: {
-    openai: `
-You are Athena AI — an empathetic and supportive therapy and counseling assistant, running on a ChatGPT-based model.
-
-Your purpose is to help users with emotional processing, reflection, mental health awareness, and personal growth through calm, human-like conversation.
-
-You are not a licensed therapist and not a replacement for professional or emergency care. You are a warm, nonjudgmental companion who listens, validates, and gently guides.
-    `.trim(),
-
-    gemini: `
-You are Athena AI — an empathetic and reflective counseling assistant, running on the Gemini model.
-
-Your purpose is to help users understand and process their emotions, gain insight, and practice self-compassion. You respond with warmth, clarity, and gentle curiosity, using short paragraphs and simple language so the user never feels overwhelmed.
-    `.trim(),
-
-    minerva: `
-You are Athena AI — using the flagship Minerva model of AthenaAI.
-
-You are the highest-capability version of Athena AI, combining deep reasoning with high emotional intelligence. Your purpose is to help users process difficult emotions, understand themselves more clearly, and grow in a kind, grounded way.
-
-You are NOT a licensed therapist and NOT a replacement for professional or emergency care. You are a skilled, emotionally safe companion.
-
-Core style:
-- Validate feelings before giving advice.
-- Use short, digestible paragraphs.
-- Ask gentle, reflective questions (not interrogations).
-- Offer choices: e.g., “Would you like advice, a grounding exercise, or just space to talk?”
-- Prioritize emotional safety and kindness over cleverness.
-
-You may draw on CBT, DBT, ACT, mindfulness, journaling, and self-compassion ideas, but always explain them simply and apply them gently.
-
-If a user mentions self-harm, suicidal thoughts, or harming others, respond with calm empathy, clearly state your limits, and encourage them to contact a trusted person, mental health professional, crisis hotline, or emergency services.
-
-You are Athena AI using the flagship Minerva model. Respond with empathy, clarity, and deep but gentle insight.
-    `.trim(),
-  },
-};
 
 // === Middleware ===
 app.use(express.json({ limit: '10kb' }));
@@ -144,7 +102,7 @@ app.use(
     origin:
       process.env.NODE_ENV === 'production'
         ? process.env.ALLOWED_ORIGINS?.split(',') || []
-        : ['http://localhost:5173', 'http://127.0.0.1:5173'],
+        : [/^http:\/\/localhost:\d+$/, /^http:\/\/127\.0\.0\.1:\d+$/],
     methods: ['GET', 'POST', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
@@ -158,7 +116,6 @@ app.post('/api/auth/google', async (req, res) => {
     const { token } = req.body;
     if (!token) return res.status(400).json({ error: 'No token provided' });
 
-    // Development bypass
     if (!firebaseApp && process.env.NODE_ENV !== 'production') {
       console.warn('⚠️ Firebase not initialized. Dev mode bypass.');
       return res.status(200).json({
@@ -199,98 +156,58 @@ app.post('/api/auth/google', async (req, res) => {
 // === Unified Chat Endpoint ===
 app.post('/api/chat', async (req, res) => {
   try {
-    const { message, history = [], model = 'openai' } = req.body;
+    const { message, history = [] } = req.body;
 
     if (!message || typeof message !== 'string') {
       return res.status(400).json({ error: 'Invalid message format' });
     }
 
-    console.log(
-      `📨 Chat request - Model: ${model}, Message: ${message.substring(
-        0,
-        50
-      )}...`
-    );
+    console.log(`📨 Chat request - Message: ${message.substring(0, 50)}...`);
 
-    // === Gemini handling (unchanged) ===
-    if (model === 'gemini') {
-      if (!aiServices.gemini) {
-        return res
-          .status(503)
-          .json({ error: 'Gemini service is not configured' });
-      }
-
-      try {
-        const gModel = aiServices.gemini.getGenerativeModel({
-          model: config.models.gemini,
-          generationConfig: {
-            temperature: config.temperature,
-            maxOutputTokens: config.maxTokens,
-          },
-        });
-
-        const conversationHistory = Array.isArray(history)
-          ? history
-              .filter((msg) => msg && msg.role && msg.content)
-              .map(
-                (msg) =>
-                  `${msg.role === 'user' ? 'Human' : 'Assistant'}: ${
-                    msg.content
-                  }`
-              )
-              .join('\n\n')
-          : '';
-
-        // You can prepend the Gemini system prompt to the text prompt if you want:
-        const basePrompt = config.systemPrompts.gemini;
-
-        const prompt = conversationHistory
-          ? `${basePrompt}\n\n${conversationHistory}\n\nHuman: ${message}\n\nAssistant:`
-          : `${basePrompt}\n\nHuman: ${message}\n\nAssistant:`;
-
-        const result = await gModel.generateContent(prompt);
-        const response = await result.response;
-
-        if (!response) {
-          throw new Error('Empty response from Gemini');
-        }
-
-        const text = response.text();
-        return res.json({
-          response: text,
-          modelUsed: config.models.gemini,
-        });
-      } catch (error) {
-        console.error('Gemini error:', error);
-        return res.status(500).json({
-          error: 'Gemini service error',
-          details:
-            process.env.NODE_ENV === 'development' ? error.message : undefined,
-        });
-      }
+    if (!aiServices.gemini) {
+      return res.status(503).json({ error: 'Gemini (Vertex AI) service is not configured' });
     }
 
+    try {
+      const conversationHistory = Array.isArray(history)
+        ? history
+          .filter((msg) => msg && msg.role && msg.content)
+          .map(
+            (msg) =>
+              `${msg.role === 'user' ? 'Human' : 'Assistant'}: ${msg.content}`
+          )
+          .join('\n\n')
+        : '';
 
+      const basePrompt = config.systemPrompt;
+      const prompt = conversationHistory
+        ? `${basePrompt}\n\n${conversationHistory}\n\nHuman: ${message}\n\nAssistant:`
+        : `${basePrompt}\n\nHuman: ${message}\n\nAssistant:`;
 
-    let logicalModelName;
-    if (model === 'minerva') {
-      logicalModelName = 'minerva';
-    } else {
-      logicalModelName = 'openai';
+      const reqObj = {
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      };
+
+      const result = await aiServices.gemini.generateContent(reqObj);
+      const response = await result.response;
+
+      if (!response || !response.candidates || response.candidates.length === 0) {
+        throw new Error('Empty response from Vertex AI Gemini');
+      }
+
+      const text = response.candidates[0].content.parts[0].text;
+
+      return res.json({
+        response: text,
+        modelUsed: 'gemini',
+      });
+    } catch (error) {
+      console.error('Gemini error:', error);
+      return res.status(500).json({
+        error: 'Gemini service error',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+      });
     }
-
-    const openaiModel =
-      logicalModelName === 'minerva'
-        ? config.models.minerva
-        : config.models.openai;
-
-    return handleOpenAIRequest(
-      message,
-      history,
-      res,
-      openaiModel,
-      logicalModelName
-    );
   } catch (error) {
     console.error('Chat endpoint error:', error);
     res.status(500).json({
@@ -300,121 +217,22 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
-
-// Helper function for OpenAI requests
-async function handleOpenAIRequest(
-  message,
-  history,
-  res,
-  model,
-  logicalModelName = 'openai'
-) {
-  if (!aiServices.openai) {
-    return res
-      .status(503)
-      .json({ error: 'OpenAI service is not configured' });
-  }
-
-  try {
-    // Pick system prompt for this logical model
-    let systemPrompt =
-      config.systemPrompts[logicalModelName] || config.systemPrompts.openai;
-
-    if (typeof systemPrompt !== 'string' || !systemPrompt.trim()) {
-      systemPrompt = undefined; // don't send invalid system message
-    }
-
-    // Sanitize history so no null / invalid content reaches OpenAI
-    const safeHistory = Array.isArray(history)
-      ? history
-          .filter(
-            (m) =>
-              m &&
-              ['user', 'assistant'].includes(m.role) &&
-              typeof m.content === 'string' &&
-              m.content.trim().length > 0
-          )
-          .map((m) => ({
-            role: m.role,
-            content: m.content,
-          }))
-      : [];
-
-    const messages = [];
-
-    if (systemPrompt) {
-      messages.push({ role: 'system', content: systemPrompt });
-    }
-
-    messages.push(...safeHistory);
-
-    messages.push({
-      role: 'user',
-      content: typeof message === 'string' ? message : String(message),
-    });
-
-    const response = await aiServices.openai.chat.completions.create({
-      model,
-      messages,
-      temperature: config.temperature,
-      max_tokens: config.maxTokens,
-    });
-
-    res.json({
-      response: response.choices[0]?.message?.content || 'No response generated',
-      modelUsed: logicalModelName,
-      actualModel: response.model,
-    });
-  } catch (error) {
-    console.error('OpenAI error:', error);
-    res.status(500).json({
-      error: 'OpenAI service error',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined,
-    });
-  }
-}
-
-
 // === Health Check Endpoint ===
 app.get('/api/health', async (req, res) => {
-  const healthStatus = {
+  res.json({
     status: 'operational',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
     services: {
       firebase: firebaseApp ? 'operational' : 'unavailable',
-      openai: aiServices.openai ? 'operational' : 'unavailable',
       gemini: aiServices.gemini ? 'operational' : 'unavailable',
-      minerva: {
-        status: aiServices.openai ? 'online' : 'offline',
-        backing: 'openai',
-        model: config.models.minerva,
-      },
     },
-    rateLimiting: {
-      enabled: true,
-      windowMs: '15 minutes',
-      maxRequests: 100,
-    },
-  };
-
-  res.json(healthStatus);
+  });
 });
 
-// === Minerva Status Endpoint ===
+// === Minerva Status Endpoint (Legacy Support) ===
 app.get('/api/minerva-status', async (req, res) => {
-  try {
-    res.json({
-      status: aiServices.openai ? 'online' : 'offline',
-      model: config.models.minerva,
-      backing: 'openai',
-    });
-  } catch (error) {
-    res.status(500).json({
-      status: 'error',
-      error: error.message,
-    });
-  }
+  res.json({ status: 'offline', model: 'none', backing: 'none' });
 });
 
 // === Error Handlers ===
@@ -433,8 +251,5 @@ app.listen(port, () => {
   console.log(`🚀 Server running on http://localhost:${port}`);
   console.log('🛡️ Security middleware enabled');
   console.log('🤖 Available AI Services:');
-  console.log(`- OpenAI (openai): ${aiServices.openai ? config.models.openai : 'Disabled'}`);
-  console.log(`- Minerva (OpenAI logical model): ${aiServices.openai ? config.models.minerva : 'Disabled'}`);
-  console.log(`- Gemini: ${aiServices.gemini ? config.models.gemini : 'Disabled'}`);
-  // console.log(`- Rate limiting: ${limiter.options.max} requests per ${limiter.options.windowMs/60000} minutes`);
+  console.log(`- Gemini (Vertex AI): ${aiServices.gemini ? config.geminiModel : 'Disabled'}`);
 });

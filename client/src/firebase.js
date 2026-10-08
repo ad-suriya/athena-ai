@@ -21,14 +21,14 @@ import {
 
 // Firebase config 
 const firebaseConfig = {
-    apiKey: "AIzaSyDGouIoX-YcnOu4MnqQuiqyHp8ME9-pn6w",
-    authDomain: "yudle-ai.firebaseapp.com",
-    projectId: "yudle-ai",
-    storageBucket: "yudle-ai.firebasestorage.app",
-    messagingSenderId: "804712731016",
-    appId: "1:804712731016:web:dc26665a95318cab582a3d",
-    measurementId: "G-M00TKEQ3MG"
-  };
+  apiKey: "AIzaSyAt3UZgwwiHrXQ8fhS0IFh2dfllYhfpv2w",
+  authDomain: "athena-abafd.firebaseapp.com",
+  projectId: "athena-abafd",
+  storageBucket: "athena-abafd.firebasestorage.app",
+  messagingSenderId: "91346159863",
+  appId: "1:91346159863:web:022cf4ff18038c76b2abf2",
+  measurementId: "G-5YNQBZPD91"
+};
   
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
