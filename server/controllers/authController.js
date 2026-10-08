@@ -2,9 +2,10 @@
 
 const { admin, firebaseApp } = require('../config/firebase');
 const env = require('../config/env');
+const userService = require('../services/user.service');
 
 // POST /api/auth/google
-// Verifies a Firebase ID token and returns the user record.
+// Verifies a Firebase ID token, creates/updates users/{uid}, and returns the user record.
 // Response format kept as-is since frontend depends on it.
 const googleAuth = async (req, res) => {
   const { token } = req.body;
@@ -27,6 +28,13 @@ const googleAuth = async (req, res) => {
   try {
     const decodedToken = await admin.auth().verifyIdToken(token);
     const userRecord = await admin.auth().getUser(decodedToken.uid);
+
+    try {
+      await userService.upsertUser(userRecord);
+    } catch (err) {
+      console.error('User profile upsert failed:', err);
+      return res.status(500).json({ error: 'Could not save user profile' });
+    }
 
     return res.status(200).json({
       message: 'Authenticated',

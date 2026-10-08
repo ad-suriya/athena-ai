@@ -4,13 +4,9 @@ import './login.css';
 import { 
   auth, 
   provider, 
-  signInWithPopup, 
-  db, 
-  doc, 
-  setDoc,
-  getDoc,
-  updateDoc
+  signInWithPopup
 } from '../../firebase.js';
+import { syncUserProfile } from '../../services/authService';
 import logoLight from '../../assets/logo-01.png';
 import aiLogo from '../../assets/logo-07.png';
 import budhaImage from '../../assets/budha.png'; // Import the budha.png image
@@ -37,22 +33,11 @@ const Login = ({ setIsAuthenticated }) => {
         throw new Error('Authentication failed');
       }
 
-      const userRef = doc(db, "users", user.uid);
-      const userSnapshot = await getDoc(userRef);
-
-      if (!userSnapshot.exists()) {
-        const userData = {
-          uid: user.uid,
-          name: user.displayName || "Anonymous",
-          email: user.email || "no-email",
-          photoURL: user.photoURL || "",
-          lastLogin: new Date(),
-          createdAt: new Date()
-        };
-        
-        await setDoc(userRef, userData);
-      } else {
-        await updateDoc(userRef, { lastLogin: new Date() });
+      // Creates/updates users/{uid} on the server. Not fatal: sign-in has already succeeded.
+      try {
+        await syncUserProfile();
+      } catch (profileError) {
+        console.error('User profile sync failed:', profileError);
       }
 
       localStorage.setItem('isLoggedIn', 'true');
