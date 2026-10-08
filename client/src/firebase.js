@@ -21,13 +21,13 @@ import {
 
 // Firebase config 
 const firebaseConfig = {
-  apiKey: "AIzaSyAt3UZgwwiHrXQ8fhS0IFh2dfllYhfpv2w",
-  authDomain: "athena-abafd.firebaseapp.com",
-  projectId: "athena-abafd",
-  storageBucket: "athena-abafd.firebasestorage.app",
-  messagingSenderId: "91346159863",
-  appId: "1:91346159863:web:022cf4ff18038c76b2abf2",
-  measurementId: "G-5YNQBZPD91"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
   
 const app = initializeApp(firebaseConfig);

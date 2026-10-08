@@ -30,3 +30,5 @@ client/.env
 !package-lock.json
 !client/package.json
 !client/package-lock.json
+!server/package.json
+!server/package-lock.json

@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import SideBar from '../../components/SideBar';
 import NoteEditor from './NoteEditor';
@@ -6,8 +7,26 @@ import NoteEditor from './NoteEditor';
 const Notes = ({ isDarkMode, onThemeToggle }) => {
   const [notes, setNotes] = useState([]);
   const [selectedNote, setSelectedNote] = useState(null);
-  const [isEditing, setIsEditing] = useState(true); // Set to true to show editor by default
+  const [, setIsEditing] = useState(true); // isEditing value was unused, but setter is kept if needed later
   const navigate = useNavigate();
+
+  const createNewNote = useCallback(() => {
+    const newNote = {
+      id: Date.now(),
+      title: 'New journal',
+      content: '',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+        
+    setNotes(prevNotes => {
+      const updatedNotes = [...prevNotes, newNote];
+      localStorage.setItem('notes', JSON.stringify(updatedNotes));
+      return updatedNotes;
+    });
+    setSelectedNote(newNote);
+    setIsEditing(true);
+  }, []);
 
   useEffect(() => {
     const savedNotes = JSON.parse(localStorage.getItem('notes')) || [];
@@ -21,23 +40,7 @@ const Notes = ({ isDarkMode, onThemeToggle }) => {
       setSelectedNote(savedNotes[0]);
       setIsEditing(true);
     }
-  }, []);
-
-  const createNewNote = () => {
-    const newNote = {
-      id: Date.now(),
-      title: 'New journal',
-      content: '',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-        
-    const updatedNotes = [...notes, newNote];
-    setNotes(updatedNotes);
-    localStorage.setItem('notes', JSON.stringify(updatedNotes));
-    setSelectedNote(newNote);
-    setIsEditing(true);
-  };
+  }, [createNewNote]); // Dependency array fixed
 
   const handleAutoSave = (updatedNote) => {
     const updatedNotes = notes.map(note => 
@@ -69,16 +72,13 @@ const Notes = ({ isDarkMode, onThemeToggle }) => {
     }
   };
 
-  const handleBackToHome = () => {
-    navigate('/chat');
-  };
+  // Unused handleBackToHome removed
 
   return (
     <div className={`flex h-screen ${isDarkMode ? 'dark' : ''}`}>
       <SideBar 
         isDarkMode={isDarkMode} 
         onThemeToggle={onThemeToggle}
-        // Hide notes list in sidebar by not passing userNotes
       />
       
       <div className="flex-1 flex flex-col">
@@ -103,6 +103,11 @@ const Notes = ({ isDarkMode, onThemeToggle }) => {
       </div>
     </div>
   );
+};
+
+Notes.propTypes = {
+  isDarkMode: PropTypes.bool.isRequired,
+  onThemeToggle: PropTypes.func.isRequired,
 };
 
 export default Notes;
