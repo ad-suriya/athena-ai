@@ -22,7 +22,7 @@ const chat = async (req, res) => {
     const status = err.status || 500;
     return res.status(status).json({
       error: err.message || 'Chat service error',
-      details: env.nodeEnv === 'development' ? err.stack : undefined,
+      details: env.nodeEnv === 'development' ? err.message : undefined,
     });
   }
 };
