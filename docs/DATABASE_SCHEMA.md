@@ -41,10 +41,12 @@ Do not embed tasks, notes, messages, or other collections inside the user docume
   lastMessage:  string,    // preview of most recent message
   messageCount: number,
   archived:     boolean,   // default false
+  legacyPath:   string,    // optional — set only on docs copied from users/{uid}/conversations/{id}
 }
 ```
 
-**Migration note:** current data is at `users/{uid}/conversations/{id}`. Migrate in Phase 9.
+**Migration:** legacy data at `users/{uid}/conversations/{id}` is copied (never moved) by
+`conversation.service.migrateLegacyConversations`. See `docs/DATA_MIGRATION.md`.
 
 ### Messages (subcollection)
 
@@ -58,12 +60,12 @@ Do not embed tasks, notes, messages, or other collections inside the user docume
   content:        string,
   createdAt:      timestamp,
   model:          string,    // e.g. "gemini-1.5-flash-001"
-  metadata:       map,       // optional
+  metadata:       map,       // optional — e.g. { isSearch, isDeepResearch, isCriticalAnalysis, legacyIndex }
 }
 ```
 
-**Migration note:** current messages are stored as an array field on the conversation document.
-Do not use an array. Migrate in Phase 9.
+Messages copied from a legacy `messages[]` array use IDs `legacy-00000`, `legacy-00001`, …
+and keep their original order via strictly increasing `createdAt`.
 
 ---
 
@@ -82,13 +84,12 @@ Do not use an array. Migrate in Phase 9.
   dueDate:     timestamp,
   completedAt: timestamp,
   category:    string,
-  tags:        string[],
+  tags:        string[],    // Task.jsx "Wellness Category" chips
+  icon:        string,      // lucide icon name chosen in Task.jsx, e.g. "Heart"
   createdAt:   timestamp,
   updatedAt:   timestamp,
 }
 ```
-
-**Migration note:** currently in localStorage. Migrate in Phase 5.
 
 ---
 
@@ -110,7 +111,7 @@ Do not use an array. Migrate in Phase 9.
 }
 ```
 
-**Migration note:** currently in localStorage. Migrate in Phase 6.
+Existing browser `localStorage['notes']` is not uploaded automatically (see `docs/DATA_MIGRATION.md`).
 
 ---
 
