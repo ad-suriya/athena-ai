@@ -38,8 +38,8 @@ and, for conversations, against the live Firestore project (read-only document c
 > `yudle-ai`, while `client/.env` (Auth + client Firestore) uses `athena-abafd`.
 > ID tokens from one project cannot be verified by the other, so the API returns 401
 > until both point to the same project. `athena-abafd` is the canonical Athena project.
-> The counts below were taken from **`yudle-ai`**. The `athena-abafd` inventory is in
-> section 4 once the server credentials are corrected. The migration design below
+> The counts below were taken from **`yudle-ai`**. The `athena-abafd` inventory has
+> **not** been taken yet; see section 4 (open blockers). The migration design below
 > holds for either project.
 
 | Collection                                   | Documents |
@@ -146,3 +146,45 @@ There is no `firestore.rules` in the repository. The old client wrote to
 `users/{uid}/conversations` directly, so the deployed rules must allow client
 writes there. Once the new frontend is deployed, tighten the rules to deny all
 client reads and writes to application data (the Admin SDK bypasses rules).
+
+---
+
+## 4. Status (2026-10-09)
+
+### Done (one commit per step)
+
+| Commit message                               | What changed |
+|----------------------------------------------|--------------|
+| `refactor: add task api layer` / `migrate tasks to backend` | `/api/tasks`, `useTasks`, demo tasks removed |
+| `refactor: add notes api layer` / `migrate notes to firestore` | `/api/notes`, `useNotes` |
+| `refactor: add calendar api layer` / `migrate calendar to backend` | `/api/calendar/events`, `useCalendarEvents`, demo events removed |
+| `refactor: migrate journal data`             | `/api/journal`, `journalService` (no UI) |
+| `refactor: migrate wellness data`            | `/api/wellness`, `wellnessService` (no UI) |
+| `refactor: establish conversation api`       | `/api/conversations` + messages, legacy copy, `ai.service.js` |
+| `refactor: migrate messages to backend`      | chat hooks use `conversationService`; sidebar rename/delete wired up |
+| `refactor: remove migrated firestore access` | `firebase.js` is Auth-only; user upsert moved to backend; `/api/chat` requires auth |
+| `refactor: replace static dashboard data`    | Profile page: real name/email/join date/last active/chat count via `GET /api/users/me` |
+
+`client/src` no longer imports `firebase/firestore`.
+
+### Hardcoded data: what stays
+
+- **There is no dashboard page.** The only hardcoded user statistics were on the
+  Profile page (now real).
+- **Settings → Engagement heatmap** is still generated in the component
+  (today = 1 login, other days = 0). Per-day login history is not recorded anywhere,
+  so it cannot be made real without new data collection. That is new feature work.
+- The Profile page subtitle "Administrator" is static text. There are no roles.
+
+### Open blockers for end-to-end verification
+
+1. **Firebase project mismatch.** `server/.env` uses `yudle-ai` and the client uses
+   `athena-abafd`. Until the server uses `athena-abafd` Admin credentials, every
+   authenticated API call returns 401. Google sign-in still works because profile sync
+   at login is non-blocking.
+2. **Vertex AI not configured.** `VERTEX_PROJECT_ID` / `VERTEX_LOCATION` are missing
+   from `server/.env`, so message sends return `503 AI_UNAVAILABLE`.
+   The user message is still saved.
+3. After (1), run `node server/scripts/migrate-conversations.js` (dry run) against
+   `athena-abafd` to inventory legacy conversations before anyone uses the new client.
+

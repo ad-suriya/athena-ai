@@ -10,7 +10,9 @@ Last verified: 2026-10-09
 - Google Sign-In via Firebase Auth
 - Chat via Vertex AI Gemini (`/api/chat`)
 - Firebase Auth token verification (`/api/auth/google`)
-- Conversation history saves to Firestore (via client SDK — violation to fix)
+- All application data (tasks, notes, calendar, journal, wellness, conversations,
+  messages, user profile) goes React → service → Express → Firestore.
+  `client/src/firebase.js` is Firebase Auth only. See `docs/DATA_MIGRATION.md`.
 - Server has helmet, rate limiting, morgan, CORS configured correctly
 
 ---
@@ -51,27 +53,13 @@ Do not suppress these with eslint-disable comments. Fix them.
 
 ### Direct Firestore access from the client
 
-`client/src/firebase.js` initialises Firestore and exports Firestore helpers.
-
-Files that use these helpers directly (instead of going through the API):
-
-- `App.jsx` — uses `auth` (OK), also sets `localStorage.setItem('isLoggedIn')`
-- `pages/chat/hooks/useChatManager.jsx` — reads/writes conversations via firebase.js
-- `pages/chat/hooks/useChatHandlers.jsx` — reads/writes conversations via firebase.js
-- `pages/login/login.jsx` — Firebase Auth (OK)
-- `pages/notes/notes.jsx` — may read from firebase.js
-- `components/KnowledgeModal.jsx` — uses Firestore helpers
-- `components/EnhancedControlButton.jsx` — uses Firestore helpers
-- `components/ReadAloudButton.jsx` — uses Firestore helpers
-- `components/CodeCompiler.jsx` — uses localStorage
-- `pages/CodeEditor/CodeEditor.jsx` — uses localStorage
+Resolved in Phase 2. `client/src` no longer imports `firebase/firestore`.
 
 ### localStorage used for persistent data
 
 Should be Firestore (via API) instead:
 
 - `pages/TaskManager/OldTask.jsx` — all task data in localStorage
-- `pages/TaskManager/Task.jsx` — confirm if still uses localStorage
 - `pages/CodeEditor/CodeEditor.jsx` — code files in localStorage
 - `components/KnowledgeModal.jsx` — knowledge entries in localStorage
 
@@ -79,18 +67,10 @@ Acceptable localStorage uses (UI preferences, not data):
 - `ReadAloudButton.jsx` — preferred voice
 - `App.jsx` — `isLoggedIn` flag (to remove; use auth state directly)
 
-### Messages stored as array in conversation document
+### Conversations / messages
 
-Current: `conversations/{conversationId}.messages = [{...}, {...}]`
-
-This does not scale and prevents proper pagination.
-
-Target: `conversations/{conversationId}/messages/{messageId}` subcollection.
-
-### Client timestamps on messages
-
-`firebase.js` uses `new Date().toISOString()` for message timestamps.
-Should use `serverTimestamp()` via Firebase Admin on the backend.
+Resolved in Phase 2: `conversations/{id}` + `messages` subcollection with server timestamps.
+Legacy `users/{uid}/conversations` docs are copied, not modified (see `docs/DATA_MIGRATION.md`).
 
 ---
 
@@ -98,9 +78,10 @@ Should use `serverTimestamp()` via Firebase Admin on the backend.
 
 - Node/Express server is active and deployed
 - Vertex AI Gemini is active (`gemini-1.5-flash-001`)
-- Only two functional routes: `/api/chat` and `/api/auth/google`
-- No CRUD routes exist yet for tasks, notes, calendar, conversations
-- No middleware for auth on protected routes yet
+- CRUD routes: `/api/tasks`, `/api/notes`, `/api/calendar/events`, `/api/journal`,
+  `/api/wellness`, `/api/conversations` (+ `/:id/messages`), `/api/users/me`
+- All data routes use `requireAuth`; ownership is checked in services (404 if not owned)
+- `/api/chat` is legacy (no client caller) and requires auth
 - Python Minerva exists at `minerva/` but is DISABLED — do not delete
 
 ---
