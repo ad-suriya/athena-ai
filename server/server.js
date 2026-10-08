@@ -44,6 +44,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/chat', aiLimiter, require('./routes/chat'));
 app.use('/api/tasks', require('./routes/tasks.routes'));
 app.use('/api/notes', require('./routes/notes.routes'));
+app.use('/api/calendar', require('./routes/calendar.routes'));
 
 // === Health check ===
 app.get('/api/health', (req, res) => {
