@@ -59,56 +59,10 @@ Do not delete. Do not integrate into the current refactor.
 
 ---
 
-## Backend Folder Structure (Target)
+## Folder Structure
 
-```
-server/
-├── server.js          entry point, middleware wiring
-├── routes/
-│   ├── auth.js
-│   ├── chat.js
-│   ├── conversations.js
-│   ├── tasks.js
-│   ├── notes.js
-│   ├── calendar.js
-│   └── ...
-├── controllers/
-│   ├── authController.js
-│   ├── chatController.js
-│   ├── conversationsController.js
-│   └── ...
-├── services/
-│   ├── firebaseService.js   Firebase Admin init + Firestore helpers
-│   ├── chatService.js       Vertex AI / Gemini
-│   ├── conversationsService.js
-│   └── ...
-└── middleware/
-    └── authMiddleware.js    verify Firebase ID token on protected routes
-```
-
----
-
-## Frontend Folder Structure (Target)
-
-```
-client/src/
-├── pages/
-│   ├── chat/
-│   ├── notes/
-│   ├── TaskManager/
-│   ├── calendar/
-│   └── ...
-├── components/          shared UI components
-├── hooks/               shared hooks
-├── services/            API call layer (replaces direct firebase.js usage)
-│   ├── api.js           base fetch/axios wrapper
-│   ├── conversationsService.js
-│   ├── tasksService.js
-│   └── ...
-├── utils/
-├── firebase.js          auth only (do not add Firestore calls here)
-└── App.jsx
-```
+Implemented. See `docs/ARCHITECTURE.md` → "Backend Folder Structure" and
+"Frontend Folder Structure" for the current layout and placement rules.
 
 ---
 

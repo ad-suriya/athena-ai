@@ -45,44 +45,26 @@ Node.js + Express
 
 ```
 server/
-├── server.js             Express app wiring — middleware, routes, startup
-├── package.json
-│
-├── config/
-│   ├── env.js            All process.env reads, config object exported
-│   ├── firebase.js       Firebase Admin + Firestore init (singleton)
-│   └── vertex.js         Vertex AI init (singleton)
-│
-├── middleware/
-│   ├── auth.js           requireAuth — verifies Firebase ID token → req.user
-│   ├── errorHandler.js   Express error handler (last middleware)
-│   └── validate.js       (future) request body validation helper
-│
-├── routes/               Thin — just mount controllers
-│   ├── auth.js
-│   ├── chat.js
-│   ├── conversations.js  (Phase 9)
-│   ├── tasks.js          (Phase 5)
-│   ├── notes.js          (Phase 6)
-│   ├── calendar.js       (Phase 7)
-│   ├── journal.js        (Phase 8)
-│   └── wellness.js       (Phase 8)
-│
-├── controllers/          Coordinate request/response, call services
-│   ├── authController.js
-│   ├── chatController.js
-│   └── ...
-│
-├── services/             Business logic + data operations
-│   ├── chatService.js    Vertex AI chat
-│   ├── userService.js    (future)
-│   ├── conversationsService.js (Phase 9)
-│   ├── tasksService.js   (Phase 5)
-│   └── ...
-│
-└── utils/
-    └── response.js       Standard JSON response helpers
+├── package.json            start: node src/server.js
+├── scripts/                One-off maintenance scripts (not part of the app)
+│   └── migrate-conversations.js
+└── src/
+    ├── server.js           Entry point: load .env, start listening
+    ├── app.js              Express app: security, parsing, CORS, /api routes, 404, errors
+    │
+    ├── config/             env.js (all process.env reads), firebase.js, vertex.js (singletons)
+    ├── middleware/         auth.middleware.js (requireAuth → req.user),
+    │                       error.middleware.js, rateLimit.middleware.js
+    ├── routes/             Thin: middleware + controller wiring only
+    │   ├── index.js        Mounts every router under /api
+    │   ├── health.routes.js  /health, /minerva-status
+    │   └── <feature>.routes.js
+    ├── controllers/        <feature>.controller.js: validate input, call service, send response
+    ├── services/           <feature>.service.js: business logic + Firestore; ai.service.js: Vertex AI
+    └── utils/              errors, response, validate, asyncHandler, firestore (shared Firestore helpers)
 ```
+
+Naming: `*.routes.js`, `*.controller.js`, `*.service.js`, `*.middleware.js`.
 
 ---
 
@@ -90,29 +72,26 @@ server/
 
 ```
 client/src/
-├── pages/               Page-level components
-│   ├── chat/
-│   ├── notes/
-│   ├── TaskManager/
-│   ├── calendar/
-│   └── ...
-│
-├── components/          Shared UI components
-├── hooks/               Shared hooks
-│
-├── services/            HTTP API clients — NO Firestore calls here
-│   ├── api.js           Base fetch wrapper (injects auth token)
-│   ├── conversationsService.js  (Phase 9)
-│   ├── tasksService.js          (Phase 5)
-│   ├── notesService.js          (Phase 6)
-│   ├── calendarService.js       (Phase 7)
-│   ├── journalService.js        (Phase 8)
-│   └── wellnessService.js       (Phase 8)
-│
-├── utils/
-├── firebase.js          Firebase Auth only (no Firestore imports)
-└── App.jsx
+├── main.jsx, App.jsx       Bootstrapping and routes
+├── config/firebase.js      Firebase Auth only (no Firestore)
+├── services/               HTTP API clients (api.js + one per resource). The only code that calls the backend.
+├── features/               One folder per feature; feature code stays inside it
+│   ├── conversations/      Chat.jsx + components/ hooks/ utils/ data/
+│   ├── tasks/              Task.jsx + hooks/
+│   ├── notes/              Notes.jsx, NoteEditor.jsx + components/ hooks/
+│   ├── calendar/           Calendar.jsx + components/ hooks/ utils/
+│   └── mindmap/            MindMapInterface.jsx
+├── pages/                  Standalone pages that are not a feature:
+│                           login/, profile/, settings/, code-editor/, feedback/
+├── components/             UI shared by more than one feature (sidebar/; ui/ for primitives)
+├── hooks/                  Hooks shared by more than one feature
+├── styles/                 Global stylesheets (index.css stays at src/ root)
+└── assets/
 ```
+
+Rules: a component used by one feature lives in that feature. Move it to `components/`
+only when a second feature needs it. Folders are lowercase/kebab-case, and component
+files are PascalCase. Unused legacy code lives in the repository-level `archive/`.
 
 ---
 
