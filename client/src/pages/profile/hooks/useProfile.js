@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { auth } from '../../../firebase.js';
+import { auth } from '../../../config/firebase.js';
 import { getMyProfile } from '../../../services/userService';
 
 const formatMonthYear = (iso) =>

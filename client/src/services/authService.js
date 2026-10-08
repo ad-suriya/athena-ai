@@ -1,5 +1,5 @@
 // Backend auth calls. Sign-in itself stays with Firebase Auth on the client.
-import { auth } from '../firebase.js';
+import { auth } from '../config/firebase.js';
 import { post } from './api';
 
 // Verifies the signed-in user's ID token on the server and creates/updates users/{uid}.

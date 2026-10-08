@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Login from './pages/login/login';
-import Chat from './pages/chat/chat';
-import Notes from './pages/notes/notes';
-import NoteEditor from './pages/notes/NoteEditor';
-import Calendar from './pages/Calendar/Calendar';
-import TaskManager from './pages/TaskManager/Task';
-import Profile from './pages/profile/profile.jsx';
-import Settings from './pages/settings/settings.jsx';
-import CodeEditor from "./pages/CodeEditor/CodeEditor.jsx"; // Fixed import path
+import Login from './pages/login/Login';
+import Chat from './features/conversations/Chat';
+import Notes from './features/notes/Notes';
+import NoteEditor from './features/notes/NoteEditor';
+import Calendar from './features/calendar/Calendar';
+import TaskManager from './features/tasks/Task';
+import Profile from './pages/profile/Profile.jsx';
+import Settings from './pages/settings/Settings.jsx';
+import CodeEditor from "./pages/code-editor/CodeEditor.jsx"; // Fixed import path
 import './App.css';
-import MindMap from './components/MindMapInterface.JSX';
-import YudleFeedbackForm from './components/YudleFeedbackForm.jsx';
-import { auth } from './firebase.js';
+import MindMap from './features/mindmap/MindMapInterface.jsx';
+import YudleFeedbackForm from './pages/feedback/YudleFeedbackForm.jsx';
+import { auth } from './config/firebase.js';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);

@@ -1,7 +1,7 @@
 // Base HTTP client for all API calls.
 // Components and hooks should import from feature-specific services (e.g. taskService.js),
 // not call this directly.
-import { auth } from '../firebase.js';
+import { auth } from '../config/firebase.js';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
 
