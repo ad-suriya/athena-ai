@@ -1,9 +1,11 @@
 import React from 'react';
 import { ArrowLeft, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useProfile } from './hooks/useProfile';
 
 const Profile = ({ onBack }) => {
   const navigate = useNavigate();
+  const { name, email, memberSince, lastActive, totalChats } = useProfile();
   return (
     <div className="flex-1 p-8">
       <button 
@@ -22,7 +24,7 @@ const Profile = ({ onBack }) => {
               <User className="w-10 h-10 text-gray-500" />
             </div>
             <div>
-              <h2 className="text-2xl font-semibold">Sai</h2>
+              <h2 className="text-2xl font-semibold">{name}</h2>
               <p className="text-gray-500">Administrator</p>
             </div>
           </div>
@@ -31,16 +33,16 @@ const Profile = ({ onBack }) => {
             <div>
               <h3 className="text-lg font-medium mb-2">Account Information</h3>
               <div className="space-y-2">
-                <p className="text-gray-700"><span className="font-medium">Email:</span> sai@example.com</p>
-                <p className="text-gray-700"><span className="font-medium">Member since:</span> January 2023</p>
+                <p className="text-gray-700"><span className="font-medium">Email:</span> {email}</p>
+                <p className="text-gray-700"><span className="font-medium">Member since:</span> {memberSince}</p>
               </div>
             </div>
             
             <div>
               <h3 className="text-lg font-medium mb-2">Activity</h3>
               <div className="space-y-2">
-                <p className="text-gray-700"><span className="font-medium">Last active:</span> 2 hours ago</p>
-                <p className="text-gray-700"><span className="font-medium">Total chats:</span> 142</p>
+                <p className="text-gray-700"><span className="font-medium">Last active:</span> {lastActive}</p>
+                <p className="text-gray-700"><span className="font-medium">Total chats:</span> {totalChats}</p>
               </div>
             </div>
           </div>

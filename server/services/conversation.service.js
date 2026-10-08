@@ -174,6 +174,13 @@ const getConversations = async (userId) => {
   return docs.sort(byTimestamp('updatedAt', 'desc')).map((d) => serializeDoc(d));
 };
 
+// Aggregation query: counted server-side by Firestore, documents are not read.
+const countConversations = async (userId) => {
+  await ensureLegacyMigrated(userId);
+  const snapshot = await requireDb().collection(COLLECTION).where('userId', '==', userId).count().get();
+  return snapshot.data().count;
+};
+
 const getConversation = async (userId, conversationId) => {
   const { snap } = await getOwnedConversation(userId, conversationId);
   return serializeDoc(snap);
@@ -337,6 +344,7 @@ const regenerateMessage = async (userId, conversationId, messageId) => {
 module.exports = {
   migrateLegacyConversations,
   getConversations,
+  countConversations,
   getConversation,
   createConversation,
   updateConversation,

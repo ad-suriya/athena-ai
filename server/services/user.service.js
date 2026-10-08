@@ -1,6 +1,7 @@
 'use strict';
 
-const { requireDb, serverTimestamp } = require('./firestore.helpers');
+const { requireDb, serverTimestamp, toIso } = require('./firestore.helpers');
+const conversationService = require('./conversation.service');
 
 const COLLECTION = 'users';
 
@@ -25,4 +26,24 @@ const upsertUser = async (userRecord) => {
   });
 };
 
-module.exports = { upsertUser };
+// Profile for the signed-in user. Falls back to token claims if users/{uid}
+// has not been written yet (e.g. profile sync failed at sign-in).
+const getProfile = async (token) => {
+  const [snap, conversations] = await Promise.all([
+    requireDb().collection(COLLECTION).doc(token.uid).get(),
+    conversationService.countConversations(token.uid),
+  ]);
+  const data = snap.exists ? snap.data() : {};
+
+  return {
+    uid: token.uid,
+    name: data.name || token.name || 'Anonymous',
+    email: data.email || token.email || '',
+    photoURL: data.photoURL || token.picture || '',
+    createdAt: toIso(data.createdAt),
+    lastLogin: toIso(data.lastLogin),
+    stats: { conversations },
+  };
+};
+
+module.exports = { upsertUser, getProfile };
