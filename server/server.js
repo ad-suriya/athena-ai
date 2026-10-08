@@ -47,6 +47,7 @@ app.use('/api/notes', require('./routes/notes.routes'));
 app.use('/api/calendar', require('./routes/calendar.routes'));
 app.use('/api/journal', require('./routes/journal.routes'));
 app.use('/api/wellness', require('./routes/wellness.routes'));
+app.use('/api/conversations', require('./routes/conversations.routes'));
 
 // === Health check ===
 app.get('/api/health', (req, res) => {
