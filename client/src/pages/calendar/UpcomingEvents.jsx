@@ -1,25 +1,25 @@
-import React, { useState } from 'react';
 import { Calendar, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useCalendarEvents } from './hooks/useCalendarEvents';
+
+const UPCOMING_DAYS = 3;
+
+// [start of today, start of today + UPCOMING_DAYS), local time
+const upcomingRange = () => {
+  const from = new Date();
+  from.setHours(0, 0, 0, 0);
+  const to = new Date(from);
+  to.setDate(to.getDate() + UPCOMING_DAYS);
+  return { from, to };
+};
 
 const UpcomingEvents = () => {
-  const [events, setEvents] = useState([]);
+  const { events } = useCalendarEvents(upcomingRange());
   const navigate = useNavigate();
 
   const handleNewEventClick = () => {
     // Redirect to /calendar route
     navigate('/calendar');
-  };
-
-  const addNewEvent = () => {
-    // This function remains for adding events locally (optional, can be removed if not needed)
-    const newEvent = {
-      id: Date.now(),
-      title: `New Event ${events.length + 1}`,
-      date: new Date().toLocaleDateString(),
-      time: '10:00 AM'
-    };
-    setEvents([...events, newEvent]);
   };
 
   return (

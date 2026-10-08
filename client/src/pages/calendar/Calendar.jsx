@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Bell } from 'lucide-react';
 import CalendarTopBar from './CalendarTopBar';
 import CalendarSidebar from './CalendarSidebar';
+import { useCalendarEvents } from './hooks/useCalendarEvents';
+import { toDateKey } from './utils/calendarDates';
 
 const Calendar = () => {
   // State management
@@ -12,57 +14,11 @@ const Calendar = () => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const [allEvents, setAllEvents] = useState([
-    {
-      id: 1,
-      title: 'Monday standup',
-      time: '9:00 AM',
-      date: new Date().toISOString().split('T')[0],
-      type: 'meeting',
-      color: 'blue',
-      description: 'Daily team standup meeting'
-    },
-    {
-      id: 2,
-      title: 'Coffee with Alina',
-      time: '11:30 AM',
-      date: new Date().toISOString().split('T')[0],
-      type: 'personal',
-      color: 'purple',
-      description: 'Discuss project collaboration'
-    },
-    {
-      id: 3,
-      title: 'Marketing site discussion',
-      time: '2:30 PM - 3:30 PM',
-      date: new Date().toISOString().split('T')[0],
-      type: 'work',
-      color: 'blue',
-      description: 'Review new marketing site designs'
-    },
-    {
-      id: 4,
-      title: 'Team lunch',
-      time: '12:00 PM',
-      date: new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0],
-      type: 'meeting',
-      color: 'green',
-      description: 'Monthly team lunch'
-    },
-    {
-      id: 5,
-      title: 'Client call',
-      time: '10:00 AM - 11:00 AM',
-      date: new Date(new Date().setDate(new Date().getDate() + 2)).toISOString().split('T')[0],
-      type: 'meeting',
-      color: 'orange',
-      description: 'Discuss project requirements'
-    }
-  ]);
+  const { events: allEvents, error, clearError, saveEvent } = useCalendarEvents();
 
   // Helper function
   const formatDate = (date) => {
-    return date.toISOString().split('T')[0];
+    return toDateKey(date);
   };
 
   // Responsive design
@@ -100,22 +56,9 @@ const Calendar = () => {
   };
 
   // Handle saving edited event
-  const handleSaveEvent = (updatedEvent) => {
-    console.log('Saving event:', updatedEvent);
-    if (selectedEvent) {
-      // Update existing event
-      setAllEvents(prevEvents =>
-        prevEvents.map(event =>
-          event.id === selectedEvent.id ? { ...event, ...updatedEvent } : event
-        )
-      );
-    } else {
-      // Add new event
-      setAllEvents(prevEvents => [
-        ...prevEvents,
-        { ...updatedEvent, id: Date.now() } // Use timestamp as ID for new events
-      ]);
-    }
+  const handleSaveEvent = async (updatedEvent) => {
+    const saved = await saveEvent(selectedEvent ? selectedEvent.id : null, updatedEvent);
+    if (!saved) return; // keep the form open so the user can fix and retry
     setIsEditMode(false);
     setSelectedEvent(null);
   };
@@ -504,6 +447,12 @@ const Calendar = () => {
           onEditClick={handleEditClick} // ADD THIS PROP
         />
         <div className="flex-1 p-4 md:p-6">
+          {error && (
+            <div className="mb-4 bg-red-50 border border-red-200 text-red-700 rounded-md px-3 py-2 text-sm flex items-center justify-between">
+              <span>{error}</span>
+              <button onClick={clearError} className="text-red-500 hover:text-red-700" title="Dismiss">✕</button>
+            </div>
+          )}
           {isMobile && (
             <div className="mb-4">
               <div className="flex space-x-1 p-1 rounded-lg bg-gray-100">

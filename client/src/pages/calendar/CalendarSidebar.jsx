@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { parseDateKey, parseFormDate } from './utils/calendarDates';
 import { ChevronLeft, ChevronRight, Search, Edit3, Eye, Plus, Clock, Users, Video, FileText, MapPin, Bell, ChevronUp, ChevronDown } from 'lucide-react';
 
 const CalendarSidebar = ({ currentDate, setCurrentDate, searchQuery, setSearchQuery, allEvents, isRightSidebar = false, isEditMode, setIsEditMode, selectedEvent, onSaveEvent, onEditClick, user }) => {
@@ -28,7 +29,7 @@ const CalendarSidebar = ({ currentDate, setCurrentDate, searchQuery, setSearchQu
         title: selectedEvent.title || '',
         startTime: selectedEvent.time?.split(' - ')[0] || '3:30 PM',
         endTime: selectedEvent.time?.split(' - ')[1] || '4:00 PM',
-        date: selectedEvent.date ? new Date(selectedEvent.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : currentDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
+        date: selectedEvent.date ? parseDateKey(selectedEvent.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : currentDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
         isAllDay: false,
         timeZone: 'Time zone',
         repeat: 'Repeat',
@@ -138,10 +139,12 @@ const CalendarSidebar = ({ currentDate, setCurrentDate, searchQuery, setSearchQu
       return;
     }
     try {
+      const date = parseFormDate(eventData.date, currentDate);
+      if (!date) throw new Error('Invalid date');
       const formattedEvent = {
         title: eventData.title,
         time: eventData.startTime + (eventData.endTime ? ` - ${eventData.endTime}` : ''),
-        date: new Date(eventData.date).toISOString().split('T')[0] || currentDate.toISOString().split('T')[0],
+        date,
         description: eventData.description,
         type: selectedEvent?.type || 'meeting',
         color: selectedEvent?.color || 'blue'
