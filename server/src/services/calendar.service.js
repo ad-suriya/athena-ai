@@ -7,7 +7,7 @@ const {
   getOwnedDoc,
   listOwnedDocs,
   byTimestamp,
-} = require('./firestore.helpers');
+} = require('../utils/firestore');
 const { validationFailed } = require('../utils/errors');
 
 const COLLECTION = 'calendarEvents';

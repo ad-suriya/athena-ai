@@ -1,7 +1,7 @@
 'use strict';
 
 const { admin, db } = require('../config/firebase');
-const { notFoundError, serviceUnavailable } = require('../utils/errors');
+const { notFoundError, serviceUnavailable } = require('./errors');
 
 const serverTimestamp = () => admin.firestore.FieldValue.serverTimestamp();
 

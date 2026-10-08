@@ -11,8 +11,8 @@
 // script is optional. See docs/DATA_MIGRATION.md.
 
 require('dotenv').config();
-const { db } = require('../config/firebase');
-const { migrateLegacyConversations } = require('../services/conversation.service');
+const { db } = require('../src/config/firebase');
+const { migrateLegacyConversations } = require('../src/services/conversation.service');
 
 const apply = process.argv.includes('--apply');
 

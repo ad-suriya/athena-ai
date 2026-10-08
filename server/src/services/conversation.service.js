@@ -10,7 +10,7 @@ const {
   listOwnedDocs,
   byTimestamp,
   DOC_ID_PATTERN,
-} = require('./firestore.helpers');
+} = require('../utils/firestore');
 const aiService = require('./ai.service');
 const { notFoundError, validationFailed } = require('../utils/errors');
 

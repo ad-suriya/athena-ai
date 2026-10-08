@@ -1,6 +1,6 @@
 'use strict';
 
-const { requireDb, serverTimestamp, toIso } = require('./firestore.helpers');
+const { requireDb, serverTimestamp, toIso } = require('../utils/firestore');
 const conversationService = require('./conversation.service');
 
 const COLLECTION = 'users';

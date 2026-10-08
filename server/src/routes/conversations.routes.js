@@ -1,8 +1,8 @@
 'use strict';
 
 const { Router } = require('express');
-const { requireAuth } = require('../middleware/auth');
-const { aiLimiter } = require('../middleware/rateLimit');
+const { requireAuth } = require('../middleware/auth.middleware');
+const { aiLimiter } = require('../middleware/rateLimit.middleware');
 const { asyncHandler } = require('../utils/asyncHandler');
 const conversations = require('../controllers/conversations.controller');
 

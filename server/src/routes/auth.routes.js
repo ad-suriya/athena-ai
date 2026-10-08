@@ -1,7 +1,7 @@
 'use strict';
 
 const { Router } = require('express');
-const { googleAuth } = require('../controllers/authController');
+const { googleAuth } = require('../controllers/auth.controller');
 
 const router = Router();
 

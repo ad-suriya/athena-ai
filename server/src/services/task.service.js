@@ -7,7 +7,7 @@ const {
   getOwnedDoc,
   listOwnedDocs,
   byTimestamp,
-} = require('./firestore.helpers');
+} = require('../utils/firestore');
 
 const COLLECTION = 'tasks';
 const TIMESTAMP_FIELDS = ['createdAt', 'updatedAt', 'dueDate', 'completedAt'];
