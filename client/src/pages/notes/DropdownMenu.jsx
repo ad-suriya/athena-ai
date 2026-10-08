@@ -154,6 +154,7 @@ const DropdownMenu = ({
   editor, 
   onNavigateBack, 
   onSave, 
+  onDelete,
   note, 
   onDictationStateChange,
   onToggleFullWidth,
@@ -454,7 +455,12 @@ const DropdownMenu = ({
   const handleCopyLink = () => { console.log('Copy link'); setIsOpen(false); };
   const handleDuplicate = () => { console.log('Duplicate note'); setIsOpen(false); };
   const handleMoveTo = () => { console.log('Move to'); setIsOpen(false); };
-  const handleMoveToTrash = () => { console.log('Move to trash'); setIsOpen(false); };
+  const handleMoveToTrash = () => {
+    setIsOpen(false);
+    if (onDelete && window.confirm('Are you sure you want to delete this note?')) {
+      onDelete();
+    }
+  };
   const handleCustomizePage = () => { console.log('Customize page'); setIsOpen(false); };
   const handleSuggestEdits = () => { console.log('Suggest edits'); setIsOpen(false); };
   const handleTranslate = () => { console.log('Translate'); setIsOpen(false); };

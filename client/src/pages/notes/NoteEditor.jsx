@@ -72,7 +72,7 @@ const RecordingButton = ({ isRecording, onClick }) => {
   );
 };
 
-const NoteEditor = ({ isDarkMode = false, onNavigateBack, initialNote, onSave }) => {
+const NoteEditor = ({ isDarkMode = false, onNavigateBack, initialNote, onSave, onDelete }) => {
   const [note, setNote] = useState(
     initialNote || {
       id: Date.now(),
@@ -316,6 +316,7 @@ const NoteEditor = ({ isDarkMode = false, onNavigateBack, initialNote, onSave })
             editor={editor}
             onNavigateBack={onNavigateBack}
             onSave={onSave}
+            onDelete={onDelete}
             note={note}
             onDictationStateChange={(dictating) => setIsDictating(dictating)}
             onToggleFullWidth={handleToggleFullWidth}
