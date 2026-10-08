@@ -7,64 +7,10 @@ import {
   Sprout, Droplets, Wind, Leaf, ArrowDown, ArrowUp
 } from 'lucide-react';
 import Sidebar from '../../components/SideBar';
+import { useTasks } from './hooks/useTasks';
 
 export default function WellnessTracker() {
-  const [tasks, setTasks] = useState([
-    {
-      id: 1,
-      icon: 'Brain',
-      title: "Morning gratitude journal",
-      status: "To Do",
-      category: ["Mindfulness / Meditation"],
-      notes: "Write down three things you're grateful for today.",
-      completed: false
-    },
-    {
-      id: 2,
-      icon: 'Activity',
-      title: "30-minute nature walk",
-      status: "In progress",
-      category: ["Fitness & Movement"],
-      notes: "Connect with nature and get some fresh air.",
-      completed: false
-    },
-    {
-      id: 3,
-      icon: 'Users',
-      title: "Call a close friend",
-      status: "In progress",
-      category: ["Social Care & Connection"],
-      notes: "Check in and have a meaningful conversation.",
-      completed: false
-    },
-    {
-      id: 4,
-      icon: 'Leaf',
-      title: "Evening meditation session",
-      status: "In progress",
-      category: ["Mindfulness / Meditation"],
-      notes: "10 minutes of guided meditation before bed.",
-      completed: false
-    },
-    {
-      id: 5,
-      icon: 'Heart',
-      title: "Prepare healthy meal",
-      status: "Done",
-      category: ["Self-Care Routines"],
-      notes: "Cook something nutritious that makes you feel good.",
-      completed: true
-    },
-    {
-      id: 6,
-      icon: 'Music',
-      title: "Listen to uplifting music",
-      status: "To Do",
-      category: ["Dopamine Activities"],
-      notes: "Create a mood-boosting playlist.",
-      completed: false
-    }
-  ]);
+  const { tasks, isLoading, error, clearError, createTask, updateTasks, deleteTasks } = useTasks();
 
   const [viewMode, setViewMode] = useState("All Activities");
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
@@ -259,17 +205,15 @@ export default function WellnessTracker() {
     }));
   };
 
-  const addTask = () => {
+  const addTask = async () => {
     if (!newTask.title.trim()) return;
     
-    const task = {
+    const created = await createTask({
       ...newTask,
-      id: Date.now(),
-      category: newTask.category.filter(cat => cat.trim() !== ''),
-      completed: newTask.status === 'Done'
-    };
-    
-    setTasks(prev => [...prev, task]);
+      category: newTask.category.filter(cat => cat.trim() !== '')
+    });
+    if (!created) return;
+
     resetNewTaskForm();
     setShowNewTaskForm(false);
     
@@ -287,32 +231,24 @@ export default function WellnessTracker() {
   };
 
   const updateTask = (id, updatedTask) => {
-    setTasks(prev => prev.map(task => 
-      task.id === id ? { 
-        ...task, 
-        ...updatedTask,
-        completed: updatedTask.status === 'Done'
-      } : task
-    ));
+    updateTasks([id], updatedTask);
     setEditingTask(null);
   };
 
   const deleteTask = (id) => {
     if (window.confirm('Are you sure you want to delete this wellness activity?')) {
-      setTasks(prev => prev.filter(task => task.id !== id));
+      deleteTasks([id]);
       setSelectedTasks(prev => prev.filter(taskId => taskId !== id));
     }
   };
 
-  const duplicateTask = (task) => {
-    const newTask = {
+  const duplicateTask = async (task) => {
+    const created = await createTask({
       ...task,
-      id: Date.now(),
       title: `${task.title} (Copy)`,
-      status: 'To Do',
-      completed: false
-    };
-    setTasks(prev => [...prev, newTask]);
+      status: 'To Do'
+    });
+    if (!created) return;
     
     setTimeout(() => scrollToTop(), 100);
   };
@@ -333,17 +269,13 @@ export default function WellnessTracker() {
   };
 
   const bulkUpdateStatus = (status) => {
-    setTasks(prev => prev.map(task => 
-      selectedTasks.includes(task.id) 
-        ? { ...task, status, completed: status === 'Done' }
-        : task
-    ));
+    updateTasks(selectedTasks, { status });
     setSelectedTasks([]);
   };
 
   const bulkDelete = () => {
     if (window.confirm(`Are you sure you want to delete ${selectedTasks.length} wellness activities?`)) {
-      setTasks(prev => prev.filter(task => !selectedTasks.includes(task.id)));
+      deleteTasks(selectedTasks);
       setSelectedTasks([]);
     }
   };
@@ -719,14 +651,12 @@ export default function WellnessTracker() {
       { id: 's8', title: "Plan a small treat for yourself", category: ["Dopamine Activities"], icon: 'Gift', notes: "Reward yourself for small victories" }
     ];
 
-    const addSuggestion = (suggestion) => {
-      const newTask = {
+    const addSuggestion = async (suggestion) => {
+      const created = await createTask({
         ...suggestion,
-        id: Date.now(),
-        status: 'To Do',
-        completed: false
-      };
-      setTasks(prev => [...prev, newTask]);
+        status: 'To Do'
+      });
+      if (!created) return;
       setAddedSuggestions(prev => [...prev, suggestion.id]);
       
       setTimeout(() => {
@@ -921,6 +851,15 @@ export default function WellnessTracker() {
             )}
           </div>
 
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 rounded-md px-3 py-2 mb-2 text-xs flex items-center justify-between">
+              <span>{error}</span>
+              <button onClick={clearError} className="p-0.5 hover:bg-red-100 rounded" title="Dismiss">
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          )}
+
           {/* Bulk Actions */}
           {selectedTasks.length > 0 && <BulkActions />}
 
@@ -1024,7 +963,11 @@ export default function WellnessTracker() {
                   />
                 ))}
 
-                {filteredAndSortedTasks.length === 0 && (
+                {isLoading && (
+                  <div className="px-3 py-8 text-center text-xs text-gray-500">Loading wellness activities...</div>
+                )}
+
+                {!isLoading && filteredAndSortedTasks.length === 0 && (
                   <div className="px-3 py-8 text-center text-gray-500">
                     <Heart className="w-8 h-8 mx-auto mb-2 text-gray-400" />
                     <h3 className="text-base font-medium mb-2">No wellness activities found</h3>

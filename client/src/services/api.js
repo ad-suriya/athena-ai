@@ -1,36 +1,56 @@
 // Base HTTP client for all API calls.
-// Components and hooks should import from feature-specific services (e.g. conversationsService.js),
+// Components and hooks should import from feature-specific services (e.g. taskService.js),
 // not call this directly.
+import { auth } from '../firebase.js';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
 
-const getIdToken = async (auth) => {
-  if (!auth?.currentUser) return null;
-  return auth.currentUser.getIdToken();
-};
+// Mirrors the backend error format: { success: false, error: { code, message, fields? } }
+export class ApiError extends Error {
+  constructor(status, code, message, fields) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.code = code;
+    this.fields = fields;
+  }
+}
 
-const request = async (method, path, body = null, auth = null) => {
-  const headers = { 'Content-Type': 'application/json', Accept: 'application/json' };
+const request = async (method, path, body) => {
+  const headers = { Accept: 'application/json' };
+  if (body !== undefined) headers['Content-Type'] = 'application/json';
 
-  if (auth) {
-    const token = await getIdToken(auth);
-    if (token) headers['Authorization'] = `Bearer ${token}`;
+  const token = await auth.currentUser?.getIdToken();
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  let res;
+  try {
+    res = await fetch(`${API_BASE_URL}${path}`, {
+      method,
+      headers,
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+  } catch {
+    throw new ApiError(0, 'NETWORK_ERROR', 'Could not reach the server. Check your connection.');
   }
 
-  const options = { method, headers };
-  if (body) options.body = JSON.stringify(body);
-
-  const res = await fetch(`${API_BASE_URL}${path}`, options);
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`${method} ${path} failed (${res.status}): ${text}`);
+  let payload = null;
+  try {
+    payload = await res.json();
+  } catch {
+    // Non-JSON body (e.g. proxy error page) — handled below.
   }
 
-  return res.json();
+  if (!res.ok || payload?.success === false) {
+    const err = payload?.error;
+    throw new ApiError(res.status, err?.code || 'HTTP_ERROR', err?.message || `Request failed (${res.status})`, err?.fields);
+  }
+
+  return payload?.data;
 };
 
-export const get = (path, auth) => request('GET', path, null, auth);
-export const post = (path, body, auth) => request('POST', path, body, auth);
-export const put = (path, body, auth) => request('PUT', path, body, auth);
-export const del = (path, auth) => request('DELETE', path, null, auth);
+export const get = (path) => request('GET', path);
+export const post = (path, body = {}) => request('POST', path, body);
+export const put = (path, body = {}) => request('PUT', path, body);
+export const patch = (path, body = {}) => request('PATCH', path, body);
+export const del = (path) => request('DELETE', path);
