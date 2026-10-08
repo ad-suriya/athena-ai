@@ -23,6 +23,9 @@ app.use(morgan(env.nodeEnv === 'development' ? 'dev' : 'combined'));
 app.use('/api', apiLimiter);
 
 // === Body parsing ===
+// Notes hold rich-text HTML (including inline images), so they get a larger limit.
+// It must be registered before the global parser, which then skips the parsed body.
+app.use('/api/notes', express.json({ limit: '1mb' }));
 app.use(express.json({ limit: '10kb' }));
 
 // === CORS ===
@@ -40,6 +43,7 @@ app.options('*', cors());
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/chat', aiLimiter, require('./routes/chat'));
 app.use('/api/tasks', require('./routes/tasks.routes'));
+app.use('/api/notes', require('./routes/notes.routes'));
 
 // === Health check ===
 app.get('/api/health', (req, res) => {
