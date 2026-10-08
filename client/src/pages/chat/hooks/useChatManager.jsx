@@ -1,17 +1,21 @@
 import { useState, useEffect } from 'react';
-import { collection, doc, getDoc, updateDoc, deleteDoc, query, where, getDocs, orderBy, setDoc, addDoc } from 'firebase/firestore';
-import { db } from '../../../firebase';
-import { 
-  getConversationMessages, 
-  createNewConversation, 
-  addMessageToConversation, 
-  getUserConversations
-} from '../../../firebase.js';
-import { 
-  callChatAPI,
+import * as conversationService from '../../../services/conversationService';
+import {
   extractUrls,
-  fetchLinkPreview 
+  fetchLinkPreview
 } from '../utils/ChatUtils.jsx';
+
+// API message → the shape the chat UI renders.
+const toUiMessage = (m) => ({
+  id: m.id,
+  role: m.role,
+  content: m.content,
+  timestamp: m.createdAt,
+  modelUsed: m.model,
+  isSearch: m.metadata?.isSearch === true,
+  isDeepResearch: m.metadata?.isDeepResearch === true,
+  isCriticalAnalysis: m.metadata?.isCriticalAnalysis === true,
+});
 
 export const useChatManager = (auth, selectedModel, isMobile, setShowSidebarOverlay, setIsSidebarVisible) => {
   const [messages, setMessages] = useState([]);
@@ -23,36 +27,46 @@ export const useChatManager = (auth, selectedModel, isMobile, setShowSidebarOver
   const [linkPreviews, setLinkPreviews] = useState({});
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
-        try {
-          const conversations = await getUserConversations(user.uid);
-          setUserConversations(conversations);
-        } catch (error) {
-          console.error('Error loading conversations:', error);
-        }
+        conversationService.getConversations()
+          .then(setUserConversations)
+          .catch((error) => console.error('Error loading conversations:', error));
       }
     });
 
     return () => unsubscribe();
   }, [auth]);
 
+  const refreshConversations = () =>
+    conversationService.getConversations()
+      .then(setUserConversations)
+      .catch((error) => console.error('Error loading conversations:', error));
+
+  // Re-reads messages from the server so the UI matches what was persisted.
+  const syncMessages = async (conversationId) => {
+    const msgs = (await conversationService.getMessages(conversationId)).map(toUiMessage);
+    setMessages(msgs);
+    setChatHistory(msgs);
+    return msgs;
+  };
+
+  const loadPreviews = async (text) => {
+    const previews = {};
+    for (const url of extractUrls(text)) {
+      previews[url] = await fetchLinkPreview(url);
+    }
+    setLinkPreviews((prev) => ({ ...prev, ...previews }));
+  };
+
   const loadConversation = async (conversationId) => {
     try {
       setMessages([]);
       setCurrentConversationId(null);
 
-      const userId = auth.currentUser?.uid;
-      if (!userId) throw new Error('User not authenticated');
+      if (!auth.currentUser) throw new Error('User not authenticated');
 
-      const convRef = doc(db, 'users', userId, 'conversations', conversationId);
-      const convSnap = await getDoc(convRef);
-      if (!convSnap.exists()) throw new Error('Conversation not found');
-
-      const msgs = await getConversationMessages(userId, conversationId);
-
-      setMessages(msgs);
-      setChatHistory(msgs);
+      await syncMessages(conversationId);
       setCurrentConversationId(conversationId);
       if (isMobile) {
         setShowSidebarOverlay(false);
@@ -77,31 +91,30 @@ export const useChatManager = (auth, selectedModel, isMobile, setShowSidebarOver
         return;
       }
 
+      const target = messages[index];
+      if (!currentConversationId || !target?.id) {
+        throw new Error('Conversation or message ID missing');
+      }
+
       const updatedMessages = [...messages];
-      updatedMessages[index].content = newContent;
+      updatedMessages[index] = { ...target, content: newContent };
       setMessages(updatedMessages);
       setEditingMessageId(null);
 
-      const userId = auth.currentUser?.uid;
-      if (!userId || !currentConversationId) {
-        throw new Error('User not authenticated or conversation ID missing');
-      }
+      await conversationService.editMessage(currentConversationId, target.id, newContent);
 
-      await updateDoc(doc(db, 'users', userId, 'conversations', currentConversationId), {
-        messages: updatedMessages,
-      });
-
-      if (updatedMessages[index].role === 'user' && index + 1 < updatedMessages.length && updatedMessages[index + 1].role === 'assistant') {
-        await handleRegenerate(index + 1);
+      if (target.role === 'user' && index + 1 < updatedMessages.length && updatedMessages[index + 1].role === 'assistant') {
+        await handleRegenerate(index + 1, updatedMessages);
       }
     } catch (error) {
-      console.error('Error updating message in Firebase:', error);
+      console.error('Error updating message:', error);
       setErrorMessage(`Failed to update message: ${error.message}`);
     }
   };
 
-  const handleRegenerate = async (index) => {
-    const currentMessages = [...messages];
+  // baseMessages lets handleSaveEdit pass the just-edited list (state may not have updated yet).
+  const handleRegenerate = async (index, baseMessages = messages) => {
+    const currentMessages = [...baseMessages];
     const userMessageIndex = index - 1;
 
     if (userMessageIndex < 0 || userMessageIndex >= currentMessages.length) {
@@ -117,15 +130,19 @@ export const useChatManager = (auth, selectedModel, isMobile, setShowSidebarOver
       return;
     }
 
+    const target = currentMessages[index];
+    if (!currentConversationId || !target?.id) {
+      setErrorMessage('Cannot regenerate: message has not been saved.');
+      return;
+    }
+
     const isSearch = userMessage.isSearch || false;
     const isDeepResearch = userMessage.isDeepResearch || false;
     const isCriticalAnalysis = userMessage.isCriticalAnalysis || false;
 
-    setMessages((prevMessages) => {
-      const updatedMessages = prevMessages
-        .slice(0, index)
-        .filter((msg) => msg.content !== 'Thinking...');
-      updatedMessages.push({
+    setMessages([
+      ...currentMessages.slice(0, index).filter((msg) => msg.content !== 'Thinking...'),
+      {
         role: 'assistant',
         content: 'Thinking...',
         timestamp: new Date().toISOString(),
@@ -133,49 +150,21 @@ export const useChatManager = (auth, selectedModel, isMobile, setShowSidebarOver
         isSearch,
         isDeepResearch,
         isCriticalAnalysis,
-      });
-      return updatedMessages;
-    });
+      },
+    ]);
     setIsLoading(false);
     setErrorMessage(null);
 
     try {
-      const userId = auth.currentUser?.uid;
-      if (!userId) {
-        throw new Error('User not authenticated');
-      }
+      const saved = await conversationService.regenerateMessage(currentConversationId, target.id);
+      const newAssistantMessage = toUiMessage(saved);
 
-      const modelParam = selectedModel.toLowerCase();
-      const history = currentMessages.slice(0, userMessageIndex + 1);
-      const flags = { isSearch, isDeepResearch, isCriticalAnalysis };
-      const data = await callChatAPI(userMessage.content, history, flags, modelParam);
+      await loadPreviews(newAssistantMessage.content);
 
-      const newAssistantMessage = {
-        role: 'assistant',
-        content: data.response,
-        timestamp: new Date().toISOString(),
-        modelUsed: data.modelUsed || selectedModel,
-        isSearch,
-        isDeepResearch,
-        isCriticalAnalysis,
-      };
-
-      const urls = extractUrls(data.response);
-      const previews = {};
-      for (const url of urls) {
-        previews[url] = await fetchLinkPreview(url);
-      }
-      setLinkPreviews((prev) => ({ ...prev, ...previews }));
-
-      setMessages((prevMessages) => [...prevMessages.slice(0, -1), newAssistantMessage]);
-      setChatHistory((prevHistory) => [...prevHistory.slice(0, -1), newAssistantMessage]);
-
-      if (currentConversationId) {
-        const updatedMessages = [...currentMessages.slice(0, index), newAssistantMessage];
-        await updateDoc(doc(db, 'users', userId, 'conversations', currentConversationId), {
-          messages: updatedMessages,
-        });
-      }
+      const updatedMessages = [...currentMessages.slice(0, index), newAssistantMessage];
+      setMessages(updatedMessages);
+      setChatHistory(updatedMessages);
+      refreshConversations();
     } catch (error) {
       console.error('Regenerate error:', error);
       setErrorMessage(`Failed to regenerate message: ${error.message}`);
@@ -190,8 +179,7 @@ export const useChatManager = (auth, selectedModel, isMobile, setShowSidebarOver
 
     const { isSearch = false, isDeepResearch = false, isCriticalAnalysis = false } = flags;
 
-    const userId = auth.currentUser?.uid;
-    if (!userId) {
+    if (!auth.currentUser) {
       console.error('No user authenticated');
       setErrorMessage('Please sign in to send messages.');
       return;
@@ -214,58 +202,40 @@ export const useChatManager = (auth, selectedModel, isMobile, setShowSidebarOver
     setShowCategoryPanel(false);
     setSelectedCategory(null);
 
+    let conversationId = currentConversationId;
     try {
-      let conversationId = currentConversationId;
       if (!conversationId) {
-        conversationId = await createNewConversation(userId, message);
+        conversationId = (await conversationService.createConversation()).id;
         setCurrentConversationId(conversationId);
-        
-        getUserConversations(userId).then(conversations => {
-          setUserConversations(conversations);
-        }).catch(console.error);
 
         if (isMobile) {
           setShowSidebarOverlay(false);
           setIsSidebarVisible(false);
         }
-      } else {
-        await addMessageToConversation(userId, conversationId, message, 'user');
       }
 
-      const urls = extractUrls(message);
-      const previews = {};
-      for (const url of urls) {
-        previews[url] = await fetchLinkPreview(url);
-      }
-      setLinkPreviews((prev) => ({ ...prev, ...previews }));
+      await loadPreviews(message);
 
-      const modelParam = selectedModel.toLowerCase();
-      const history = [...chatHistory, userMessage];
-      const apiFlags = {
-        isSearch: userMessage.isSearch,
-        isDeepResearch: userMessage.isDeepResearch,
-        isCriticalAnalysis: userMessage.isCriticalAnalysis,
-      };
-      const data = await callChatAPI(message, history, apiFlags, modelParam);
+      // The backend saves the user message, calls Vertex AI, and saves the reply.
+      const result = await conversationService.sendMessage(conversationId, message, {
+        isSearch,
+        isDeepResearch,
+        isCriticalAnalysis,
+      });
+      const savedUser = toUiMessage(result.userMessage);
+      const assistantMessage = toUiMessage(result.assistantMessage);
 
-      const assistantMessage = {
-        role: 'assistant',
-        content: data.response,
-        timestamp: new Date().toISOString(),
-        modelUsed: data.modelUsed || selectedModel,
-        isSearch: userMessage.isSearch,
-        isDeepResearch: userMessage.isDeepResearch,
-        isCriticalAnalysis: userMessage.isCriticalAnalysis,
-      };
-
-      setMessages((prev) => [...prev, assistantMessage]);
-      setChatHistory((prev) => [...prev, assistantMessage]);
-      await addMessageToConversation(userId, conversationId, data.response, 'assistant');
+      // Replace the optimistic user message with the saved one (it carries the ID).
+      setMessages((prev) => [...prev.slice(0, -1), savedUser, assistantMessage]);
+      setChatHistory((prev) => [...prev, savedUser, assistantMessage]);
     } catch (error) {
       console.error('API Error:', error);
       setErrorMessage(`Failed to send message: ${error.message}`);
+      // The user message may have been saved even if the AI failed; show the persisted state.
+      if (conversationId) syncMessages(conversationId).catch(console.error);
     } finally {
       setIsLoading(false);
+      if (conversationId) refreshConversations();
     }
   };
 
@@ -277,6 +247,40 @@ export const useChatManager = (auth, selectedModel, isMobile, setShowSidebarOver
     if (isMobile) {
       setShowSidebarOverlay(false);
       setIsSidebarVisible(false);
+    }
+  };
+
+  const renameConversation = async (conversationId, title) => {
+    try {
+      const updated = await conversationService.renameConversation(conversationId, title.trim());
+      setUserConversations((prev) => prev.map((conv) => (conv.id === conversationId ? updated : conv)));
+    } catch (error) {
+      console.error('Rename conversation failed:', error);
+      setErrorMessage(`Failed to rename conversation: ${error.message}`);
+    }
+  };
+
+  const archiveConversation = async (conversationId) => {
+    try {
+      await conversationService.archiveConversation(conversationId);
+      setUserConversations((prev) =>
+        prev.map((conv) => (conv.id === conversationId ? { ...conv, archived: true } : conv))
+      );
+      if (conversationId === currentConversationId) startNewChat();
+    } catch (error) {
+      console.error('Archive conversation failed:', error);
+      setErrorMessage(`Failed to archive conversation: ${error.message}`);
+    }
+  };
+
+  const deleteConversation = async (conversationId) => {
+    try {
+      await conversationService.deleteConversation(conversationId);
+      setUserConversations((prev) => prev.filter((conv) => conv.id !== conversationId));
+      if (conversationId === currentConversationId) startNewChat();
+    } catch (error) {
+      console.error('Delete conversation failed:', error);
+      setErrorMessage(`Failed to delete conversation: ${error.message}`);
     }
   };
 
@@ -295,6 +299,9 @@ export const useChatManager = (auth, selectedModel, isMobile, setShowSidebarOver
     handleSaveEdit,
     handleRegenerate,
     sendMessage,
-    startNewChat
+    startNewChat,
+    renameConversation,
+    archiveConversation,
+    deleteConversation
   };
 };

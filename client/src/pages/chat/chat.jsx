@@ -5,17 +5,9 @@ import SettingsPage from '../settings/settings';
 import ProfilePage from '../profile/profile';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/SideBar.jsx';
-import {
-  auth,
-  db,
-  createNewConversation,
-  addMessageToConversation,
-  getUserConversations,
-  getConversationMessages,
-} from '../../firebase.js';
-import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { auth } from '../../firebase.js';
 import { searchOptions } from './data/ChatCategoriesData.js';
-import { extractUrls, fetchLinkPreview, formatMessageContent, callChatAPI, exportToPDF } from './utils/ChatUtils.jsx';
+import { extractUrls, fetchLinkPreview, formatMessageContent, exportToPDF } from './utils/ChatUtils.jsx';
 import { useVoiceRecording } from './hooks/useVoiceRecording.jsx';
 import { useChatManager } from './hooks/useChatManager.jsx';
 import { ChatMainView } from './components/ChatMainView.jsx';
@@ -54,7 +46,6 @@ const Chat = ({ setIsAuthenticated }) => {
     chatHistory,
     currentConversationId,
     userConversations,
-    setUserConversations,
     isLoading,
     errorMessage,
     setErrorMessage,
@@ -63,7 +54,10 @@ const Chat = ({ setIsAuthenticated }) => {
     handleSaveEdit: handleSaveEditInternal,
     handleRegenerate,
     sendMessage,
-    startNewChat
+    startNewChat,
+    renameConversation,
+    archiveConversation,
+    deleteConversation
   } = useChatManager(auth, selectedModel, isMobile, setShowSidebarOverlay, setIsSidebarVisible);
 
   const {
@@ -112,10 +106,9 @@ const Chat = ({ setIsAuthenticated }) => {
     handleReportIssue,
     toggleUploadPanel,
     onArchive,
-    onDelete
+    onDelete,
+    handleDeleteConversation
   } = createChatHandlers({
-    auth,
-    db,
     isMobile,
     isRecording,
     inputValue,
@@ -124,7 +117,6 @@ const Chat = ({ setIsAuthenticated }) => {
     activeUploadPanel,
     stopRecording,
     sendMessage,
-    startNewChat,
     currentConversationId,
     setInputValue,
     setActiveAction,
@@ -140,7 +132,8 @@ const Chat = ({ setIsAuthenticated }) => {
     setMessageRatings,
     setIsReportModalOpen,
     setSelectedMessageIndex,
-    setUserConversations,
+    archiveConversation,
+    deleteConversation,
     handleSaveEditInternal
   });
 
@@ -203,6 +196,8 @@ const Chat = ({ setIsAuthenticated }) => {
         userConversations={userConversations}
         currentConversationId={currentConversationId}
         loadConversation={loadConversation}
+        deleteConversation={handleDeleteConversation}
+        renameConversation={renameConversation}
         startNewChat={startNewChat}
         currentView={currentView}
         setCurrentView={setCurrentView}

@@ -1,8 +1,4 @@
-import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
-
 export const createChatHandlers = ({
-  auth,
-  db,
   isMobile,
   isRecording,
   inputValue,
@@ -11,7 +7,6 @@ export const createChatHandlers = ({
   activeUploadPanel,
   stopRecording,
   sendMessage,
-  startNewChat,
   currentConversationId,
   setInputValue,
   setActiveAction,
@@ -27,7 +22,8 @@ export const createChatHandlers = ({
   setMessageRatings,
   setIsReportModalOpen,
   setSelectedMessageIndex,
-  setUserConversations,
+  archiveConversation,
+  deleteConversation,
   handleSaveEditInternal
 }) => {
   return {
@@ -121,33 +117,22 @@ Please execute the task as soon as you can - an artifact would be great if it ma
     },
     onArchive: () => {
       if (currentConversationId) {
-        const userId = auth.currentUser?.uid;
-        updateDoc(doc(db, 'users', userId, 'conversations', currentConversationId), {
-          archived: true,
-        }).then(() => {
-          setUserConversations(prev => 
-            prev.map(conv => 
-              conv.id === currentConversationId ? {...conv, archived: true} : conv
-            )
-          );
-          setActiveAction(null);
-          startNewChat();
-        });
+        setActiveAction(null);
+        archiveConversation(currentConversationId);
       }
     },
     onDelete: () => {
       if (currentConversationId) {
         if (window.confirm('Are you sure you want to delete this conversation?')) {
-          const userId = auth.currentUser?.uid;
-          deleteDoc(doc(db, 'users', userId, 'conversations', currentConversationId))
-            .then(() => {
-              setUserConversations(prev => 
-                prev.filter(conv => conv.id !== currentConversationId)
-              );
-              setActiveAction(null);
-              startNewChat();
-            });
+          setActiveAction(null);
+          deleteConversation(currentConversationId);
         }
+      }
+    },
+    // Sidebar conversation menu
+    handleDeleteConversation: (conversationId) => {
+      if (window.confirm('Are you sure you want to delete this conversation?')) {
+        deleteConversation(conversationId);
       }
     }
   };

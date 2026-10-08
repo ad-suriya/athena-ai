@@ -116,57 +116,6 @@ export const formatMessageContent = (content) => {
   });
 };
 
-export const callChatAPI = async (messageText, history, flags, modelParam) => {
-  let endpoint = '/api/chat';
-  let body = {
-    message: messageText,
-    history,
-    model: modelParam,
-  };
-
-  if (flags.isSearch) {
-    endpoint = '/api/search';
-    body = {
-      query: messageText.replace('[Search]', '').trim(),
-      model: modelParam,
-    };
-  } else if (flags.isDeepResearch) {
-    endpoint = '/api/research';
-    body = {
-      query: messageText.replace('[Deep Research]', '').trim(),
-      model: modelParam,
-    };
-  } else if (flags.isCriticalAnalysis) {
-    endpoint = '/api/analyze';
-    body = {
-      query: messageText.replace('[Critical Analysis]', '').trim(),
-      model: modelParam,
-    };
-  }
-
-  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    },
-    body: JSON.stringify(body),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Request failed with status ${response.status}: ${errorText}`);
-  }
-
-  const data = await response.json();
-  if (!data.response) {
-    throw new Error('No response content received from API');
-  }
-
-  return data;
-};
-
 export const exportToPDF = (messageContent, authorName = 'Anonymous') => {
   const script = document.createElement('script');
   script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
