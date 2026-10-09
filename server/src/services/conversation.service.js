@@ -194,6 +194,7 @@ const createConversation = async (userId, data) => {
     lastMessage: '',
     messageCount: 0,
     archived: data.archived ?? false,
+    isFavorite: data.isFavorite ?? false,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });

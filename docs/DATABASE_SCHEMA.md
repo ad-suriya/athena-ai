@@ -35,12 +35,13 @@ Do not embed tasks, notes, messages, or other collections inside the user docume
 {
   id:           string,
   userId:       string,    // owner — index this field
-  title:        string,    // truncated first message, max 50 chars
+  title:        string,    // first 30 chars of the first message, or set by rename
   createdAt:    timestamp,
   updatedAt:    timestamp,
   lastMessage:  string,    // preview of most recent message
   messageCount: number,
   archived:     boolean,   // default false
+  isFavorite:   boolean,   // default false; missing on older docs means false
   legacyPath:   string,    // optional — set only on docs copied from users/{uid}/conversations/{id}
 }
 ```

@@ -17,6 +17,14 @@ const toUiMessage = (m) => ({
   isCriticalAnalysis: m.metadata?.isCriticalAnalysis === true,
 });
 
+// API conversation → the fields the sidebar history panel reads.
+const toUiConversation = (c) => ({
+  ...c,
+  preview: c.lastMessage || '',
+  isArchived: c.archived === true,
+  isFavorite: c.isFavorite === true,
+});
+
 export const useChatManager = (auth, selectedModel, isMobile, setShowSidebarOverlay, setIsSidebarVisible) => {
   const [messages, setMessages] = useState([]);
   const [chatHistory, setChatHistory] = useState([]);
@@ -30,7 +38,7 @@ export const useChatManager = (auth, selectedModel, isMobile, setShowSidebarOver
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
         conversationService.getConversations()
-          .then(setUserConversations)
+          .then((conversations) => setUserConversations(conversations.map(toUiConversation)))
           .catch((error) => console.error('Error loading conversations:', error));
       }
     });
@@ -40,7 +48,7 @@ export const useChatManager = (auth, selectedModel, isMobile, setShowSidebarOver
 
   const refreshConversations = () =>
     conversationService.getConversations()
-      .then(setUserConversations)
+      .then((conversations) => setUserConversations(conversations.map(toUiConversation)))
       .catch((error) => console.error('Error loading conversations:', error));
 
   // Re-reads messages from the server so the UI matches what was persisted.
@@ -252,7 +260,7 @@ export const useChatManager = (auth, selectedModel, isMobile, setShowSidebarOver
 
   const renameConversation = async (conversationId, title) => {
     try {
-      const updated = await conversationService.renameConversation(conversationId, title.trim());
+      const updated = toUiConversation(await conversationService.renameConversation(conversationId, title.trim()));
       setUserConversations((prev) => prev.map((conv) => (conv.id === conversationId ? updated : conv)));
     } catch (error) {
       console.error('Rename conversation failed:', error);
@@ -264,13 +272,38 @@ export const useChatManager = (auth, selectedModel, isMobile, setShowSidebarOver
     try {
       await conversationService.archiveConversation(conversationId);
       setUserConversations((prev) =>
-        prev.map((conv) => (conv.id === conversationId ? { ...conv, archived: true } : conv))
+        prev.map((conv) => (conv.id === conversationId ? { ...conv, archived: true, isArchived: true } : conv))
       );
       if (conversationId === currentConversationId) startNewChat();
     } catch (error) {
       console.error('Archive conversation failed:', error);
       setErrorMessage(`Failed to archive conversation: ${error.message}`);
     }
+  };
+
+  // Sidebar menu: flips a flag on the server and updates the list.
+  const updateConversationFlags = async (conversationId, changes, action) => {
+    try {
+      const updated = toUiConversation(await conversationService.updateConversation(conversationId, changes));
+      setUserConversations((prev) => prev.map((conv) => (conv.id === conversationId ? updated : conv)));
+      return updated;
+    } catch (error) {
+      console.error(`${action} conversation failed:`, error);
+      setErrorMessage(`Failed to ${action.toLowerCase()} conversation: ${error.message}`);
+      return null;
+    }
+  };
+
+  const toggleFavorite = (conversationId) => {
+    const conv = userConversations.find((c) => c.id === conversationId);
+    return updateConversationFlags(conversationId, { isFavorite: !conv?.isFavorite }, 'Favorite');
+  };
+
+  // Archiving the open conversation also starts a new chat, as the input menu's Archive does.
+  const toggleArchive = async (conversationId) => {
+    const conv = userConversations.find((c) => c.id === conversationId);
+    const updated = await updateConversationFlags(conversationId, { archived: !conv?.isArchived }, 'Archive');
+    if (updated?.isArchived && conversationId === currentConversationId) startNewChat();
   };
 
   const deleteConversation = async (conversationId) => {
@@ -302,6 +335,8 @@ export const useChatManager = (auth, selectedModel, isMobile, setShowSidebarOver
     startNewChat,
     renameConversation,
     archiveConversation,
-    deleteConversation
+    deleteConversation,
+    toggleFavorite,
+    toggleArchive
   };
 };

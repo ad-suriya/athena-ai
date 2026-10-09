@@ -9,6 +9,7 @@ const MAX_MESSAGE_LENGTH = 8000; // global JSON body limit is 10kb
 const conversationSpec = {
   title: { type: 'string', maxLength: 200 },
   archived: { type: 'boolean' },
+  isFavorite: { type: 'boolean' },
 };
 
 const messageSpec = {

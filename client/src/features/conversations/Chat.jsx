@@ -57,7 +57,9 @@ const Chat = ({ setIsAuthenticated }) => {
     startNewChat,
     renameConversation,
     archiveConversation,
-    deleteConversation
+    deleteConversation,
+    toggleFavorite,
+    toggleArchive
   } = useChatManager(auth, selectedModel, isMobile, setShowSidebarOverlay, setIsSidebarVisible);
 
   const {
@@ -198,6 +200,8 @@ const Chat = ({ setIsAuthenticated }) => {
         loadConversation={loadConversation}
         deleteConversation={handleDeleteConversation}
         renameConversation={renameConversation}
+        toggleFavorite={toggleFavorite}
+        toggleArchive={toggleArchive}
         startNewChat={startNewChat}
         currentView={currentView}
         setCurrentView={setCurrentView}
