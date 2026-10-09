@@ -3,7 +3,8 @@ import {
   getAuth, 
   GoogleAuthProvider, 
   signInWithPopup,
-  signInWithEmailAndPassword
+  signInWithEmailAndPassword,
+  signOut
 } from 'firebase/auth';
 
 // Firebase config 
@@ -28,5 +29,6 @@ export {
   auth,
   provider,
   signInWithPopup,
-  signInWithEmailAndPassword
+  signInWithEmailAndPassword,
+  signOut
 };

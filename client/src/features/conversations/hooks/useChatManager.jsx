@@ -25,7 +25,7 @@ const toUiConversation = (c) => ({
   isFavorite: c.isFavorite === true,
 });
 
-export const useChatManager = (auth, selectedModel, isMobile, setShowSidebarOverlay, setIsSidebarVisible) => {
+export const useChatManager = (auth, selectedModel) => {
   const [messages, setMessages] = useState([]);
   const [chatHistory, setChatHistory] = useState([]);
   const [currentConversationId, setCurrentConversationId] = useState(null);
@@ -76,10 +76,6 @@ export const useChatManager = (auth, selectedModel, isMobile, setShowSidebarOver
 
       await syncMessages(conversationId);
       setCurrentConversationId(conversationId);
-      if (isMobile) {
-        setShowSidebarOverlay(false);
-        setIsSidebarVisible(false);
-      }
     } catch (error) {
       console.error('Load conversation failed:', error);
       setMessages([
@@ -215,11 +211,6 @@ export const useChatManager = (auth, selectedModel, isMobile, setShowSidebarOver
       if (!conversationId) {
         conversationId = (await conversationService.createConversation()).id;
         setCurrentConversationId(conversationId);
-
-        if (isMobile) {
-          setShowSidebarOverlay(false);
-          setIsSidebarVisible(false);
-        }
       }
 
       await loadPreviews(message);
@@ -252,10 +243,6 @@ export const useChatManager = (auth, selectedModel, isMobile, setShowSidebarOver
     setChatHistory([]);
     setCurrentConversationId(null);
     setErrorMessage(null);
-    if (isMobile) {
-      setShowSidebarOverlay(false);
-      setIsSidebarVisible(false);
-    }
   };
 
   const renameConversation = async (conversationId, title) => {

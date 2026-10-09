@@ -11,7 +11,9 @@ const createDraft = () => ({
   updatedAt: new Date().toISOString(),
 });
 
-export const useNotes = () => {
+// Opens on `noteId` when given (falling back to the latest note), or on a fresh
+// draft when `startNew` is true.
+export const useNotes = ({ noteId = null, startNew = false } = {}) => {
   const [notes, setNotes] = useState([]);
   const [selectedNote, setSelectedNote] = useState(null);
   // Changes only when a *different* note is selected, so the editor remounts then
@@ -41,7 +43,8 @@ export const useNotes = () => {
       .then((data) => {
         if (cancelled) return;
         setNotes(data);
-        selectNote(data.length > 0 ? data[0] : createDraft());
+        const requested = noteId && data.find((n) => n.id === noteId);
+        selectNote(startNew ? createDraft() : requested || (data.length > 0 ? data[0] : createDraft()));
       })
       .catch((err) => {
         if (cancelled) return;
@@ -53,7 +56,7 @@ export const useNotes = () => {
     return () => {
       cancelled = true;
     };
-  }, [selectNote]);
+  }, [selectNote, noteId, startNew]);
 
   // `editorNote` is the editor's copy; its id may be stale (null) after the first save,
   // so the id is always taken from the hook's selected note.

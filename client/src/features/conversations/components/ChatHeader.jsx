@@ -1,75 +1,33 @@
-import React from 'react';
-import { PanelLeft } from 'lucide-react';
-import NotificationAppProfile from './NotificationAppProfile.jsx';
-import AppLogo from './AppLogo.jsx';
+import PropTypes from 'prop-types';
+import { History, SquarePen } from 'lucide-react';
 
-export const ChatHeader = ({
-  isMobile,
-  showSidebarOverlay,
-  isSidebarVisible,
-  toggleSidebar,
-  currentConversationId,
-  user,
-  setShowSidebarOverlay,
-  setIsSidebarVisible
-}) => {
-  return (
-    <>
-      {isMobile && (
-        <div className="bg-gradient-to-r from-white to-[#F5D9D1]/30 backdrop-blur-sm px-4 py-2 flex items-center justify-between h-[65px] sticky top-0 z-30 border-b border-[#E65C52]/10">
-          {!showSidebarOverlay && !isSidebarVisible && (
-            <button
-              onClick={toggleSidebar}
-              className="p-2 rounded-lg hover:bg-[#F5D9D1] transition-colors menu-button shadow-lg shadow-[#E65C52]/10"
-            >
-              <PanelLeft className="w-5 h-5 text-[#E65C52]" />
-            </button>
-          )}
-          {currentConversationId === null && (
-            <div className="relative z-[60]">
-              <NotificationAppProfile
-                user={user}
-                isMobile={isMobile}
-                setShowSidebarOverlay={setShowSidebarOverlay}
-                setIsSidebarVisible={setIsSidebarVisible}
-              />
-            </div>
-          )}
-        </div>
-      )}
+// Chat's own toolbar inside the app shell: conversation history and a new chat.
+export const ChatHeader = ({ historyOpen, onToggleHistory, onNewChat, title }) => (
+  <div className="flex h-14 shrink-0 items-center gap-2 border-b border-[#E65C52]/10 bg-white/60 px-4">
+    <button
+      onClick={onToggleHistory}
+      className={`flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
+        historyOpen ? 'bg-brand-100 text-brand-600' : 'text-ink hover:bg-brand-50'
+      }`}
+      aria-expanded={historyOpen}
+    >
+      <History className="h-4 w-4" />
+      History
+    </button>
+    <button
+      onClick={onNewChat}
+      className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-ink hover:bg-brand-50"
+    >
+      <SquarePen className="h-4 w-4" />
+      New chat
+    </button>
+    {title && <p className="ml-2 min-w-0 truncate text-sm text-ink-muted">{title}</p>}
+  </div>
+);
 
-      {!isMobile && (
-        <div className="bg-[#F5D9D1]/20 px-4 py-2 flex items-center justify-between h-[65px] border-b border-[#E65C52]/10">
-          <div className="flex items-center gap-2">
-            {!isSidebarVisible && (
-              <button
-                onClick={toggleSidebar}
-                className="p-2 rounded-lg hover:bg-[#F5D9D1] transition-colors menu-button shadow-lg shadow-[#E65C52]/10"
-              >
-                <PanelLeft className="w-5 h-5 text-[#E65C52]" />
-              </button>
-            )}
-            {currentConversationId === null && (
-              <>
-                <AppLogo size={45} />
-                <div className="font-semibold text-lg bg-gradient-to-r from-[#E65C52] to-[#E14C42] bg-clip-text text-transparent">
-                  Athena AI
-                </div>
-              </>
-            )}
-          </div>
-          {currentConversationId === null && (
-            <div className="flex items-center gap-2">
-              <NotificationAppProfile
-                user={user}
-                isMobile={isMobile}
-                setShowSidebarOverlay={setShowSidebarOverlay}
-                setIsSidebarVisible={setIsSidebarVisible}
-              />
-            </div>
-          )}
-        </div>
-      )}
-    </>
-  );
+ChatHeader.propTypes = {
+  historyOpen: PropTypes.bool.isRequired,
+  onToggleHistory: PropTypes.func.isRequired,
+  onNewChat: PropTypes.func.isRequired,
+  title: PropTypes.string,
 };

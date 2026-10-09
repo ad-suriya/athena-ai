@@ -1,5 +1,4 @@
 import { useRef, useState } from 'react';
-import SideBar from '../../components/sidebar/Sidebar';
 import { useMindMap } from './hooks/useMindMap';
 import { useNodeDrag } from './hooks/useNodeDrag';
 import { useContextMenu } from './hooks/useContextMenu';
@@ -51,9 +50,7 @@ const MindMap = () => {
   };
 
   return (
-    <div className="h-screen bg-[#FCF4F1] flex relative overflow-hidden">
-      <SideBar />
-
+    <div className="h-full bg-[#FCF4F1] flex relative overflow-hidden">
       <div className="flex-1 flex flex-col bg-[#FCF4F1]">
         <NotificationStack notifications={notifications} />
 

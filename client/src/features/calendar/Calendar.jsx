@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import CalendarTopBar from './components/CalendarTopBar';
 import CalendarMiniMonth from './components/CalendarMiniMonth';
 import CalendarInfoPanel from './components/CalendarInfoPanel';
@@ -27,6 +28,17 @@ const Calendar = () => {
   const eventForm = useEventForm(selectedEvent, currentDate);
 
   const events = filterEvents(allEvents, searchQuery);
+
+  // Home's "Add event" links here with { newEvent: true }: open the new-event form once.
+  const location = useLocation();
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (location.state?.newEvent) {
+      setSelectedEvent(null);
+      setIsEditMode(true);
+      navigate(location.pathname, { replace: true, state: null });
+    }
+  }, [location.state, location.pathname, navigate]);
 
   const handleEventClick = (event) => {
     setSelectedEvent(event);

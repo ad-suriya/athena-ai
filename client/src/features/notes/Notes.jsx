@@ -1,20 +1,14 @@
 import PropTypes from 'prop-types';
-import SideBar from '../../components/sidebar/Sidebar';
+import { useSearchParams } from 'react-router-dom';
 import NoteEditor from './NoteEditor';
 import { useNotes } from './hooks/useNotes';
 
-const Notes = ({ isDarkMode, onThemeToggle }) => {
-  const { selectedNote, selectionKey, isLoading, error, saveNote, deleteNote } = useNotes();
-
-  // Unused handleBackToHome removed
+// Journal page. ?id=<noteId> opens that entry; ?new=1 starts a blank one.
+const NotesPage = ({ isDarkMode = false, noteId, startNew }) => {
+  const { selectedNote, selectionKey, isLoading, error, saveNote, deleteNote } = useNotes({ noteId, startNew });
 
   return (
-    <div className={`flex h-screen ${isDarkMode ? 'dark' : ''}`}>
-      <SideBar 
-        isDarkMode={isDarkMode} 
-        onThemeToggle={onThemeToggle}
-      />
-      
+    <div className={`flex h-full ${isDarkMode ? 'dark' : ''}`}>
       <div className="flex-1 flex flex-col">
         {error && (
           <div className="bg-red-50 border-b border-red-200 text-red-700 px-4 py-2 text-sm">{error}</div>
@@ -42,9 +36,16 @@ const Notes = ({ isDarkMode, onThemeToggle }) => {
   );
 };
 
-Notes.propTypes = {
-  isDarkMode: PropTypes.bool.isRequired,
-  onThemeToggle: PropTypes.func.isRequired,
+NotesPage.propTypes = {
+  isDarkMode: PropTypes.bool,
+  noteId: PropTypes.string,
+  startNew: PropTypes.bool.isRequired,
+};
+
+// Remounts when the query changes, so following a link to another entry reloads the selection.
+const Notes = () => {
+  const [params] = useSearchParams();
+  return <NotesPage key={params.toString()} noteId={params.get('id')} startNew={params.get('new') === '1'} />;
 };
 
 export default Notes;

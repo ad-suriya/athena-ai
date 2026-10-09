@@ -38,11 +38,11 @@ const NoteEditor = ({ isDarkMode = false, initialNote, onSave, onDelete }) => {
   };
 
   if (!editor) {
-    return <div className={`flex items-center justify-center h-screen ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>Loading editor...</div>;
+    return <div className={`flex items-center justify-center h-full ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>Loading editor...</div>;
   }
 
   return (
-    <div className={`flex flex-col h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-[#FCF4F1] text-gray-900'}`}>
+    <div className={`flex flex-col h-full transition-colors duration-300 ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-[#FCF4F1] text-gray-900'}`}>
       <NoteEditorHeader
         isDarkMode={isDarkMode}
         editor={editor}

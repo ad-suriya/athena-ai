@@ -1,5 +1,4 @@
 export const createChatHandlers = ({
-  isMobile,
   isRecording,
   inputValue,
   activeAction,
@@ -12,8 +11,6 @@ export const createChatHandlers = ({
   setActiveAction,
   setShowCategoryPanel,
   setSelectedCategory,
-  setShowSidebarOverlay,
-  setIsSidebarVisible,
   setUploadedFiles,
   setUploadedImages,
   setActiveUploadPanel,
@@ -27,14 +24,6 @@ export const createChatHandlers = ({
   handleSaveEditInternal
 }) => {
   return {
-    toggleSidebar: () => {
-      if (isMobile) {
-        setShowSidebarOverlay((prev) => !prev);
-        setIsSidebarVisible((prev) => !prev);
-      } else {
-        setIsSidebarVisible((prev) => !prev);
-      }
-    },
     handleFilesUpload: (files) => {
       setUploadedFiles(files);
       setActiveUploadPanel(null);

@@ -1,6 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
 import { ArrowDown, Heart, X } from 'lucide-react';
-import Sidebar from '../../components/sidebar/Sidebar';
 import { useTasks } from './hooks/useTasks';
 import { useTaskFilters } from './hooks/useTaskFilters';
 import { useScrollContainer } from './hooks/useScrollContainer';
@@ -27,7 +26,6 @@ export default function WellnessTracker() {
   const [showFilters, setShowFilters] = useState(false);
   const [selectedTasks, setSelectedTasks] = useState([]);
   const [showBulkActions, setShowBulkActions] = useState(false);
-  const [isSidebarVisible, setIsSidebarVisible] = useState(true);
 
   const mainContentRef = useRef(null);
   const { isScrolledDown, scrollToTop, scrollToBottom } = useScrollContainer(mainContentRef);
@@ -123,22 +121,10 @@ export default function WellnessTracker() {
   };
 
   return (
-    <div className="flex bg-[#FCF4F1] h-screen w-full overflow-hidden">
-      {/* Sidebar - Fixed position */}
-      <div className={`${isSidebarVisible ? 'w-64' : 'w-0'} flex-shrink-0 transition-all duration-300 ease-in-out overflow-hidden`}>
-        <Sidebar
-          isSidebarVisible={isSidebarVisible}
-          setIsSidebarVisible={setIsSidebarVisible}
-        />
-      </div>
-
-      {/* Main Content - Dynamic width */}
+    <div className="flex bg-[#FCF4F1] h-full w-full overflow-hidden">
       <div
         ref={mainContentRef}
-        className="flex-1 overflow-y-auto transition-all duration-300 ease-in-out ml-0"
-        style={{
-          width: isSidebarVisible ? 'calc(100% - 256px)' : '100%'
-        }}
+        className="flex-1 overflow-y-auto"
       >
         <div className="px-4 py-4 max-w-7xl mx-auto">
           <div className="mb-4">

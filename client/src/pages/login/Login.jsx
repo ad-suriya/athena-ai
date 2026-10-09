@@ -39,7 +39,7 @@ const Login = ({ setIsAuthenticated }) => {
 
       localStorage.setItem('isLoggedIn', 'true');
       setIsAuthenticated(true);
-      navigate('/chat');
+      navigate('/home');
 
     } catch (error) {
       console.error('Google login error:', error);
@@ -80,7 +80,7 @@ const Login = ({ setIsAuthenticated }) => {
 
       localStorage.setItem('isLoggedIn', 'true');
       setIsAuthenticated(true);
-      navigate('/chat');
+      navigate('/home');
     } catch (error) {
       setErrorMessage(error.message);
     } finally {

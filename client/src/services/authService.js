@@ -1,5 +1,5 @@
 // Backend auth calls. Sign-in itself stays with Firebase Auth on the client.
-import { auth, signInWithEmailAndPassword } from '../config/firebase.js';
+import { auth, signInWithEmailAndPassword, signOut } from '../config/firebase.js';
 import { post } from './api';
 
 // Verifies the signed-in user's ID token on the server and creates/updates users/{uid}.
@@ -32,3 +32,6 @@ export const signInWithEmail = async (email, password) => {
     throw new Error(EMAIL_SIGN_IN_ERRORS[err.code] || 'Sign-in failed. Please try again.');
   }
 };
+
+// Signs out of Firebase Auth. App.jsx's auth listener then routes to /login.
+export const signOutUser = () => signOut(auth);

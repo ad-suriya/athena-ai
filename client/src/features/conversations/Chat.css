@@ -347,10 +347,6 @@ body {
 }
 
 /* Utility Classes */
-.hidden {
-  display: none !important;
-}
-
 .text-muted {
   color: var(--text-muted);
 }

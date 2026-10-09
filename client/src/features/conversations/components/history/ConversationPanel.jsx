@@ -1,25 +1,20 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { MessageSquare, Search, X } from 'lucide-react';
 import ConversationListItem from './ConversationListItem';
 import { filterAndSortConversations, groupConversations } from './conversationListUtils';
-import { conversationShape } from './sidebarPropTypes';
+import { conversationShape } from './historyPropTypes';
 
 const VIEWS = ["All", "Favorites", "Scheduled"];
 
-// Slide-out "Conversation History" panel: search, view tabs, and the conversation list.
-// The view (currentView/setCurrentView) is owned by the page; it resets to "All" on open.
+// Slide-out "Conversation History" drawer inside Chat: search, view tabs, and the list.
+// The view tab resets to "All" each time the drawer opens.
 const ConversationPanel = ({
   isOpen,
   onClose,
   userConversations,
   currentConversationId,
   loadConversation,
-  currentView,
-  setCurrentView,
-  isMobile,
-  setShowSidebarOverlay,
-  setIsSidebarVisible,
   deleteConversation,
   renameConversation,
   toggleFavorite,
@@ -30,12 +25,14 @@ const ConversationPanel = ({
   const [renamingId, setRenamingId] = useState(null);
   const [newTitle, setNewTitle] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentView, setCurrentView] = useState("All");
 
-  useEffect(() => {
-    if (isOpen) {
-      setCurrentView("All");
-    }
-  }, [isOpen, setCurrentView]);
+  // Reset the tab when the drawer opens (adjusting state during render, not in an effect).
+  const [wasOpen, setWasOpen] = useState(isOpen);
+  if (isOpen !== wasOpen) {
+    setWasOpen(isOpen);
+    if (isOpen) setCurrentView("All");
+  }
 
   const grouped = groupConversations(filterAndSortConversations(userConversations, searchTerm), currentView);
   const visibleConversations = [...grouped.favoritesAndScheduled, ...grouped.others];
@@ -43,10 +40,6 @@ const ConversationPanel = ({
   const handleSelect = (conversationId) => {
     setSelectedConversationId(conversationId);
     loadConversation(conversationId);
-    if (isMobile) {
-      setShowSidebarOverlay(false);
-      setIsSidebarVisible(false);
-    }
     onClose();
   };
 
@@ -68,7 +61,7 @@ const ConversationPanel = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed top-0 left-[280px] h-full w-72 bg-white/90 backdrop-blur-xl border-l border-[#FFE7E5] shadow-xl z-50 flex transform transition-all duration-300 ease-in-out">
+    <div className="absolute bottom-0 left-0 top-14 z-40 flex w-80 max-w-full bg-white/95 backdrop-blur-xl border-r border-[#FFE7E5] shadow-xl">
       <div className="w-full flex flex-col">
         <div className="p-4 border-b border-[#FFE7E5] bg-white/80">
           <div className="flex items-center justify-between">
@@ -154,11 +147,6 @@ ConversationPanel.propTypes = {
   userConversations: PropTypes.arrayOf(conversationShape).isRequired,
   currentConversationId: PropTypes.string,
   loadConversation: PropTypes.func.isRequired,
-  currentView: PropTypes.string.isRequired,
-  setCurrentView: PropTypes.func.isRequired,
-  isMobile: PropTypes.bool.isRequired,
-  setShowSidebarOverlay: PropTypes.func.isRequired,
-  setIsSidebarVisible: PropTypes.func.isRequired,
   deleteConversation: PropTypes.func.isRequired,
   renameConversation: PropTypes.func.isRequired,
   toggleFavorite: PropTypes.func.isRequired,

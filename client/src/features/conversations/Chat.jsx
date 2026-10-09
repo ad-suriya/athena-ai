@@ -3,12 +3,12 @@ import React, { useState, useRef, useEffect } from 'react';
 import './Chat.css';
 import SettingsPage from '../../pages/settings/Settings';
 import ProfilePage from '../../pages/profile/Profile';
-import { useNavigate } from 'react-router-dom';
-import Sidebar from '../../components/sidebar/Sidebar.jsx';
+import { useLocation, useNavigate } from 'react-router-dom';
+import ConversationPanel from './components/history/ConversationPanel.jsx';
 import { auth } from '../../config/firebase.js';
 import { searchOptions } from './data/ChatCategoriesData.js';
 import { extractUrls, fetchLinkPreview, formatMessageContent, exportToPDF } from './utils/ChatUtils.jsx';
-import { useVoiceRecording } from './hooks/useVoiceRecording.jsx';
+import { useVoiceRecording } from '../../hooks/useVoiceRecording.jsx';
 import { useChatManager } from './hooks/useChatManager.jsx';
 import { ChatMainView } from './components/ChatMainView.jsx';
 import { ChatHeader } from './components/ChatHeader.jsx';
@@ -20,7 +20,6 @@ const Chat = ({ setIsAuthenticated }) => {
   const navigate = useNavigate();
   const [showFileCategoryPanel, setShowFileCategoryPanel] = useState(false);
   const [inputValue, setInputValue] = useState('');
-  const [isSidebarVisible, setIsSidebarVisible] = useState(false);
   const [currentView, setCurrentView] = useState('chat');
   const [showDocsNotification, setShowDocsNotification] = useState(true);
   const [uploadedFiles, setUploadedFiles] = useState([]);
@@ -31,8 +30,6 @@ const Chat = ({ setIsAuthenticated }) => {
   const [selectedModel, setSelectedModel] = useState('GPT');
   const [showModelDropdown, setShowModelDropdown] = useState(false);
   const [activeAction, setActiveAction] = useState(null);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const [showSidebarOverlay, setShowSidebarOverlay] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [activeMode, setActiveMode] = useState('message');
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
@@ -60,7 +57,7 @@ const Chat = ({ setIsAuthenticated }) => {
     deleteConversation,
     toggleFavorite,
     toggleArchive
-  } = useChatManager(auth, selectedModel, isMobile, setShowSidebarOverlay, setIsSidebarVisible);
+  } = useChatManager(auth, selectedModel);
 
   const {
     isRecording,
@@ -73,9 +70,39 @@ const Chat = ({ setIsAuthenticated }) => {
     setRecordingError
   } = useVoiceRecording(setInputValue);
 
+  // Hand-offs from other screens (Ask Athena, wellness tools, search). Each navigation
+  // is handled once, by its location key, even when effects run twice in development.
+  // Handlers are read through a ref so the effect only depends on the navigation.
+  const location = useLocation();
+  const handledLocation = useRef(null);
+  const handoffActions = useRef(null);
+  handoffActions.current = {
+    openConversation: (id) => loadConversation(id),
+    ask: (prompt) => {
+      startNewChat();
+      sendMessage(prompt, {}, setInputValue, setActiveAction, setShowCategoryPanel, setSelectedCategory);
+    },
+    showCategory: (category) => {
+      setSelectedCategory(category);
+      setShowCategoryPanel(true);
+    },
+  };
+  useEffect(() => {
+    const handoff = location.state;
+    if (!handoff || handledLocation.current === location.key) return;
+    handledLocation.current = location.key;
+    const actions = handoffActions.current;
+    if (handoff.conversationId) actions.openConversation(handoff.conversationId);
+    else if (handoff.prompt) actions.ask(handoff.prompt);
+    else if (handoff.category) actions.showCategory(handoff.category);
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location.key, location.state, location.pathname, navigate]);
+
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const currentTitle = userConversations.find((c) => c.id === currentConversationId)?.title;
+
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
-  const sidebarRef = useRef(null);
   const attachmentPanelRef = useRef(null);
   const modelDropdownRef = useRef(null);
 
@@ -94,7 +121,6 @@ const Chat = ({ setIsAuthenticated }) => {
   }, [messages]);
 
   const {
-    toggleSidebar,
     handleFilesUpload,
     handleImagesUpload,
     handleCategoryClick,
@@ -111,7 +137,6 @@ const Chat = ({ setIsAuthenticated }) => {
     onDelete,
     handleDeleteConversation
   } = createChatHandlers({
-    isMobile,
     isRecording,
     inputValue,
     activeAction,
@@ -124,8 +149,6 @@ const Chat = ({ setIsAuthenticated }) => {
     setActiveAction,
     setShowCategoryPanel,
     setSelectedCategory,
-    setShowSidebarOverlay,
-    setIsSidebarVisible,
     setUploadedFiles,
     setUploadedImages,
     setActiveUploadPanel,
@@ -178,23 +201,10 @@ const Chat = ({ setIsAuthenticated }) => {
   };
 
   return (
-    <div className="h-screen flex overflow-hidden bg-gradient-to-b from-[#F5D9D1]/20 to-white">
-      {isMobile && showSidebarOverlay && (
-        <div
-          className="fixed inset-0 bg-[#E65C52]/10 backdrop-blur-sm z-40"
-          onClick={() => {
-            setShowSidebarOverlay(false);
-            setIsSidebarVisible(false);
-          }}
-        />
-      )}
-
-      <Sidebar
-        ref={sidebarRef}
-        isSidebarVisible={isSidebarVisible}
-        isMobile={isMobile}
-        showSidebarOverlay={showSidebarOverlay}
-        toggleSidebar={toggleSidebar}
+    <div className="relative h-full flex overflow-hidden bg-gradient-to-b from-[#F5D9D1]/20 to-white">
+      <ConversationPanel
+        isOpen={historyOpen}
+        onClose={() => setHistoryOpen(false)}
         userConversations={userConversations}
         currentConversationId={currentConversationId}
         loadConversation={loadConversation}
@@ -202,23 +212,14 @@ const Chat = ({ setIsAuthenticated }) => {
         renameConversation={renameConversation}
         toggleFavorite={toggleFavorite}
         toggleArchive={toggleArchive}
-        startNewChat={startNewChat}
-        currentView={currentView}
-        setCurrentView={setCurrentView}
-        user={auth.currentUser}
-        setShowSidebarOverlay={setShowSidebarOverlay}
       />
 
       <div className="flex-1 flex flex-col h-full overflow-hidden">
         <ChatHeader
-          isMobile={isMobile}
-          showSidebarOverlay={showSidebarOverlay}
-          isSidebarVisible={isSidebarVisible}
-          toggleSidebar={toggleSidebar}
-          currentConversationId={currentConversationId}
-          user={auth.currentUser}
-          setShowSidebarOverlay={setShowSidebarOverlay}
-          setIsSidebarVisible={setIsSidebarVisible}
+          historyOpen={historyOpen}
+          onToggleHistory={() => setHistoryOpen(!historyOpen)}
+          onNewChat={() => { setHistoryOpen(false); startNewChat(); }}
+          title={currentTitle}
         />
 
         {currentView === 'settings' ? (

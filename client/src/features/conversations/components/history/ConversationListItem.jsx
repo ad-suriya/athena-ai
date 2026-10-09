@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { Archive, Edit, MessageSquare, MoreVertical, Share, Star, Trash2 } from 'lucide-react';
 import { formatConversationTime } from './conversationListUtils';
-import { conversationShape } from './sidebarPropTypes';
+import { conversationShape } from './historyPropTypes';
 
 const menuButtonClass = "flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-[#FFE7E5] w-full text-left rounded-lg";
 
