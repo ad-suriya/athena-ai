@@ -201,7 +201,7 @@ const Chat = ({ setIsAuthenticated }) => {
   };
 
   return (
-    <div className="relative h-full flex overflow-hidden bg-gradient-to-b from-[#F5D9D1]/20 to-white">
+    <div className="relative h-full flex overflow-hidden bg-[#FFFCFB]">
       <ConversationPanel
         isOpen={historyOpen}
         onClose={() => setHistoryOpen(false)}

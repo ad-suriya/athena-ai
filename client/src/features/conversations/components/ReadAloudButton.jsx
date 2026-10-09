@@ -132,8 +132,8 @@ const ReadAloudButton = ({ text }) => {
         onClick={toggleReadAloud}
         className={`p-1.5 rounded-lg transition-all duration-300 ${
           isPlaying
-            ? 'bg-blue-100 text-blue-600 scale-110'
-            : 'bg-gray-100 hover:bg-gray-200 hover:scale-105 text-gray-600'
+            ? 'bg-brand-50 text-brand-600'
+            : 'text-ink-faint hover:bg-brand-50 hover:text-brand-500'
         }`}
         title={isPlaying ? "Stop reading" : "Read aloud"}
       >
@@ -142,7 +142,7 @@ const ReadAloudButton = ({ text }) => {
 
       {/* Voice selection button */}
       <button
-        className="ml-1 p-1 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600"
+        className="p-1 rounded-lg text-ink-faint hover:bg-brand-50 hover:text-brand-500"
         onClick={(e) => {
           e.stopPropagation();
           setShowVoiceOptions(!showVoiceOptions);
@@ -154,16 +154,16 @@ const ReadAloudButton = ({ text }) => {
 
       {/* Voice options dropdown */}
       {showVoiceOptions && (
-        <div className="absolute top-full right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50 min-w-32">
+        <div className="absolute top-full right-0 z-50 mt-1 min-w-32 rounded-2xl border border-line bg-white p-1.5 shadow-card">
           {voiceOptions.map((voice) => (
             <div
               key={voice.id}
-              className="px-3 py-2 hover:bg-gray-100 flex items-center justify-between cursor-pointer text-sm"
+              className="flex cursor-pointer items-center justify-between rounded-xl px-3 py-2 text-sm text-ink hover:bg-brand-50"
               onClick={() => selectVoice(voice.id)}
             >
               <span>{voice.name}</span>
               {selectedVoice === voice.id && (
-                <Check className="w-4 h-4 text-blue-500 ml-2" />
+                <Check className="ml-2 h-4 w-4 text-brand-500" />
               )}
             </div>
           ))}

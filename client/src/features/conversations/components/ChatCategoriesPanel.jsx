@@ -13,7 +13,9 @@ const ChatCategoriesPanel = ({
 }) => {
   return (
     <>
-      <div className={`flex flex-wrap justify-center gap-2 ${isAbsolute ? '' : 'mb-4'}`}>
+      {/* Under a conversation on phones: one row that scrolls sideways, so the chips
+          don't push the messages off screen. */}
+      <div className={`flex gap-2 ${isAbsolute ? 'flex-wrap justify-center' : '-mx-4 mb-3 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:justify-center sm:overflow-visible sm:px-0'}`}>
         {categories.map((category) => {
           const Icon = category.icon;
           return (
@@ -21,14 +23,14 @@ const ChatCategoriesPanel = ({
               key={category.id}
               onClick={() => handleCategoryClick(category.id)}
               className={`
-                flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all text-sm font-medium border-2
-                ${selectedCategory === category.id 
-                  ? 'bg-gradient-to-r from-[#E65C52] to-[#E14C42] text-white border-transparent shadow-lg shadow-[#E65C52]/30' 
-                  : 'bg-white text-gray-700 border-[#E65C52]/20 hover:bg-[#F5D9D1] hover:border-[#E65C52]/40 hover:shadow-md'
+                flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full border px-4 py-2 text-sm transition-colors
+                ${selectedCategory === category.id
+                  ? 'border-brand-100 bg-brand-100 font-medium text-brand-600'
+                  : 'border-line bg-white text-ink hover:bg-brand-50'
                 }
               `}
             >
-              <Icon className={`w-4 h-4 ${selectedCategory === category.id ? 'text-white' : 'text-[#E65C52]'}`} />
+              <Icon className="h-4 w-4 text-brand-500" />
               <span>{category.label}</span>
             </button>
           );
@@ -38,15 +40,15 @@ const ChatCategoriesPanel = ({
       {showCategoryPanel && selectedCategory && (
         <div className={`relative w-full ${isAbsolute ? 'mt-4' : 'mb-4'}`}>
           <div 
-            className={`border-2 border-[#E65C52]/20 rounded-xl shadow-xl overflow-hidden bg-white category-panel ${isAbsolute ? 'absolute left-0 right-0 mx-auto z-10' : ''}`}
+            className={`overflow-hidden rounded-2xl border border-line bg-white text-left shadow-card category-panel ${isAbsolute ? 'absolute left-0 right-0 mx-auto z-10' : ''}`}
             style={isAbsolute ? { width: 'calc(100% - 2rem)' } : {}}
           >
-            <div className="flex items-center justify-between px-4 py-3 border-b-2 border-[#E65C52]/20 bg-gradient-to-r from-[#F5D9D1]/30 to-white">
+            <div className="flex items-center justify-between border-b border-line px-4 py-3">
               <div className="flex items-center gap-2">
                 {React.createElement(categories.find((c) => c.id === selectedCategory)?.icon, { 
-                  className: 'w-4 h-4 text-[#E65C52]' 
+                  className: 'h-4 w-4 text-brand-500' 
                 })}
-                <span className="font-medium text-[#E14C42]">
+                <span className="font-semibold text-ink">
                   {categories.find((c) => c.id === selectedCategory)?.label}
                 </span>
               </div>
@@ -55,7 +57,8 @@ const ChatCategoriesPanel = ({
                   setShowCategoryPanel(false);
                   setSelectedCategory(null);
                 }}
-                className="text-gray-400 hover:text-[#E65C52] hover:bg-[#F5D9D1] rounded-full p-1 transition-colors"
+                className="rounded-full p-1 text-ink-faint transition-colors hover:bg-brand-50 hover:text-brand-500"
+                aria-label="Close options"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -65,7 +68,7 @@ const ChatCategoriesPanel = ({
                 <button
                   key={index}
                   onClick={() => handleCategoryOptionSelect(option)}
-                  className="w-full text-left px-4 py-3 text-gray-700 hover:bg-[#F5D9D1] transition-colors border-b border-[#E65C52]/10 last:border-b-0"
+                  className="w-full border-b border-line px-4 py-3 text-left text-ink transition-colors last:border-b-0 hover:bg-brand-50"
                 >
                   <span className="text-sm leading-relaxed">{option}</span>
                 </button>

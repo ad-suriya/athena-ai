@@ -5,6 +5,7 @@ import ChatMessageList from './ChatMessageList.jsx';
 import UpcomingEvents from '../../calendar/components/UpcomingEvents.jsx';
 import VoiceRecordingAnimation from './VoiceRecordingAnimation.jsx';
 import { X } from 'lucide-react';
+import logo from '../../../assets/logo-07.png';
 
 export const ChatMainView = ({
   messages,
@@ -25,11 +26,12 @@ export const ChatMainView = ({
         <div className="w-full max-w-4xl">
           {messages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center py-12">
-              <h1 className="text-2xl md:text-4xl font-semibold mb-2 bg-gradient-to-r from-[#E65C52] to-[#E14C42] bg-clip-text text-transparent">
-                Hi, {user?.displayName?.split(' ')[0] || 'there'}!
+              <img src={logo} alt="" className="mb-4 h-14 w-14 object-contain" />
+              <h1 className="text-balance text-3xl font-bold tracking-[-0.02em] text-ink md:text-[40px]">
+                Hi, <span className="text-brand-500">{user?.displayName?.split(' ')[0] || 'there'}</span>
               </h1>
-              <p className="text-gray-600 text-lg md:text-xl mb-8">
-                How can I assist you today?
+              <p className="mb-8 mt-2 text-lg text-ink-muted">
+                How can I help you today?
               </p>
 
               <ChatInputForm isAbsolute={true} {...chatInputProps} />
@@ -43,7 +45,7 @@ export const ChatMainView = ({
               </div>
             </div>
           ) : (
-            <div className="space-y-6 md:space-y-8 py-2 md:py-4">
+            <div className="space-y-5 py-2 md:py-4">
               <ChatMessageList {...messageListProps} messages={messages} />
             </div>
           )}
@@ -51,15 +53,16 @@ export const ChatMainView = ({
       </div>
 
       {messages.length > 0 && (
-        <div className="sticky bottom-0 p-4 bg-transparent w-full">
+        <div className="sticky bottom-0 w-full bg-gradient-to-t from-white via-white/95 to-transparent px-4 pb-4 pt-6">
           <div className="max-w-4xl mx-auto w-full">
             {errorMessage && (
-              <div className="bg-[#F5D9D1]/90 border-2 border-[#E65C52]/20 rounded-lg p-3 mb-4 flex items-center justify-between">
+              <div className="mb-3 flex items-center justify-between gap-3 rounded-xl border border-brand-200 bg-brand-50 px-4 py-3" role="alert">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-[#E14C42]">{errorMessage}</span>
+                  <span className="text-sm text-brand-700">{errorMessage}</span>
                 </div>
                 <button
-                  className="text-[#E65C52] hover:text-[#E14C42]"
+                  aria-label="Dismiss"
+                  className="rounded-md p-1 text-brand-500 hover:bg-brand-100"
                   onClick={() => setErrorMessage(null)}
                 >
                   <X className="w-4 h-4" />
@@ -67,12 +70,13 @@ export const ChatMainView = ({
               </div>
             )}
             {recordingError && (
-              <div className="bg-[#F5D9D1]/90 border-2 border-[#E65C52]/20 rounded-lg p-3 mb-4 flex items-center justify-between">
+              <div className="mb-3 flex items-center justify-between gap-3 rounded-xl border border-brand-200 bg-brand-50 px-4 py-3" role="alert">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-[#E14C42]">{recordingError}</span>
+                  <span className="text-sm text-brand-700">{recordingError}</span>
                 </div>
                 <button
-                  className="text-[#E65C52] hover:text-[#E14C42]"
+                  aria-label="Dismiss"
+                  className="rounded-md p-1 text-brand-500 hover:bg-brand-100"
                   onClick={() => setRecordingError(null)}
                 >
                   <X className="w-4 h-4" />
@@ -87,7 +91,7 @@ export const ChatMainView = ({
             {isRecording && (
               <div className="mt-2 text-center">
                 <VoiceRecordingAnimation audioLevel={audioLevel} />
-                <p className="text-sm text-[#E14C42] mt-1">Recording... Speak now</p>
+                <p className="mt-1 text-sm text-brand-600">Recording… speak now</p>
               </div>
             )}
           </div>

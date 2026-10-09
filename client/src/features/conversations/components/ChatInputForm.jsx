@@ -40,7 +40,7 @@ const ChatInputForm = ({
           <button
             type="button"
             onClick={stopRecording}
-            className="p-2 rounded-full text-[#E14C42] hover:text-[#E14C42]/80 bg-[#F5D9D1] transition-colors"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-brand-100 text-brand-600 transition-colors hover:bg-brand-200"
           >
             <StopCircle className="w-5 h-5" />
           </button>
@@ -53,7 +53,7 @@ const ChatInputForm = ({
         <Tooltip text="Send message">
           <button
             type="submit"
-            className="p-2 rounded-full bg-gradient-to-r from-[#E65C52] to-[#E14C42] text-white hover:shadow-lg hover:shadow-[#E65C52]/30 transition-all"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-brand-500 text-white shadow-[0_6px_16px_rgba(230,92,82,0.35)] transition-colors hover:bg-brand-600"
           >
             <Send className="w-5 h-5" />
           </button>
@@ -68,10 +68,10 @@ const ChatInputForm = ({
         <button
           type="button"
           onClick={permissionState === 'denied' ? requestPermissionAgain : toggleRecording}
-          className={`p-2 rounded-full transition-colors ${
-            permissionState === 'denied' ? 
-              'text-[#E14C42] bg-[#F5D9D1]' :
-              'text-[#E65C52] hover:text-[#E14C42] hover:bg-[#F5D9D1]'
+          className={`flex h-11 w-11 items-center justify-center rounded-full transition-colors ${
+            permissionState === 'denied' ?
+              'bg-brand-100 text-brand-600' :
+              'bg-[#F3F1F1] text-ink hover:bg-brand-50'
           }`}
         >
           {permissionState === 'denied' ? (
@@ -87,15 +87,16 @@ const ChatInputForm = ({
   return (
     <form
       onSubmit={handleSubmit}
-      className={`w-full ${isAbsolute ? 'max-w-2xl mx-auto' : ''} bg-white border-2 border-[#E65C52]/20 rounded-xl px-4 py-4 shadow-lg hover:shadow-xl hover:shadow-[#E65C52]/10 transition-all relative`}
+      className={`relative w-full ${isAbsolute ? 'mx-auto max-w-2xl' : ''} rounded-2xl border border-line bg-white px-4 py-4 shadow-card transition-shadow focus-within:border-brand-300 focus-within:ring-4 focus-within:ring-brand-100`}
     >
       {!isAbsolute && (
         <div className="absolute top-2 right-2 flex items-center gap-1">
           <Tooltip text="Share">
             <button
               type="button"
-              className="p-1.5 rounded-md text-[#E65C52] hover:bg-[#F5D9D1] transition-colors"
+              className="rounded-lg p-1.5 text-ink-muted transition-colors hover:bg-brand-50 hover:text-brand-500"
               onClick={onShareClick}
+              aria-label="Share"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -121,8 +122,9 @@ const ChatInputForm = ({
             <Tooltip text="More options">
               <button
                 type="button"
-                className="p-1.5 rounded-md text-[#E65C52] hover:bg-[#F5D9D1] transition-colors"
+                className="rounded-lg p-1.5 text-ink-muted transition-colors hover:bg-brand-50 hover:text-brand-500"
                 onClick={() => setActiveAction(activeAction === 'message-options' ? null : 'message-options')}
+                aria-label="Conversation options"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -143,10 +145,10 @@ const ChatInputForm = ({
             </Tooltip>
 
             {activeAction === 'message-options' && (
-              <div className="absolute right-0 top-full mt-1 bg-white rounded-md shadow-xl py-1 z-10 border-2 border-[#E65C52]/20 w-40">
+              <div className="absolute right-0 top-full z-10 mt-1 w-44 rounded-2xl border border-line bg-white p-1.5 shadow-card">
                 <button
                   type="button"
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-[#F5D9D1] flex items-center gap-2"
+                  className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm text-ink hover:bg-brand-50"
                   onClick={onArchive}
                 >
                   <svg
@@ -168,7 +170,7 @@ const ChatInputForm = ({
                 </button>
                 <button
                   type="button"
-                  className="w-full text-left px-4 py-2 text-sm text-[#E14C42] hover:bg-[#F5D9D1] flex items-center gap-2"
+                  className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm text-brand-600 hover:bg-brand-50"
                   onClick={onDelete}
                 >
                   <svg
@@ -200,32 +202,34 @@ const ChatInputForm = ({
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           placeholder="Ask anything..."
-          className="w-full bg-transparent focus:outline-none text-gray-700 placeholder-gray-400 text-base min-h-[40px] py-2"
+          className="min-h-[40px] w-full bg-transparent px-1 py-2 pr-16 text-[16px] text-ink placeholder:text-ink-faint focus:outline-none"
+          aria-label="Message Athena"
           disabled={isLoading}
           autoFocus
         />
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2.5">
             <div className="relative" ref={attachmentPanelRef}>
               <Tooltip text="Attach files">
                 <button
                   type="button"
-                  className={`p-2 rounded-lg transition-colors attachment-button ${
+                  className={`flex h-10 w-10 items-center justify-center rounded-full transition-colors attachment-button ${
                     activeUploadPanel === 'attachment'
-                      ? 'text-[#E14C42] bg-[#F5D9D1] border-2 border-[#E65C52]/40 shadow-lg shadow-[#E65C52]/20'
-                      : 'text-[#E65C52] hover:text-[#E14C42] hover:bg-[#F5D9D1] hover:border-2 hover:border-[#E65C52]/20'
+                      ? 'bg-brand-100 text-brand-600'
+                      : 'bg-[#F3F1F1] text-ink-muted hover:bg-brand-50 hover:text-brand-500'
                   }`}
+                  aria-label="Attach files"
                   onClick={() => toggleUploadPanel('attachment')}
                 >
                   <Paperclip className="w-5 h-5" />
                 </button>
               </Tooltip>
               {activeUploadPanel === 'attachment' && (
-                <div className="absolute bottom-full left-0 mb-2 bg-white rounded-lg shadow-xl border-2 border-[#E65C52]/20 p-2 z-10 w-48">
+                <div className="absolute bottom-full left-0 z-10 mb-2 w-48 rounded-2xl border border-line bg-white p-1.5 shadow-card">
                   <div className="flex flex-col gap-1">
-                    <label className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-[#F5D9D1] rounded cursor-pointer">
-                      <FileText className="w-4 h-4 text-[#E65C52]" />
+                    <label className="flex cursor-pointer items-center gap-2 rounded-xl px-3 py-2 text-sm text-ink hover:bg-brand-50">
+                      <FileText className="h-4 w-4 text-brand-500" />
                       <span>Upload File</span>
                       <input
                         type="file"
@@ -237,8 +241,8 @@ const ChatInputForm = ({
                         multiple
                       />
                     </label>
-                    <label className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-[#F5D9D1] rounded cursor-pointer">
-                      <ImageIcon className="w-4 h-4 text-[#E65C52]" />
+                    <label className="flex cursor-pointer items-center gap-2 rounded-xl px-3 py-2 text-sm text-ink hover:bg-brand-50">
+                      <ImageIcon className="h-4 w-4 text-brand-500" />
                       <span>Upload Image</span>
                       <input
                         type="file"
@@ -266,16 +270,17 @@ const ChatInputForm = ({
                   <button
                     type="button"
                     onClick={() => setShowSearchOptions(!showSearchOptions)}
-                    className="p-2 rounded-lg text-[#E65C52] hover:text-[#E14C42] hover:bg-[#F5D9D1] transition-colors"
+                    className="flex h-11 w-11 items-center justify-center rounded-full bg-[#F3F1F1] text-ink transition-colors hover:bg-brand-50"
+                    aria-label="Search options"
                   >
                     <Globe className="w-5 h-5" />
                   </button>
                 </Tooltip>
 
                 {showSearchOptions && (
-                  <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-xl z-50 border-2 border-[#E65C52]/20">
-                    <div className="p-3 border-b-2 border-[#E65C52]/10 bg-gradient-to-r from-[#F5D9D1]/30 to-white">
-                      <h3 className="text-sm font-medium text-[#E14C42]">Search options</h3>
+                  <div className="absolute right-0 top-full z-50 mt-2 w-64 rounded-2xl border border-line bg-white shadow-card">
+                    <div className="border-b border-line px-4 py-3">
+                      <h3 className="text-sm font-semibold text-ink">Search options</h3>
                     </div>
                     <div className="p-2">
                       {searchOptions?.map((option) => {
@@ -283,7 +288,7 @@ const ChatInputForm = ({
                         return (
                           <button
                             key={option.id}
-                            className="w-full text-left px-3 py-2 text-sm hover:bg-[#F5D9D1] rounded-md flex items-start gap-3 transition-colors"
+                            className="flex w-full items-start gap-3 rounded-xl px-3 py-2 text-left text-sm transition-colors hover:bg-brand-50"
                             onClick={() => {
                               setActiveAction('search');
                               setInputValue(`[${option.label}] `);
@@ -291,12 +296,12 @@ const ChatInputForm = ({
                               if (inputRef && inputRef.current) inputRef.current.focus();
                             }}
                           >
-                            <div className="p-1.5 rounded-md bg-[#F5D9D1] text-[#E65C52]">
+                            <div className="rounded-lg bg-brand-50 p-1.5 text-brand-500">
                               <Icon className="w-4 h-4" />
                             </div>
                             <div className="flex-1">
-                              <div className="font-medium text-gray-900">{option.label}</div>
-                              <div className="text-xs text-gray-500">{option.description}</div>
+                              <div className="font-medium text-ink">{option.label}</div>
+                              <div className="text-xs text-ink-faint">{option.description}</div>
                             </div>
                           </button>
                         );

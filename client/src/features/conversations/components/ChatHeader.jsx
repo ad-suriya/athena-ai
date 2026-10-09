@@ -6,7 +6,7 @@ export const ChatHeader = ({ historyOpen, onToggleHistory, onNewChat, title }) =
   <div className="flex h-14 shrink-0 items-center gap-2 border-b border-[#E65C52]/10 bg-white/60 px-4">
     <button
       onClick={onToggleHistory}
-      className={`flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
+      className={`flex shrink-0 items-center gap-2 whitespace-nowrap rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
         historyOpen ? 'bg-brand-100 text-brand-600' : 'text-ink hover:bg-brand-50'
       }`}
       aria-expanded={historyOpen}
@@ -16,7 +16,7 @@ export const ChatHeader = ({ historyOpen, onToggleHistory, onNewChat, title }) =
     </button>
     <button
       onClick={onNewChat}
-      className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-ink hover:bg-brand-50"
+      className="flex shrink-0 items-center gap-2 whitespace-nowrap rounded-xl px-3 py-2 text-sm font-medium text-ink hover:bg-brand-50"
     >
       <SquarePen className="h-4 w-4" />
       New chat

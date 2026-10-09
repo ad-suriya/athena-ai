@@ -34,8 +34,8 @@ const CopyButton = ({ text }) => {
       disabled={isAnimating}
       className={`p-1.5 rounded-lg transition-all duration-300 ${
         isAnimating 
-          ? (copied ? 'bg-green-100 scale-110' : 'bg-gray-200 scale-95')
-          : 'bg-gray-100 hover:bg-gray-200 hover:scale-105'
+          ? (copied ? 'bg-emerald-50 scale-110' : 'bg-brand-50 scale-95')
+          : 'hover:bg-brand-50'
       }`}
       title={copied ? "Copied!" : "Copy to clipboard"}
     >
@@ -43,12 +43,12 @@ const CopyButton = ({ text }) => {
         <div className={`transition-all duration-300 ${
           copied ? 'opacity-100 scale-100 rotate-0' : 'opacity-0 scale-50 rotate-90 absolute'
         }`}>
-          <Check className={`w-4 h-4 ${copied ? 'text-green-600' : 'text-gray-600'}`} />
+          <Check className={`w-4 h-4 ${copied ? 'text-emerald-600' : 'text-ink-faint'}`} />
         </div>
         <div className={`transition-all duration-300 ${
           copied ? 'opacity-0 scale-50 rotate-90 absolute' : 'opacity-100 scale-100 rotate-0'
         }`}>
-          <Copy className="w-4 h-4 text-gray-600" />
+          <Copy className="w-4 h-4 text-ink-faint" />
         </div>
       </div>
     </button>

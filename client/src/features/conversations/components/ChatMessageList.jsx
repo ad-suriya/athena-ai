@@ -2,6 +2,7 @@ import React from 'react';
 import { Tooltip } from './ChatUIComponents.jsx';
 import IconCopyButton from './IconCopyButton.jsx';
 import { Edit, MoreVertical } from 'lucide-react';
+import logo from '../../../assets/logo-07.png';
 import MessageEditor from './MessageEditor';
 import CopyButton from './CopyButton';
 import ReadAloudButton from './ReadAloudButton.jsx';
@@ -30,23 +31,26 @@ const ChatMessageList = ({
       {messages.map((message, index) => (
         <div
           key={index}
-          className={`flex animate-fade duration-300 ${
+          className={`flex animate-fade gap-3 duration-300 ${
             message.role === 'user' ? 'justify-end' : 'justify-start'
           }`}
         >
+          {message.role !== 'user' && (
+            <img src={logo} alt="" className="mt-1 hidden h-9 w-9 shrink-0 rounded-full border border-line bg-white object-contain p-1 sm:block" />
+          )}
           <div
-            className={`max-w-full md:max-w-4xl rounded-2xl ${
+            className={`min-w-0 max-w-full md:max-w-3xl rounded-2xl ${
               message.role === 'user'
-                ? 'bg-gradient-to-r from-[#E65C52] to-[#E14C42] text-white p-3 md:p-5 shadow-lg'
-                : 'bg-white border-2 border-[#E65C52]/20 shadow-md p-3 md:p-5 relative'
+                ? 'rounded-br-md bg-brand-500 px-4 py-3 text-white shadow-sm md:px-5'
+                : 'relative rounded-bl-md border border-line bg-white px-4 py-3 text-ink shadow-card md:px-5 md:py-4'
             }`}
           >
             {message.role === 'user' ? (
               <div className="flex flex-col gap-3">
-                <div className="text-sm whitespace-pre-wrap">
+                <div className="text-[15px] leading-relaxed whitespace-pre-wrap">
                   {formatMessageContent(message.content)}
                 </div>
-                <div className="flex items-center justify-end gap-2 mt-2 pt-2 border-t border-white/20">
+                <div className="-mb-1 flex items-center justify-end gap-1">
                   <Tooltip text="Copy">
                     <IconCopyButton
                       text={message.content}
@@ -85,7 +89,7 @@ const ChatMessageList = ({
               <div className="flex flex-col gap-3">
                 <div className="flex justify-between items-start gap-4">
                   <div className="flex-1 pr-4">
-                    <div className="text-sm whitespace-pre-wrap">
+                    <div className="text-[15px] leading-relaxed whitespace-pre-wrap">
                       {formatMessageContent(message.content)}
                     </div>
                     {extractUrls(message.content).map((url) => {
@@ -93,7 +97,7 @@ const ChatMessageList = ({
                       return preview ? (
                         <div
                           key={url}
-                          className="mt-2 p-4 border-2 border-[#E65C52]/10 rounded-lg bg-[#F5D9D1]/20 max-w-full"
+                          className="mt-3 max-w-full overflow-hidden rounded-xl border border-line bg-[#FFFAF9]"
                         >
                           {preview.image && (
                             <img
@@ -103,7 +107,7 @@ const ChatMessageList = ({
                             />
                           )}
                           <div className="p-4">
-                            <h4 className="text-base font-bold text-[#E14C42] link-preview-text">
+                            <h4 className="text-base font-semibold text-ink link-preview-text">
                               {preview.title}
                             </h4>
                             <p className="text-sm text-gray-600 link-preview-text">
@@ -113,7 +117,7 @@ const ChatMessageList = ({
                               href={preview.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-sm text-[#E65C52] hover:text-[#E14C42] link-preview-text"
+                              className="text-sm text-brand-500 hover:text-brand-600 link-preview-text"
                             >
                               {preview.url}
                             </a>
@@ -123,10 +127,10 @@ const ChatMessageList = ({
                     })}
                   </div>
                 </div>
-                <div className="flex items-center justify-end gap-2 mt-2 pt-2 border-t border-[#E65C52]/10">
+                <div className="-mb-1 flex items-center justify-end gap-1 border-t border-line pt-2">
                   <Tooltip text="Regenerate">
                     <button
-                      className={`p-1.5 rounded-md text-[#E65C52] hover:bg-[#F5D9D1] hover:text-[#E14C42] transition-colors ${
+                      className={`p-1.5 rounded-lg text-ink-faint hover:bg-brand-50 hover:text-brand-500 transition-colors ${
                         index === 0 || messages[index - 1].role !== 'user'
                           ? 'opacity-50 cursor-not-allowed'
                           : ''
@@ -173,10 +177,10 @@ const ChatMessageList = ({
                     <button
                       className={`p-1.5 rounded-md transition-colors ${
                         messageRatings[index] === 'positive'
-                          ? 'text-[#E14C42] bg-[#F5D9D1]'
+                          ? 'text-brand-600 bg-brand-50'
                           : messageRatings[index] === 'negative'
                           ? 'hidden'
-                          : 'text-gray-400 hover:text-[#E65C52] hover:bg-[#F5D9D1]'
+                          : 'text-ink-faint hover:text-brand-500 hover:bg-brand-50'
                       }`}
                       onClick={() => {
                         console.log('Like clicked for index:', index);
@@ -203,10 +207,10 @@ const ChatMessageList = ({
                     <button
                       className={`p-1.5 rounded-md transition-colors ${
                         messageRatings[index] === 'negative'
-                          ? 'text-[#E14C42] bg-[#F5D9D1]'
+                          ? 'text-brand-600 bg-brand-50'
                           : messageRatings[index] === 'positive'
                           ? 'hidden'
-                          : 'text-gray-400 hover:text-[#E65C52] hover:bg-[#F5D9D1]'
+                          : 'text-ink-faint hover:text-brand-500 hover:bg-brand-50'
                       }`}
                       onClick={() => {
                         console.log('Unlike clicked for index:', index);
@@ -231,7 +235,7 @@ const ChatMessageList = ({
                   </Tooltip>
                   <Tooltip text="More options">
                     <button
-                      className="p-1.5 rounded-md text-gray-400 hover:text-[#E65C52] hover:bg-[#F5D9D1] transition-colors"
+                      className="p-1.5 rounded-lg text-ink-faint hover:text-brand-500 hover:bg-brand-50 transition-colors"
                       onClick={() => {
                         setActiveAction(
                           activeAction === `options-${index}` ? null : `options-${index}`
@@ -243,17 +247,17 @@ const ChatMessageList = ({
                   </Tooltip>
                   {activeAction === `options-${index}` && (
                     <div
-                      className="absolute top-full right-0 mt-2 bg-white rounded-lg shadow-xl py-1 z-50 border-2 border-[#E65C52]/20 more-options-dropdown"
+                      className="absolute top-full right-0 z-50 mt-2 rounded-2xl border border-line bg-white p-1.5 shadow-card more-options-dropdown"
                       style={{ minWidth: '200px' }}
                     >
                       <button
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-[#F5D9D1] transition-colors flex items-center"
+                        className="flex w-full items-center rounded-xl px-3 py-2 text-left text-sm text-ink transition-colors hover:bg-brand-50"
                         onClick={() => handleReportIssue(index)}
                       >
                         <span>Report Issue</span>
                       </button>
                       <button
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-[#F5D9D1] transition-colors flex items-center"
+                        className="flex w-full items-center rounded-xl px-3 py-2 text-left text-sm text-ink transition-colors hover:bg-brand-50"
                         onClick={() => {
                           exportToPDF(message.content);
                           setActiveAction(null);
@@ -270,12 +274,13 @@ const ChatMessageList = ({
         </div>
       ))}
       {isLoading && (
-        <div className="flex justify-start animate-fade duration-300">
-          <div className="max-w-full md:max-w-4xl p-3 md:p-5 rounded-2xl bg-white border-2 border-[#E65C52]/20 shadow-md">
+        <div className="flex justify-start gap-3 animate-fade duration-300">
+          <img src={logo} alt="" className="mt-1 hidden h-9 w-9 shrink-0 rounded-full border border-line bg-white object-contain p-1 sm:block" />
+          <div className="rounded-2xl rounded-bl-md border border-line bg-white px-5 py-4 shadow-card" aria-label="Athena is typing">
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-[#E65C52] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-              <div className="w-2 h-2 bg-[#E65C52] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-              <div className="w-2 h-2 bg-[#E65C52] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+              <div className="w-2 h-2 bg-brand-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+              <div className="w-2 h-2 bg-brand-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+              <div className="w-2 h-2 bg-brand-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
             </div>
           </div>
         </div>

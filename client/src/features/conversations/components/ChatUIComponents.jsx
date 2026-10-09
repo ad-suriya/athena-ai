@@ -21,11 +21,11 @@ export const Tooltip = ({ text, children, position = 'top' }) => {
       {children}
       {isVisible && (
         <div
-          className={`absolute ${positionClasses[position]} z-50 px-2 py-1 text-xs text-white bg-[#E14C42] rounded whitespace-nowrap pointer-events-none`}
+          className={`absolute ${positionClasses[position]} z-50 px-2 py-1 text-xs text-white bg-ink rounded-md whitespace-nowrap pointer-events-none`}
         >
           {text}
           <div
-            className={`absolute w-2 h-2 bg-[#E14C42] transform rotate-45 ${
+            className={`absolute w-2 h-2 bg-ink transform rotate-45 ${
               position === 'top'
                 ? 'top-full left-1/2 -translate-x-1/2 -translate-y-1/2'
                 : position === 'bottom'
