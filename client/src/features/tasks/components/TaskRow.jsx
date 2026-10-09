@@ -37,31 +37,34 @@ const TaskRow = ({
   const IconComponent = getTaskIcon(task.icon);
 
   return (
-    <div className={`grid grid-cols-12 gap-2 px-3 py-2 border-b border-gray-100 hover:bg-gray-50 group transition-colors ${
+    <div className={`flex flex-wrap items-center gap-x-3 gap-y-2 md:grid md:grid-cols-12 md:gap-3 px-4 py-3 border-b border-line/70 hover:bg-brand-50/40 group transition-colors ${
       task.completed ? 'opacity-75' : ''
     }`}>
       {showCheckbox && (
-        <div className="col-span-1 flex items-center">
+        <div className="order-0 flex items-center md:order-none md:col-span-1">
           <input
             type="checkbox"
             checked={isSelected}
             onChange={() => onToggleSelect(task.id)}
-            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-3 h-3"
+            className="rounded border-line text-blue-600 focus:ring-brand-200 w-3 h-3"
           />
         </div>
       )}
 
-      <div className="col-span-4 flex items-center gap-2">
-        <IconComponent className="w-4 h-4 text-gray-600 flex-shrink-0" />
-        <span className={`text-xs font-medium ${task.completed ? 'line-through text-gray-500' : 'text-gray-900'}`}>
+      <div className="order-1 min-w-0 flex-1 flex items-center gap-2 md:order-none md:col-span-4">
+        <IconComponent className="w-4 h-4 text-ink-muted flex-shrink-0" />
+        <span className={`text-sm font-medium ${task.completed ? 'line-through text-ink-muted' : 'text-ink'}`}>
           {task.title}
         </span>
       </div>
 
-      <div className="col-span-1 flex items-center relative">
+      {/* Phones: status and categories start a second line. */}
+      <div className="order-3 h-0 basis-full md:hidden" aria-hidden="true" />
+
+      <div className="order-4 flex items-center relative md:order-none md:col-span-1">
         <button
           onClick={() => setOpenMenu(openMenu === 'status' ? closedMenu : 'status')}
-          className={`px-1 py-0.5 rounded-full text-[10px] font-medium ${getStatusColor(task.status)} hover:opacity-80 cursor-pointer flex items-center gap-1`}
+          className={`px-1 py-0.5 rounded-full text-xs font-medium ${getStatusColor(task.status)} hover:opacity-80 cursor-pointer flex items-center gap-1`}
         >
           {task.status}
           <ChevronDown className="w-2 h-2" />
@@ -75,7 +78,7 @@ const TaskRow = ({
         />
       </div>
 
-      <div className="col-span-2 flex items-center gap-1 relative">
+      <div className="order-5 min-w-0 flex-1 flex items-center gap-1 relative md:order-none md:col-span-2">
         <div className="flex flex-wrap gap-1 flex-1">
           {task.category.map((cat, index) => (
             <button
@@ -84,7 +87,7 @@ const TaskRow = ({
                 const newCategories = task.category.filter((_, i) => i !== index);
                 actions.onUpdate(task.id, { category: newCategories });
               }}
-              className="inline-flex bg-purple-100 text-purple-700 px-1 py-0.5 rounded-full text-[10px] hover:bg-purple-200 cursor-pointer items-center gap-1"
+              className="inline-flex bg-brand-50 text-brand-600 px-1 py-0.5 rounded-full text-xs hover:bg-brand-100 cursor-pointer items-center gap-1"
             >
               {cat}
               <X className="w-2 h-2" />
@@ -92,7 +95,7 @@ const TaskRow = ({
           ))}
           <button
             onClick={() => setOpenMenu(openMenu === 'category' ? closedMenu : 'category')}
-            className="inline-flex items-center gap-1 bg-gray-100 text-gray-500 px-1 py-0.5 rounded-full text-[10px] hover:bg-gray-200 cursor-pointer"
+            className="inline-flex items-center gap-1 bg-[#F5F2F1] text-ink-muted px-1 py-0.5 rounded-full text-xs hover:bg-[#EEEAE9] cursor-pointer"
           >
             <Plus className="w-2 h-2" />
             Add
@@ -111,30 +114,30 @@ const TaskRow = ({
         />
       </div>
 
-      <div className="col-span-4 flex items-center">
-        <span className="text-xs text-gray-600 truncate" title={task.notes}>
+      <div className={`order-6 w-full items-center md:order-none md:col-span-4 ${task.notes ? 'flex' : 'hidden md:flex'}`}>
+        <span className="text-sm text-ink-muted truncate" title={task.notes}>
           {task.notes}
         </span>
       </div>
 
-      <div className="col-span-1 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="order-2 flex items-center gap-1 transition-opacity md:order-none md:col-span-1 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100">
         <button
           onClick={() => actions.onEdit(task.id)}
-          className="p-0.5 text-blue-600 hover:bg-blue-100 rounded"
+          className="rounded-lg p-1.5 text-ink-muted hover:bg-brand-50 hover:text-brand-500"
           title="Edit activity"
         >
           <Edit className="w-3 h-3" />
         </button>
         <button
           onClick={() => actions.onDuplicate(task)}
-          className="p-0.5 text-green-600 hover:bg-green-100 rounded"
+          className="rounded-lg p-1.5 text-ink-muted hover:bg-brand-50 hover:text-brand-500"
           title="Duplicate activity"
         >
           <Plus className="w-3 h-3" />
         </button>
         <button
           onClick={() => actions.onDelete(task.id)}
-          className="p-0.5 text-red-600 hover:bg-red-100 rounded"
+          className="rounded-lg p-1.5 text-brand-500 hover:bg-brand-50 hover:text-brand-600"
           title="Delete activity"
         >
           <Trash2 className="w-3 h-3" />

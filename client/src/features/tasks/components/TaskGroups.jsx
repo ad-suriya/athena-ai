@@ -9,20 +9,20 @@ const TaskGroups = ({ groupedTasks, totalCount, editingId, categoryOptions, acti
   <div className="space-y-4">
     {Object.entries(groupedTasks).map(([status, statusTasks]) => (
       statusTasks.length > 0 && (
-        <div key={status} className="bg-white rounded-md border border-gray-200 shadow-sm">
-          <div className="bg-gray-50 px-3 py-2 border-b border-gray-200">
+        <div key={status} className="bg-white rounded-card border border-line shadow-card">
+          <div className="bg-[#FBF8F7] px-3 py-2 border-b border-line">
             <div className="flex items-center justify-between">
-              <h3 className="font-medium text-gray-900 text-sm flex items-center gap-2">
+              <h3 className="font-medium text-ink text-sm flex items-center gap-2">
                 <span className={`w-3 h-3 rounded-full ${getStatusColor(status).split(' ')[1]}`}></span>
                 {status} ({statusTasks.length})
               </h3>
-              <div className="text-xs text-gray-500">
+              <div className="text-sm text-ink-muted">
                 {status === 'Done' && `${Math.round((statusTasks.length / totalCount) * 100)}% of all activities completed`}
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-12 gap-2 px-3 py-2 bg-gray-50 border-b border-gray-200 text-xs font-medium text-gray-600">
+          <div className="hidden md:grid md:grid-cols-12 md:gap-3 px-4 py-3 bg-[#FBF8F7] border-b border-line text-sm font-medium text-ink-muted">
             <div className="col-span-4 flex items-center gap-1">
               <Target className="w-3 h-3" />
               Wellness Activities
@@ -53,10 +53,10 @@ const TaskGroups = ({ groupedTasks, totalCount, editingId, categoryOptions, acti
     ))}
 
     {Object.values(groupedTasks).every(arr => arr.length === 0) && (
-      <div className="bg-white rounded-md border border-gray-200 px-3 py-8 text-center text-gray-500 shadow-sm">
-        <Heart className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+      <div className="bg-white rounded-xl border border-line px-3 py-8 text-center text-ink-muted shadow-card">
+        <Heart className="w-8 h-8 mx-auto mb-2 text-ink-faint" />
         <h3 className="text-base font-medium mb-2">No wellness activities found</h3>
-        <p className="text-xs">Try adjusting your search or filters to see more activities</p>
+        <p className="text-sm">Try adjusting your search or filters to see more activities</p>
       </div>
     )}
   </div>

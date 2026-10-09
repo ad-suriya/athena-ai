@@ -9,13 +9,13 @@ const TaskEditRow = ({ task, showCheckbox, onSave, onCancel }) => {
   const [editData, setEditData] = useState(task);
 
   return (
-    <div className="grid grid-cols-12 gap-2 px-3 py-2 border-b border-gray-100 bg-blue-50">
-      {showCheckbox && <div className="col-span-1"></div>}
-      <div className="col-span-3 flex items-center gap-2">
+    <div className="flex flex-col gap-2 md:grid md:grid-cols-12 md:gap-3 px-4 py-3 border-b border-line/70 bg-brand-50/60">
+      {showCheckbox && <div className="hidden md:block md:col-span-1"></div>}
+      <div className="flex items-center gap-2 md:col-span-3">
         <select
           value={editData.icon}
           onChange={(e) => setEditData(prev => ({...prev, icon: e.target.value}))}
-          className="w-6 h-6 text-xs border rounded"
+          className="w-6 h-6 text-sm border rounded"
         >
           {ICON_NAMES.map(icon => (
             <option key={icon} value={icon}>{icon}</option>
@@ -25,7 +25,7 @@ const TaskEditRow = ({ task, showCheckbox, onSave, onCancel }) => {
           type="text"
           value={editData.title}
           onChange={(e) => setEditData(prev => ({...prev, title: e.target.value}))}
-          className="font-medium text-gray-900 bg-white border rounded px-2 py-1 text-xs flex-1"
+          className="font-medium text-ink bg-white border rounded px-2 py-1 text-sm flex-1"
           onKeyDown={(e) => {
             if (e.key === 'Enter') onSave(task.id, editData);
             if (e.key === 'Escape') onCancel();
@@ -33,11 +33,11 @@ const TaskEditRow = ({ task, showCheckbox, onSave, onCancel }) => {
         />
       </div>
 
-      <div className="col-span-1 flex items-center">
+      <div className="flex items-center md:col-span-1">
         <select
           value={editData.status}
           onChange={(e) => setEditData(prev => ({...prev, status: e.target.value}))}
-          className="text-xs bg-white border rounded px-2 py-1 w-full"
+          className="text-sm bg-white border rounded px-2 py-1 w-full"
         >
           {STATUS_OPTIONS.map(status => (
             <option key={status} value={status}>{status}</option>
@@ -45,26 +45,26 @@ const TaskEditRow = ({ task, showCheckbox, onSave, onCancel }) => {
         </select>
       </div>
 
-      <div className="col-span-2 flex items-center">
+      <div className="flex items-center md:col-span-2">
         <input
           type="text"
           value={editData.category.join(', ')}
           onChange={(e) => setEditData(prev => ({...prev, category: e.target.value.split(',').map(s => s.trim())}))}
           placeholder="Mindfulness, Self-Care"
-          className="text-xs text-gray-600 bg-white border rounded px-2 py-1 w-full"
+          className="text-sm text-ink-muted bg-white border rounded px-2 py-1 w-full"
         />
       </div>
 
-      <div className="col-span-5 flex items-center gap-2">
+      <div className="flex items-center gap-2 md:col-span-5">
         <input
           type="text"
           value={editData.notes}
           onChange={(e) => setEditData(prev => ({...prev, notes: e.target.value}))}
-          className="text-xs text-gray-600 bg-white border rounded px-2 py-1 flex-1"
+          className="text-sm text-ink-muted bg-white border rounded px-2 py-1 flex-1"
         />
       </div>
 
-      <div className="col-span-1 flex items-center gap-1">
+      <div className="flex items-center gap-1 md:col-span-1">
         <button
           onClick={() => onSave(task.id, editData)}
           className="p-1 text-green-600 hover:bg-green-100 rounded"
@@ -74,7 +74,7 @@ const TaskEditRow = ({ task, showCheckbox, onSave, onCancel }) => {
         </button>
         <button
           onClick={onCancel}
-          className="p-1 text-gray-600 hover:bg-gray-100 rounded"
+          className="p-1 text-ink-muted hover:bg-brand-50 rounded"
           title="Cancel"
         >
           <X className="w-3 h-3" />

@@ -33,7 +33,7 @@ export default function WellnessTracker() {
   const categoryOptions = useMemo(() => allCategories.map(cat => ({
     value: cat,
     label: cat,
-    color: 'bg-purple-100 text-purple-700'
+    color: 'bg-brand-50 text-brand-600'
   })), [allCategories]);
 
   const resetNewTaskForm = () => setNewTask(EMPTY_TASK);
@@ -121,18 +121,18 @@ export default function WellnessTracker() {
   };
 
   return (
-    <div className="flex bg-[#FCF4F1] h-full w-full overflow-hidden">
+    <div className="flex bg-white h-full w-full overflow-hidden">
       <div
         ref={mainContentRef}
         className="flex-1 overflow-y-auto"
       >
-        <div className="px-4 py-4 max-w-7xl mx-auto">
-          <div className="mb-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Heart className="w-6 h-6 text-purple-600" />
-              <h1 className="text-2xl font-semibold">Wellness Tracker</h1>
+        <div className="mx-auto w-full max-w-[1400px] px-4 pb-10 pt-2 sm:px-6 lg:px-9">
+          <div className="mb-6">
+            <div className="flex items-center gap-3">
+              <Heart className="h-8 w-8 text-brand-500" strokeWidth={1.9} />
+              <h1 className="text-[32px] font-bold leading-tight tracking-[-0.02em] text-ink">Wellness Tracker</h1>
             </div>
-            <p className="text-xs text-gray-600 max-w-xl">
+            <p className="mt-2 max-w-2xl text-base text-ink-muted">
               A gentle, intuitive system for tracking mental wellness activities. Nourish your mind, one activity at a time.
             </p>
           </div>
@@ -155,7 +155,7 @@ export default function WellnessTracker() {
           />
 
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 rounded-md px-3 py-2 mb-2 text-xs flex items-center justify-between">
+            <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-3 py-2 mb-2 text-sm flex items-center justify-between">
               <span>{error}</span>
               <button onClick={clearError} className="p-0.5 hover:bg-red-100 rounded" title="Dismiss">
                 <X className="w-3 h-3" />
@@ -223,7 +223,7 @@ export default function WellnessTracker() {
         {isScrolledDown && (
           <button
             onClick={scrollToBottom}
-            className="fixed right-8 bottom-8 z-40 bg-purple-600 text-white p-3 rounded-full shadow-lg hover:bg-purple-700 transition-all duration-300 hover:scale-110"
+            className="fixed right-8 bottom-8 z-40 bg-brand-500 text-white p-3 rounded-full shadow-lg hover:bg-brand-600 transition-all duration-300 hover:scale-110"
             title="Scroll to Athena AI Suggestions"
           >
             <ArrowDown className="w-5 h-5" />

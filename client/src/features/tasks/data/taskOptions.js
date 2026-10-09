@@ -24,7 +24,7 @@ export const WELLNESS_CATEGORIES = [
 export const STATUS_OPTIONS = ['To Do', 'In progress', 'Done'];
 
 export const STATUS_DROPDOWN_OPTIONS = [
-  { value: 'To Do', label: 'To Do', color: 'bg-red-100 text-red-600' },
+  { value: 'To Do', label: 'To Do', color: 'bg-[#ECE7E6] text-ink-muted' },
   { value: 'In progress', label: 'In progress', color: 'bg-blue-100 text-blue-600' },
   { value: 'Done', label: 'Done', color: 'bg-green-100 text-green-600' }
 ];

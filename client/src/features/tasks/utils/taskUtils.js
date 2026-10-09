@@ -6,10 +6,10 @@ export const getTaskIcon = (name) => TASK_ICONS[name] || Heart;
 
 export const getStatusColor = (status) => {
   switch (status) {
-    case "To Do": return "text-red-600 bg-red-100";
+    case "To Do": return "text-ink-muted bg-[#ECE7E6]";
     case "In progress": return "text-blue-600 bg-blue-100";
     case "Done": return "text-green-600 bg-green-100";
-    default: return "text-gray-600 bg-gray-100";
+    default: return "text-ink-muted bg-[#F5F2F1]";
   }
 };
 

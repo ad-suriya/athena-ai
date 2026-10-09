@@ -22,19 +22,19 @@ const TaskToolbar = ({
   <div className="mb-4">
     <div className="flex items-center gap-2 mb-2">
       <div className="relative flex-1 max-w-xs">
-        <Search className="w-4 h-4 absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
+        <Search className="w-4 h-4 absolute left-2 top-1/2 transform -translate-y-1/2 text-ink-faint" />
         <input
           type="text"
           placeholder="Search wellness activities..."
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="pl-8 pr-3 py-1 w-full border border-gray-300 rounded-md text-xs focus:ring-1 focus:ring-purple-500 focus:border-transparent"
+          className="pl-8 pr-3 py-1 w-full border border-line rounded-xl text-sm focus:ring-1 focus:ring-brand-200 focus:border-transparent"
         />
       </div>
       <button
         onClick={onToggleFilters}
-        className={`p-1 rounded-md border transition-colors ${
-          showFilters ? 'bg-purple-100 border-purple-300 text-purple-700' : 'border-gray-300 hover:bg-gray-100'
+        className={`p-1 rounded-xl border transition-colors ${
+          showFilters ? 'bg-brand-50 border-brand-200 text-brand-600' : 'border-line hover:bg-brand-50'
         }`}
         title="Toggle filters"
       >
@@ -42,8 +42,8 @@ const TaskToolbar = ({
       </button>
       <button
         onClick={onToggleBulkActions}
-        className={`p-1 rounded-md border transition-colors ${
-          showBulkActions ? 'bg-green-100 border-green-300 text-green-700' : 'border-gray-300 hover:bg-gray-100'
+        className={`p-1 rounded-xl border transition-colors ${
+          showBulkActions ? 'bg-green-100 border-green-300 text-green-700' : 'border-line hover:bg-brand-50'
         }`}
         title="Bulk actions"
       >
@@ -52,14 +52,14 @@ const TaskToolbar = ({
     </div>
 
     {showFilters && (
-      <div className="bg-white p-2 rounded-md border border-gray-200 mb-2 shadow-sm">
+      <div className="bg-white p-2 rounded-xl border border-line mb-2 shadow-card">
         <div className="grid grid-cols-3 gap-2">
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Status</label>
+            <label className="block text-sm font-medium text-ink mb-1">Status</label>
             <select
               value={filterStatus}
               onChange={(e) => onFilterStatusChange(e.target.value)}
-              className="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-purple-500 focus:border-transparent"
+              className="w-full border border-line rounded px-2 py-1 text-sm focus:ring-1 focus:ring-brand-200 focus:border-transparent"
             >
               <option value="">All Statuses</option>
               {STATUS_OPTIONS.map(status => (
@@ -68,11 +68,11 @@ const TaskToolbar = ({
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Wellness Category</label>
+            <label className="block text-sm font-medium text-ink mb-1">Wellness Category</label>
             <select
               value={filterCategory}
               onChange={(e) => onFilterCategoryChange(e.target.value)}
-              className="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-purple-500 focus:border-transparent"
+              className="w-full border border-line rounded px-2 py-1 text-sm focus:ring-1 focus:ring-brand-200 focus:border-transparent"
             >
               <option value="">All Categories</option>
               {categories.map(category => (
@@ -83,13 +83,13 @@ const TaskToolbar = ({
           <div className="flex items-end">
             <button
               onClick={onClearFilters}
-              className="px-2 py-1 bg-gray-200 text-gray-700 rounded text-xs hover:bg-gray-300 transition-colors"
+              className="px-2 py-1 bg-[#EEEAE9] text-ink rounded text-sm hover:bg-[#E6E1E0] transition-colors"
             >
               Clear All
             </button>
           </div>
         </div>
-        <div className="mt-2 text-xs text-gray-500">
+        <div className="mt-2 text-sm text-ink-muted">
           Showing {shownCount} of {totalCount} wellness activities
         </div>
       </div>

@@ -29,9 +29,9 @@ const OptionDropdown = ({
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <div className="absolute top-1 left-0 w-48 bg-white border border-gray-200 rounded-md shadow-md z-50">
+      <div className="absolute top-1 left-0 w-48 bg-white border border-line rounded-xl shadow-md z-50">
         <div className="p-2">
-          <div className="text-xs text-gray-500 mb-2">{placeholder}</div>
+          <div className="text-sm text-ink-muted mb-2">{placeholder}</div>
           <div className="space-y-1">
             {options.map((option) => (
               <div
@@ -40,11 +40,11 @@ const OptionDropdown = ({
                   onChange(option.value);
                   onClose();
                 }}
-                className="flex items-center gap-1 px-2 py-1 hover:bg-gray-100 rounded cursor-pointer"
+                className="flex items-center gap-1 px-2 py-1 hover:bg-brand-50 rounded cursor-pointer"
               >
-                <div className="w-1 h-3 bg-gray-300 rounded-full"></div>
-                <span className={`text-xs ${
-                  option.color ? `px-1 py-0.5 rounded ${option.color}` : 'text-gray-700'
+                <div className="w-1 h-3 bg-line rounded-full"></div>
+                <span className={`text-sm ${
+                  option.color ? `px-1 py-0.5 rounded ${option.color}` : 'text-ink'
                 }`}>
                   {option.label}
                 </span>
