@@ -65,6 +65,7 @@ Do not embed tasks, notes, messages, or other collections inside the user docume
                              //   sources: [{ title, url }]   — web pages used (assistant, search only)
                              //   attachments: [{ name, mimeType, size }] — files sent to the AI (bytes are not stored)
                              //   rating: 'up' | 'down' — user's thumbs on an assistant reply
+                             //   actions: [string]     — changes Athena made with tools (assistant)
                              //   editedAt, regenerated, legacyIndex, isDeepResearch, isCriticalAnalysis (legacy)
 }
 ```

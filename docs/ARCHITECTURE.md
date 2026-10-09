@@ -148,6 +148,31 @@ No `process.env.*` calls outside of `env.js` and `dotenv` initialization.
 
 ---
 
+## Athena's actions (AI tools)
+
+In Chat, Athena can change the user's data: tasks, journal entries, calendar
+events, mood check-ins and the mind map. It uses Gemini function calling.
+
+```
+POST /api/conversations/:id/messages
+  → conversation.service.sendMessage
+  → ai.service.generateResponse (tool loop, max 8 rounds)
+  → agent/tools.js  — validates args with the REST controllers' specs
+  → task / note / calendar / wellness / mindmap services (same as the API)
+```
+
+- Tools run as the signed-in user (`req.user.uid`); they can only reach that user's data.
+- Changes happen immediately, including deletes (product decision: fully automatic).
+- Each change adds a line to the reply's `metadata.actions`; Chat shows them under the reply,
+  and later turns see them so the model knows what it did.
+- If a reply claims a change but no tool ran, the server tells the model once and makes it act
+  or correct itself.
+- Web search turns tools off for that message (Gemini cannot combine them).
+- Regenerate never runs tools, so it cannot repeat a change.
+- Vertex 429 (quota) is retried with backoff; if it still fails after some changes were made,
+  the reply lists those changes instead of failing.
+- The client sends its IANA time zone so "tomorrow at 6pm" means the user's local time.
+
 ## Minerva
 
 Minerva is retained for future use. It has no active code in the repository.

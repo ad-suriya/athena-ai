@@ -42,4 +42,4 @@ const remove = async (req, res) => {
   return success(res, { id: req.params.id });
 };
 
-module.exports = { list, get, create, update, remove };
+module.exports = { list, get, create, update, remove, eventSpec };

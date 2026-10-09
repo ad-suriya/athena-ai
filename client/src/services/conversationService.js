@@ -18,8 +18,15 @@ export const getMessages = (id) => get(`${conv(id)}/messages`);
 // options.search: answer using Google Search (the reply carries metadata.sources).
 // options.attachments: [{ name, mimeType, data (base64) }] read by the AI with this message.
 // Returns { userMessage, assistantMessage }.
+// The browser's time zone is sent so Athena understands "tomorrow at 6pm".
+// The reply's metadata.actions lists anything Athena changed (tasks, journal, calendar…).
 export const sendMessage = (id, content, { search = false, attachments = [] } = {}) =>
-  post(`${conv(id)}/messages`, { content, ...(search ? { search } : {}), ...(attachments.length ? { attachments } : {}) });
+  post(`${conv(id)}/messages`, {
+    content,
+    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    ...(search ? { search } : {}),
+    ...(attachments.length ? { attachments } : {}),
+  });
 
 // rating: 'up' | 'down' | null (clears).
 export const rateMessage = (id, messageId, rating) =>

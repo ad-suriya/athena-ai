@@ -235,9 +235,13 @@ const getMessages = async (userId, conversationId) => {
 };
 
 // Attachment bytes are only sent with their own message; later turns see the names.
+// Replies that changed data list what they did, so the model knows about it later.
 const historyText = (d) => {
-  const files = d.get('metadata')?.attachments;
-  return files?.length ? `${d.get('content')}\n\n(Attached earlier: ${files.map((f) => f.name).join(', ')})` : d.get('content');
+  const meta = d.get('metadata') || {};
+  let text = d.get('content');
+  if (meta.attachments?.length) text += `\n\n(Attached earlier: ${meta.attachments.map((f) => f.name).join(', ')})`;
+  if (meta.actions?.length) text += `\n\n(Actions taken: ${meta.actions.join('; ')})`;
+  return text;
 };
 
 const toHistory = (messageDocs) =>
@@ -266,7 +270,7 @@ const addMessage = async (convRef, { role, content, model = '', metadata = {} })
 // save assistant message → return both.
 // If the AI call fails, the user message stays saved and the AI error is thrown.
 // attachments ([{ name, mimeType, data }]) go to the AI; only name/type/size are stored.
-const sendMessage = async (userId, conversationId, { content, metadata = {}, attachments = [] }) => {
+const sendMessage = async (userId, conversationId, { content, metadata = {}, attachments = [], timeZone = null }) => {
   const { ref: convRef, snap: convSnap } = await getOwnedConversation(userId, conversationId);
   const increment = admin.firestore.FieldValue.increment;
 
@@ -283,10 +287,15 @@ const sendMessage = async (userId, conversationId, { content, metadata = {}, att
     ...(convSnap.get('messageCount') === 0 && convSnap.get('title') === 'New Chat' ? { title: titleFrom(content) } : {}),
   });
 
-  const { text, model, sources } = await aiService.generateResponse(content, history, { search: wantsSearch(metadata), attachments });
+  const { text, model, sources, actions } = await aiService.generateResponse(content, history, {
+    search: wantsSearch(metadata), attachments, userId, timeZone,
+  });
 
   const assistantMsgRef = await addMessage(convRef, {
-    role: 'assistant', content: text, model, metadata: { ...metadata, ...(sources.length ? { sources } : {}) },
+    role: 'assistant',
+    content: text,
+    model,
+    metadata: { ...metadata, ...(sources.length ? { sources } : {}), ...(actions.length ? { actions } : {}) },
   });
   await convRef.update({
     lastMessage: preview(text),
@@ -345,6 +354,7 @@ const regenerateMessage = async (userId, conversationId, messageId) => {
   }
 
   // Attachments are not stored, so a regenerated reply sees only their names.
+  // No tools here: regenerating must not repeat actions (e.g. add the same task twice).
   const promptMeta = prompt.get('metadata') || {};
   const { text, model, sources } = await aiService.generateResponse(historyText(prompt), toHistory(docs.slice(0, index - 1)), { search: wantsSearch(promptMeta) });
 

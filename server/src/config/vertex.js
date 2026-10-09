@@ -47,7 +47,7 @@ const sourcesOf = (response) => {
 // Returns { text, sources, response } — response is the raw SDK result (function calls etc.).
 const generate = async ({ contents, systemInstruction, tools }) => {
   const { model, maxTokens, temperature } = env.vertex;
-  const response = await client.models.generateContent({
+  const response = await withRetry(() => client.models.generateContent({
     model,
     contents,
     config: {
@@ -56,8 +56,30 @@ const generate = async ({ contents, systemInstruction, tools }) => {
       ...(systemInstruction ? { systemInstruction } : {}),
       ...(tools ? { tools } : {}),
     },
-  });
-  return { text: response.text || '', sources: sourcesOf(response), response };
+  }));
+  return { text: textOf(response), sources: sourcesOf(response), response };
 };
 
-module.exports = { isAvailable, generateText, generate };
+// The reply's text parts (not thoughts or function calls).
+const textOf = (response) => (response.candidates?.[0]?.content?.parts || [])
+  .filter((p) => typeof p.text === 'string' && !p.thought)
+  .map((p) => p.text)
+  .join('');
+
+// Vertex returns 429 when the project's per-minute quota is used up. Retry a few
+// times with backoff (≈1s, 2s, 4s) before giving up.
+const RETRY_DELAYS_MS = [1000, 2000, 4000];
+const isRateLimit = (err) => err?.status === 429 || /RESOURCE_EXHAUSTED/.test(err?.message || '');
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const withRetry = async (call) => {
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      return await call();
+    } catch (err) {
+      if (!isRateLimit(err) || attempt >= RETRY_DELAYS_MS.length) throw err;
+      await sleep(RETRY_DELAYS_MS[attempt] + Math.floor(Math.random() * 250));
+    }
+  }
+};
+
+module.exports = { isAvailable, generateText, generate, isRateLimit };

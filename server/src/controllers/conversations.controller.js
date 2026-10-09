@@ -26,6 +26,7 @@ const conversationSpec = {
 const messageSpec = {
   content: { type: 'string', required: true, maxLength: MAX_MESSAGE_LENGTH },
   search: { type: 'boolean' },
+  timeZone: { type: 'string', maxLength: 64 },
   // Older clients' flags; isSearch also turns on search.
   isSearch: { type: 'boolean' },
   isDeepResearch: { type: 'boolean' },
@@ -34,6 +35,15 @@ const messageSpec = {
 
 const ratingSpec = {
   rating: { type: 'enum', values: ['up', 'down'], required: true, nullable: true },
+};
+
+const isValidTimeZone = (tz) => {
+  try {
+    new Intl.DateTimeFormat('en-US', { timeZone: tz });
+    return true;
+  } catch {
+    return false;
+  }
 };
 
 // → [{ name, mimeType, data, size }] or throws 422.
@@ -84,11 +94,12 @@ const listMessages = async (req, res) =>
   success(res, await conversationService.getMessages(req.user.uid, req.params.id));
 
 const sendMessage = async (req, res) => {
-  const { content, ...flags } = validate(req.body, messageSpec);
+  const { content, timeZone, ...flags } = validate(req.body, messageSpec);
+  if (timeZone !== undefined && !isValidTimeZone(timeZone)) throw validationFailed({ timeZone: 'Unknown time zone' });
   const attachments = validateAttachments(req.body.attachments);
   if (flags.isSearch) flags.search = true;
   const metadata = Object.fromEntries(Object.entries(flags).filter(([, v]) => v === true));
-  const result = await conversationService.sendMessage(req.user.uid, req.params.id, { content, metadata, attachments });
+  const result = await conversationService.sendMessage(req.user.uid, req.params.id, { content, metadata, attachments, timeZone });
   return success(res, result, 201);
 };
 

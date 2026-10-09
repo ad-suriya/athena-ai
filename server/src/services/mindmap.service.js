@@ -1,7 +1,7 @@
 'use strict';
 
 const { requireDb, serverTimestamp, serializeDoc } = require('../utils/firestore');
-const { validationFailed } = require('../utils/errors');
+const { validationFailed, notFoundError } = require('../utils/errors');
 
 // One mind map per user, stored at mindMaps/{userId}:
 // { userId, nodes: [{ id, x, y, title, content, type, expanded }], connections: [{ from, to }] }
@@ -82,4 +82,61 @@ const saveMap = async (userId, data) => {
   return getMap(userId);
 };
 
-module.exports = { getMap, saveMap, normalizeMap, NODE_TYPES };
+// --- Single-node edits (used by the AI). Each reads, changes and saves the whole map.
+
+const findNode = (map, id) => {
+  const node = map.nodes.find((n) => n.id === id);
+  if (!node) throw notFoundError(`No mind map node with id ${id}`);
+  return node;
+};
+
+// Adds a node; placed to the right of `connectTo` when given, else below the lowest node.
+const addNode = async (userId, { title, content = '', type, connectTo }) => {
+  const map = await getMap(userId);
+  const id = map.nodes.length ? Math.max(...map.nodes.map((n) => n.id)) + 1 : 1;
+  const anchor = connectTo !== undefined ? findNode(map, connectTo) : null;
+  const siblings = anchor ? map.connections.filter((c) => c.from === anchor.id).length : 0;
+  const lowest = map.nodes.reduce((y, n) => Math.max(y, n.y), 0);
+  const node = {
+    id,
+    x: anchor ? anchor.x + 240 : 120,
+    y: anchor ? anchor.y + siblings * 110 : (map.nodes.length ? lowest + 140 : 120),
+    title,
+    content,
+    type: type || (map.nodes.length ? 'secondary' : 'main'),
+    expanded: true,
+  };
+  const saved = await saveMap(userId, {
+    nodes: [...map.nodes, node],
+    connections: anchor ? [...map.connections, { from: anchor.id, to: id }] : map.connections,
+  });
+  return saved.nodes.find((n) => n.id === id);
+};
+
+const updateNode = async (userId, id, changes) => {
+  const map = await getMap(userId);
+  findNode(map, id);
+  const saved = await saveMap(userId, { ...map, nodes: map.nodes.map((n) => (n.id === id ? { ...n, ...changes } : n)) });
+  return saved.nodes.find((n) => n.id === id);
+};
+
+// Removes the node and its connections.
+const deleteNode = async (userId, id) => {
+  const map = await getMap(userId);
+  const node = findNode(map, id);
+  await saveMap(userId, {
+    nodes: map.nodes.filter((n) => n.id !== id),
+    connections: map.connections.filter((c) => c.from !== id && c.to !== id),
+  });
+  return node;
+};
+
+const connectNodes = async (userId, from, to) => {
+  const map = await getMap(userId);
+  findNode(map, from);
+  findNode(map, to);
+  await saveMap(userId, { ...map, connections: [...map.connections, { from, to }] });
+  return { from, to };
+};
+
+module.exports = { getMap, saveMap, normalizeMap, NODE_TYPES, addNode, updateNode, deleteNode, connectNodes };

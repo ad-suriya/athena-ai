@@ -15,6 +15,7 @@ const toUiMessage = (m) => ({
   isSearch: m.metadata?.search === true || m.metadata?.isSearch === true,
   attachments: m.metadata?.attachments || [],
   sources: m.metadata?.sources || [],
+  actions: m.metadata?.actions || [],
   rating: m.metadata?.rating || null,
 });
 

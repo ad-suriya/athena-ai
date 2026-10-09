@@ -97,6 +97,16 @@ const ChatMessageList = ({
                     <div className="text-[15px] leading-relaxed whitespace-pre-wrap">
                       {formatMessageContent(message.content)}
                     </div>
+                    {message.actions?.length > 0 && (
+                      <ul className="mt-3 space-y-1 rounded-xl bg-[#FFFAF9] px-3 py-2 text-xs text-ink-muted" aria-label="What Athena changed">
+                        {message.actions.map((action, i) => (
+                          <li key={`${action}-${i}`} className="flex items-start gap-1.5">
+                            <span className="text-brand-500" aria-hidden="true">✓</span>
+                            <span>{action}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                     {message.sources?.length > 0 && (
                       <div className="mt-3 border-t border-line pt-2">
                         <p className="text-xs font-medium text-ink-muted">Sources</p>
@@ -318,6 +328,7 @@ ChatMessageList.propTypes = {
     rating: PropTypes.oneOf(['up', 'down', null]),
     attachments: PropTypes.arrayOf(PropTypes.shape({ name: PropTypes.string.isRequired })),
     sources: PropTypes.arrayOf(PropTypes.shape({ title: PropTypes.string, url: PropTypes.string.isRequired })),
+    actions: PropTypes.arrayOf(PropTypes.string),
   })).isRequired,
   formatMessageContent: PropTypes.func.isRequired,
   extractUrls: PropTypes.func.isRequired,
