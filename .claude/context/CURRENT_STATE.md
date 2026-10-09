@@ -98,9 +98,10 @@ Legacy `users/{uid}/conversations` docs are copied, not modified (see `docs/DATA
 
 ## Security Issues
 
-- Firebase Admin service account JSON (`athena-abafd-firebase-adminsdk-fbsvc-5d57a84f2e.json`)
-  is inside `client/public/` — this is a critical secret exposure. Verify it is not being served.
-  It should never be in the client directory.
+- Firebase Admin service account JSON: moved from `client/public/` (where Vite would
+  publish it) to `server/`, git-ignored. `server/.env` uses the `athena-abafd` project.
+- The admin password formerly hardcoded in `Login.jsx` is removed (86228f9), but it
+  remains in the public repository history; treat it as leaked.
 - `.env` files exist in both `client/` and `server/` — confirm they are in `.gitignore`
 
 ---

@@ -38,8 +38,8 @@ and, for conversations, against the live Firestore project (read-only document c
 > `yudle-ai`, while `client/.env` (Auth + client Firestore) uses `athena-abafd`.
 > ID tokens from one project cannot be verified by the other, so the API returns 401
 > until both point to the same project. `athena-abafd` is the canonical Athena project.
-> The counts below were taken from **`yudle-ai`**. The `athena-abafd` inventory has
-> **not** been taken yet; see section 4 (open blockers). The migration design below
+> The counts below were taken from **`yudle-ai`**. The server now uses `athena-abafd`;
+> its inventory is in section 4. The migration design below
 > holds for either project.
 
 | Collection                                   | Documents |
@@ -176,15 +176,25 @@ client reads and writes to application data (the Admin SDK bypasses rules).
   so it cannot be made real without new data collection. That is new feature work.
 - The Profile page subtitle "Administrator" is static text. There are no roles.
 
+### `athena-abafd` (2026-10-09)
+
+The server now uses the `athena-abafd` Admin credentials. The service-account key is in
+`server/` and git-ignored; it is no longer in `client/public/`, where Vite would publish it.
+The previous `yudle-ai` settings are backed up in `server/.env.yudle-ai.local` (git-ignored).
+
+Migration dry run (`node server/scripts/migrate-conversations.js`, read-only):
+
+| Users with legacy conversations | Legacy conversations | Would migrate | Failed |
+|---|---|---|---|
+| 2 | 34 | 34 | 0 |
+
+Nothing has been written. Each user's conversations are copied the first time they open chat,
+or all at once with `--apply`.
+
 ### Open blockers for end-to-end verification
 
-1. **Firebase project mismatch.** `server/.env` uses `yudle-ai` and the client uses
-   `athena-abafd`. Until the server uses `athena-abafd` Admin credentials, every
-   authenticated API call returns 401. Google sign-in still works because profile sync
-   at login is non-blocking.
-2. **Vertex AI not configured.** `VERTEX_PROJECT_ID` / `VERTEX_LOCATION` are missing
+1. **Vertex AI not configured.** `VERTEX_PROJECT_ID` / `VERTEX_LOCATION` are missing
    from `server/.env`, so message sends return `503 AI_UNAVAILABLE`.
    The user message is still saved.
-3. After (1), run `node server/scripts/migrate-conversations.js` (dry run) against
-   `athena-abafd` to inventory legacy conversations before anyone uses the new client.
-
+2. **Email/password sign-in** needs the Email/Password provider enabled in Firebase
+   Authentication for `athena-abafd` (Google sign-in already works).
