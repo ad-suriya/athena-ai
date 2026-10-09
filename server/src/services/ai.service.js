@@ -1,6 +1,6 @@
 'use strict';
 
-const { generativeModel, isAvailable } = require('../config/vertex');
+const { generateText, isAvailable } = require('../config/vertex');
 const env = require('../config/env');
 const { AppError } = require('../utils/errors');
 
@@ -40,12 +40,7 @@ const generateResponse = async (message, history = []) => {
   }
 
   try {
-    const result = await generativeModel.generateContent({
-      contents: [{ role: 'user', parts: [{ text: buildContext(message, history) }] }],
-    });
-
-    const response = await result.response;
-    const text = response?.candidates?.[0]?.content?.parts?.[0]?.text;
+    const text = await generateText(buildContext(message, history));
     if (!text) {
       throw new Error('Empty response from Vertex AI');
     }

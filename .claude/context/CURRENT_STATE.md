@@ -79,8 +79,9 @@ Legacy `users/{uid}/conversations` docs are copied, not modified (see `docs/DATA
 ## Backend
 
 - Node/Express server is active and deployed
-- Vertex AI Gemini is active (`gemini-2.5-flash`, project `athena-abafd`, `us-central1`).
-  The `@google-cloud/vertexai` SDK is deprecated (scheduled for removal on 2026-06-24); migrate to `@google/genai`
+- Vertex AI Gemini is active (`gemini-2.5-flash`, project `athena-abafd`, `us-central1`) via the
+  Google Gen AI SDK (`@google/genai`). The deprecated `@google-cloud/vertexai` and unused
+  `@google/generative-ai` packages were removed.
 - CRUD routes: `/api/tasks`, `/api/notes`, `/api/calendar/events`, `/api/journal`,
   `/api/wellness`, `/api/conversations` (+ `/:id/messages`), `/api/users/me`
 - All data routes use `requireAuth`; ownership is checked in services (404 if not owned)
