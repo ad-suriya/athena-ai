@@ -19,11 +19,10 @@ Last verified: 2026-10-09
 
 ## ESLint
 
-Client currently reports approximately:
-
-- 584 problems
-- 575 errors
-- 9 warnings
+Client reports 211 problems (all errors), after Phase 3. 184 of them are in
+`features/conversations`, 15 in `features/calendar/components/CalendarTopBar.jsx`,
+and the rest in `pages/` and `App.jsx`. `features/tasks`, `features/notes`,
+`features/mindmap` and `components/sidebar` lint clean.
 
 Major rules violated:
 
@@ -37,15 +36,19 @@ Do not suppress these with eslint-disable comments. Fix them.
 
 ## Large Components
 
-| File | Lines | Notes |
-|------|-------|-------|
-| `pages/TaskManager/OldTask.jsx` | ~2112 | Legacy — may be dead code |
-| `pages/TaskManager/Task.jsx` | ~1127 | Active task manager |
-| `pages/notes/DropdownMenu.jsx` | ~875 | |
-| `pages/notes/NoteEditor.jsx` | ~748 | |
-| `components/MindMapInterface.jsx` | ~610 | |
-| `components/SideBar.jsx` | ~597 | |
-| `pages/calendar/Calendar.jsx` | ~550 | |
+Phase 3 split the large components by responsibility. See `docs/COMPONENT_REFACTOR.md`.
+
+| File | Before | After |
+|------|--------|-------|
+| `features/tasks/Task.jsx` | 1070 | 249 |
+| `features/notes/components/DropdownMenu.jsx` | 881 | replaced by `NoteOptionsMenu.jsx` (249) + `NoteMenuItems.jsx` + `useDictation` |
+| `features/notes/NoteEditor.jsx` | 749 | 143 |
+| `features/mindmap/MindMapInterface.jsx` | 610 | 142 |
+| `components/sidebar/Sidebar.jsx` | 597 | 171 |
+| `features/calendar/Calendar.jsx` | 499 | 144 |
+| `features/calendar/components/CalendarSidebar.jsx` | 527 | replaced by `CalendarMiniMonth`, `EventEditPanel`, `CalendarInfoPanel` |
+
+`OldTask.jsx` and `sidebar1.jsx` are gone: `OldTask.jsx` is in `archive/`, and `sidebar1.jsx` was deleted in f88e74d.
 
 ---
 
