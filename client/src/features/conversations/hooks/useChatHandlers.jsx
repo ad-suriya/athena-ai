@@ -1,9 +1,10 @@
+import { addAttachments } from '../utils/attachments';
+
 export const createChatHandlers = ({
   isRecording,
   inputValue,
   activeAction,
   selectedCategory,
-  activeUploadPanel,
   stopRecording,
   sendMessage,
   currentConversationId,
@@ -11,12 +12,11 @@ export const createChatHandlers = ({
   setActiveAction,
   setShowCategoryPanel,
   setSelectedCategory,
-  setUploadedFiles,
-  setUploadedImages,
-  setActiveUploadPanel,
-  setShowSearchOptions,
+  attachments,
+  setAttachments,
+  setAttachmentError,
   setEditingMessageId,
-  setMessageRatings,
+  rateMessage,
   setIsReportModalOpen,
   setSelectedMessageIndex,
   archiveConversation,
@@ -24,13 +24,15 @@ export const createChatHandlers = ({
   handleSaveEditInternal
 }) => {
   return {
-    handleFilesUpload: (files) => {
-      setUploadedFiles(files);
-      setActiveUploadPanel(null);
+    // Reads picked files for the next message (they are sent with it, then cleared).
+    handleFilesUpload: async (files) => {
+      const result = await addAttachments(attachments, files);
+      setAttachments(result.attachments);
+      setAttachmentError(result.error);
     },
-    handleImagesUpload: (images) => {
-      setUploadedImages(images);
-      setActiveUploadPanel(null);
+    removeAttachment: (index) => {
+      setAttachments(attachments.filter((_, i) => i !== index));
+      setAttachmentError(null);
     },
     handleCategoryClick: (categoryId) => {
       if (selectedCategory === categoryId) {
@@ -40,69 +42,44 @@ export const createChatHandlers = ({
         setSelectedCategory(categoryId);
         setShowCategoryPanel(true);
       }
-      setShowSearchOptions(false);
     },
     handleCategoryOptionSelect: (option) => {
-      const structuredPrompt = `
-Hi Yudle! Could you ${option.toLowerCase()}? If you need more information from me, ask me 1-2 key questions right away. If you think I should upload any documents that would help you do a better job, let me know. You can use the tools you have access to — like Google Drive, web search, etc. — if they'll help you better accomplish this task. Do not use analysis tool. Please keep your responses friendly, brief, and conversational.
+      const structuredPrompt = `Could you help me ${option.toLowerCase()}? If you need more information, ask me one or two key questions first. Please keep it friendly, brief and conversational.`;
 
-Please execute the task as soon as you can - an artifact would be great if it makes sense. If using an artifact, consider what kind of artifact (interactive, visual, checklist, etc.) might be most helpful for this specific task. Thanks for your help!
-      `.trim();
-      
       sendMessage(structuredPrompt, {}, setInputValue, setActiveAction, setShowCategoryPanel, setSelectedCategory);
     },
     handleSubmit: (e) => {
       if (e) e.preventDefault();
       if (isRecording) stopRecording();
 
-      let finalMessage = inputValue;
-      if (activeAction === 'search') {
-        finalMessage = `[Search] ${inputValue}`;
-      } else if (activeAction === 'deepResearch') {
-        finalMessage = `[Deep Research] ${inputValue}`;
-      } else if (activeAction === 'think') {
-        finalMessage = `[Critical Analysis] ${inputValue}`;
-      }
-
       sendMessage(
-        finalMessage, 
-        {
-          isSearch: activeAction === 'search',
-          isDeepResearch: activeAction === 'deepResearch',
-          isCriticalAnalysis: activeAction === 'think',
-        },
-        setInputValue, 
-        setActiveAction, 
-        setShowCategoryPanel, 
+        inputValue,
+        { search: activeAction === 'search', attachments },
+        setInputValue,
+        setActiveAction,
+        setShowCategoryPanel,
         setSelectedCategory
-      );
+      ).then((sent) => {
+        if (sent) {
+          setAttachments([]);
+          setAttachmentError(null);
+        }
+      });
     },
     handleEditMessage: (index) => setEditingMessageId(index),
     handleCancelEdit: () => setEditingMessageId(null),
     handleSaveEdit: (index, newContent) => {
       handleSaveEditInternal(index, newContent, setEditingMessageId);
     },
-    handleRateMessage: (index, isPositive) => {
-      setMessageRatings((prev) => ({
-        ...prev,
-        [index]: isPositive ? 'positive' : 'negative',
-      }));
-    },
-    handleActionClick: (action) => {
-      if (activeAction === action) {
-        setActiveAction(null);
-      } else {
-        setActiveAction(action);
-        setShowSearchOptions(false);
-      }
+    handleRateMessage: (index, isPositive) => rateMessage(index, isPositive ? 'up' : 'down'),
+    // Web search on/off for the next message.
+    toggleSearch: () => {
+      setActiveAction(activeAction === 'search' ? null : 'search');
     },
     handleReportIssue: (index) => {
       setSelectedMessageIndex(index);
       setIsReportModalOpen(true);
       setActiveAction(null);
-    },
-    toggleUploadPanel: (panelType) => {
-      setActiveUploadPanel(activeUploadPanel === panelType ? null : panelType);
     },
     onArchive: () => {
       if (currentConversationId) {

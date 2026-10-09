@@ -12,9 +12,10 @@ const toUiMessage = (m) => ({
   content: m.content,
   timestamp: m.createdAt,
   modelUsed: m.model,
-  isSearch: m.metadata?.isSearch === true,
-  isDeepResearch: m.metadata?.isDeepResearch === true,
-  isCriticalAnalysis: m.metadata?.isCriticalAnalysis === true,
+  isSearch: m.metadata?.search === true || m.metadata?.isSearch === true,
+  attachments: m.metadata?.attachments || [],
+  sources: m.metadata?.sources || [],
+  rating: m.metadata?.rating || null,
 });
 
 // API conversation → the fields the sidebar history panel reads.
@@ -178,15 +179,17 @@ export const useChatManager = (auth, selectedModel) => {
     }
   };
 
-  const sendMessage = async (message, flags = {}, setInputValue, setActiveAction, setShowCategoryPanel, setSelectedCategory) => {
-    if (!message.trim()) return;
+  // options: { search, attachments } — see conversationService.sendMessage.
+  // Returns true when the message was sent (the reply may still have failed).
+  const sendMessage = async (message, options = {}, setInputValue, setActiveAction, setShowCategoryPanel, setSelectedCategory) => {
+    if (!message.trim()) return false;
 
-    const { isSearch = false, isDeepResearch = false, isCriticalAnalysis = false } = flags;
+    const { search = false, attachments = [] } = options;
 
     if (!auth.currentUser) {
       console.error('No user authenticated');
       setErrorMessage('Please sign in to send messages.');
-      return;
+      return false;
     }
 
     const userMessage = {
@@ -194,9 +197,10 @@ export const useChatManager = (auth, selectedModel) => {
       content: message,
       timestamp: new Date().toISOString(),
       model: selectedModel,
-      isSearch,
-      isDeepResearch,
-      isCriticalAnalysis,
+      isSearch: search,
+      attachments: attachments.map(({ name, mimeType, size }) => ({ name, mimeType, size })),
+      sources: [],
+      rating: null,
     };
 
     setMessages((prev) => [...prev, userMessage]);
@@ -216,11 +220,7 @@ export const useChatManager = (auth, selectedModel) => {
       await loadPreviews(message);
 
       // The backend saves the user message, calls Vertex AI, and saves the reply.
-      const result = await conversationService.sendMessage(conversationId, message, {
-        isSearch,
-        isDeepResearch,
-        isCriticalAnalysis,
-      });
+      const result = await conversationService.sendMessage(conversationId, message, { search, attachments });
       const savedUser = toUiMessage(result.userMessage);
       const assistantMessage = toUiMessage(result.assistantMessage);
 
@@ -235,6 +235,22 @@ export const useChatManager = (auth, selectedModel) => {
     } finally {
       setIsLoading(false);
       if (conversationId) refreshConversations();
+    }
+    return true;
+  };
+
+  // Thumbs up/down on a reply; choosing the current rating again clears it.
+  const rateMessage = async (index, rating) => {
+    const target = messages[index];
+    if (!target?.id || !currentConversationId) return;
+    const next = target.rating === rating ? null : rating;
+    const apply = (value) => setMessages((prev) => prev.map((m) => (m.id === target.id ? { ...m, rating: value } : m)));
+    apply(next);
+    try {
+      await conversationService.rateMessage(currentConversationId, target.id, next);
+    } catch (error) {
+      apply(target.rating);
+      setErrorMessage(`Could not save your rating: ${error.message}`);
     }
   };
 
@@ -319,6 +335,7 @@ export const useChatManager = (auth, selectedModel) => {
     handleSaveEdit,
     handleRegenerate,
     sendMessage,
+    rateMessage,
     startNewChat,
     renameConversation,
     archiveConversation,

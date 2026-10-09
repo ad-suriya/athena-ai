@@ -1,4 +1,4 @@
-import React from 'react';
+import PropTypes from 'prop-types';
 import ReportIssueModal from './ReportIssueModal';
 import FileCategoryPanel from './FileCategoryPanel';
 
@@ -6,6 +6,7 @@ export const ChatModals = ({
   isReportModalOpen,
   setIsReportModalOpen,
   messages,
+  conversationId,
   selectedMessageIndex,
   showFileCategoryPanel,
   setShowFileCategoryPanel,
@@ -14,13 +15,12 @@ export const ChatModals = ({
   return (
     <>
       {isReportModalOpen && (
-        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
-          <ReportIssueModal
-            isOpen={isReportModalOpen}
-            onClose={() => setIsReportModalOpen(false)}
-            message={messages[selectedMessageIndex]?.content || ''}
-          />
-        </div>
+        <ReportIssueModal
+          isOpen={isReportModalOpen}
+          onClose={() => setIsReportModalOpen(false)}
+          conversationId={conversationId}
+          messageId={messages[selectedMessageIndex]?.id}
+        />
       )}
 
       {showFileCategoryPanel && (
@@ -36,4 +36,15 @@ export const ChatModals = ({
       )}
     </>
   );
+};
+
+ChatModals.propTypes = {
+  isReportModalOpen: PropTypes.bool.isRequired,
+  setIsReportModalOpen: PropTypes.func.isRequired,
+  messages: PropTypes.arrayOf(PropTypes.shape({ id: PropTypes.string, content: PropTypes.string })).isRequired,
+  conversationId: PropTypes.string,
+  selectedMessageIndex: PropTypes.number,
+  showFileCategoryPanel: PropTypes.bool.isRequired,
+  setShowFileCategoryPanel: PropTypes.func.isRequired,
+  setInputValue: PropTypes.func.isRequired,
 };

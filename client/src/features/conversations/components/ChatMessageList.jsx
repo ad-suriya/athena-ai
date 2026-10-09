@@ -1,4 +1,4 @@
-import React from 'react';
+import PropTypes from 'prop-types';
 import { Tooltip } from './ChatUIComponents.jsx';
 import IconCopyButton from './IconCopyButton.jsx';
 import { Edit, MoreVertical } from 'lucide-react';
@@ -17,7 +17,6 @@ const ChatMessageList = ({
   handleSaveEdit,
   handleCancelEdit,
   handleRegenerate,
-  messageRatings,
   handleRateMessage,
   activeAction,
   setActiveAction,
@@ -50,13 +49,20 @@ const ChatMessageList = ({
                 <div className="text-[15px] leading-relaxed whitespace-pre-wrap">
                   {formatMessageContent(message.content)}
                 </div>
+                {(message.isSearch || message.attachments?.length > 0) && (
+                  <div className="flex flex-wrap gap-1.5 text-xs">
+                    {message.isSearch && <span className="rounded-md bg-white/20 px-2 py-0.5">Web search</span>}
+                    {message.attachments?.map((file, i) => (
+                      <span key={`${file.name}-${i}`} className="max-w-[14rem] truncate rounded-md bg-white/20 px-2 py-0.5" title={file.name}>
+                        📎 {file.name}
+                      </span>
+                    ))}
+                  </div>
+                )}
                 <div className="-mb-1 flex items-center justify-end gap-1">
                   <Tooltip text="Copy">
                     <IconCopyButton
                       text={message.content}
-                      onCopy={() =>
-                        console.log('Copy clicked for user message index:', index)
-                      }
                     />
                   </Tooltip>
                   <Tooltip text="Edit">
@@ -67,7 +73,6 @@ const ChatMessageList = ({
                           : 'text-white/80 hover:text-white hover:bg-white/10'
                       }`}
                       onClick={() => {
-                        console.log('Edit clicked for user message index:', index);
                         handleEditMessage(index);
                       }}
                     >
@@ -92,6 +97,21 @@ const ChatMessageList = ({
                     <div className="text-[15px] leading-relaxed whitespace-pre-wrap">
                       {formatMessageContent(message.content)}
                     </div>
+                    {message.sources?.length > 0 && (
+                      <div className="mt-3 border-t border-line pt-2">
+                        <p className="text-xs font-medium text-ink-muted">Sources</p>
+                        <ol className="mt-1 space-y-0.5 text-xs">
+                          {message.sources.map((source, i) => (
+                            <li key={source.url} className="truncate">
+                              <span className="text-ink-faint">{i + 1}. </span>
+                              <a href={source.url} target="_blank" rel="noopener noreferrer" className="text-brand-600 hover:underline">
+                                {source.title}
+                              </a>
+                            </li>
+                          ))}
+                        </ol>
+                      </div>
+                    )}
                     {extractUrls(message.content).map((url) => {
                       const preview = linkPreviews[url];
                       return preview ? (
@@ -136,7 +156,6 @@ const ChatMessageList = ({
                           : ''
                       }`}
                       onClick={() => {
-                        console.log('Regenerate clicked for index:', index);
                         handleRegenerate(index);
                       }}
                       disabled={index === 0 || messages[index - 1].role !== 'user'}
@@ -162,30 +181,27 @@ const ChatMessageList = ({
                   <Tooltip text="Copy">
                     <CopyButton
                       text={message.content}
-                      onCopy={() => console.log('Copy clicked for index:', index)}
                     />
                   </Tooltip>
                   <Tooltip text="Read Aloud">
                     <ReadAloudButton
                       text={message.content}
-                      onStart={() =>
-                        console.log('Read Aloud started for index:', index)
-                      }
                     />
                   </Tooltip>
                   <Tooltip text="Like">
                     <button
                       className={`p-1.5 rounded-md transition-colors ${
-                        messageRatings[index] === 'positive'
+                        message.rating === 'up'
                           ? 'text-brand-600 bg-brand-50'
-                          : messageRatings[index] === 'negative'
+                          : message.rating === 'down'
                           ? 'hidden'
                           : 'text-ink-faint hover:text-brand-500 hover:bg-brand-50'
                       }`}
                       onClick={() => {
-                        console.log('Like clicked for index:', index);
                         handleRateMessage(index, true);
                       }}
+                      aria-label="Good reply"
+                      aria-pressed={message.rating === 'up'}
                       disabled={editingMessageId === index}
                     >
                       <svg
@@ -206,16 +222,17 @@ const ChatMessageList = ({
                   <Tooltip text="Unlike">
                     <button
                       className={`p-1.5 rounded-md transition-colors ${
-                        messageRatings[index] === 'negative'
+                        message.rating === 'down'
                           ? 'text-brand-600 bg-brand-50'
-                          : messageRatings[index] === 'positive'
+                          : message.rating === 'up'
                           ? 'hidden'
                           : 'text-ink-faint hover:text-brand-500 hover:bg-brand-50'
                       }`}
                       onClick={() => {
-                        console.log('Unlike clicked for index:', index);
                         handleRateMessage(index, false);
                       }}
+                      aria-label="Bad reply"
+                      aria-pressed={message.rating === 'down'}
                       disabled={editingMessageId === index}
                     >
                       <svg
@@ -288,6 +305,40 @@ const ChatMessageList = ({
       <div ref={messagesEndRef} />
     </>
   );
+};
+
+const refShape = PropTypes.oneOfType([PropTypes.func, PropTypes.shape({ current: PropTypes.any })]);
+
+ChatMessageList.propTypes = {
+  messages: PropTypes.arrayOf(PropTypes.shape({
+    id: PropTypes.string,
+    role: PropTypes.string.isRequired,
+    content: PropTypes.string.isRequired,
+    isSearch: PropTypes.bool,
+    rating: PropTypes.oneOf(['up', 'down', null]),
+    attachments: PropTypes.arrayOf(PropTypes.shape({ name: PropTypes.string.isRequired })),
+    sources: PropTypes.arrayOf(PropTypes.shape({ title: PropTypes.string, url: PropTypes.string.isRequired })),
+  })).isRequired,
+  formatMessageContent: PropTypes.func.isRequired,
+  extractUrls: PropTypes.func.isRequired,
+  linkPreviews: PropTypes.objectOf(PropTypes.shape({
+    image: PropTypes.string,
+    title: PropTypes.string,
+    description: PropTypes.string,
+    url: PropTypes.string,
+  })).isRequired,
+  editingMessageId: PropTypes.number,
+  handleEditMessage: PropTypes.func.isRequired,
+  handleSaveEdit: PropTypes.func.isRequired,
+  handleCancelEdit: PropTypes.func.isRequired,
+  handleRegenerate: PropTypes.func.isRequired,
+  handleRateMessage: PropTypes.func.isRequired,
+  activeAction: PropTypes.string,
+  setActiveAction: PropTypes.func.isRequired,
+  handleReportIssue: PropTypes.func.isRequired,
+  exportToPDF: PropTypes.func.isRequired,
+  isLoading: PropTypes.bool,
+  messagesEndRef: refShape,
 };
 
 export default ChatMessageList;

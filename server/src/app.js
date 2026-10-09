@@ -25,6 +25,8 @@ app.use('/api', apiLimiter);
 app.use('/api/notes', express.json({ limit: '1mb' }));
 // A mind map is saved whole (up to 500 nodes).
 app.use('/api/mindmap', express.json({ limit: '1mb' }));
+// Messages may carry attachments for Gemini (max 10 MB of files, base64 adds ~33%).
+app.post('/api/conversations/:id/messages', express.json({ limit: '15mb' }));
 app.use(express.json({ limit: '10kb' }));
 
 // === CORS ===

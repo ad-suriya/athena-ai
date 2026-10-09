@@ -234,11 +234,20 @@ const getMessages = async (userId, conversationId) => {
   return (await loadMessages(ref)).map(serializeMessage);
 };
 
+// Attachment bytes are only sent with their own message; later turns see the names.
+const historyText = (d) => {
+  const files = d.get('metadata')?.attachments;
+  return files?.length ? `${d.get('content')}\n\n(Attached earlier: ${files.map((f) => f.name).join(', ')})` : d.get('content');
+};
+
 const toHistory = (messageDocs) =>
   messageDocs
     .slice(-CONTEXT_MESSAGES)
-    .map((d) => ({ role: d.get('role'), content: d.get('content') }))
+    .map((d) => ({ role: d.get('role'), content: historyText(d) }))
     .filter((m) => m.role === 'user' || m.role === 'assistant');
+
+// Legacy messages flagged search with isSearch.
+const wantsSearch = (metadata = {}) => metadata.search === true || metadata.isSearch === true;
 
 const addMessage = async (convRef, { role, content, model = '', metadata = {} }) => {
   const msgRef = convRef.collection(MESSAGES).doc();
@@ -256,13 +265,17 @@ const addMessage = async (convRef, { role, content, model = '', metadata = {} })
 // Flow: verify ownership → save user message → build context → Vertex AI →
 // save assistant message → return both.
 // If the AI call fails, the user message stays saved and the AI error is thrown.
-const sendMessage = async (userId, conversationId, { content, metadata }) => {
+// attachments ([{ name, mimeType, data }]) go to the AI; only name/type/size are stored.
+const sendMessage = async (userId, conversationId, { content, metadata = {}, attachments = [] }) => {
   const { ref: convRef, snap: convSnap } = await getOwnedConversation(userId, conversationId);
   const increment = admin.firestore.FieldValue.increment;
 
   const history = toHistory(await loadMessages(convRef));
 
-  const userMsgRef = await addMessage(convRef, { role: 'user', content, metadata });
+  const userMetadata = attachments.length
+    ? { ...metadata, attachments: attachments.map(({ name, mimeType, size }) => ({ name, mimeType, size })) }
+    : metadata;
+  const userMsgRef = await addMessage(convRef, { role: 'user', content, metadata: userMetadata });
   await convRef.update({
     lastMessage: preview(content),
     messageCount: increment(1),
@@ -270,9 +283,11 @@ const sendMessage = async (userId, conversationId, { content, metadata }) => {
     ...(convSnap.get('messageCount') === 0 && convSnap.get('title') === 'New Chat' ? { title: titleFrom(content) } : {}),
   });
 
-  const { text, model } = await aiService.generateResponse(content, history);
+  const { text, model, sources } = await aiService.generateResponse(content, history, { search: wantsSearch(metadata), attachments });
 
-  const assistantMsgRef = await addMessage(convRef, { role: 'assistant', content: text, model, metadata });
+  const assistantMsgRef = await addMessage(convRef, {
+    role: 'assistant', content: text, model, metadata: { ...metadata, ...(sources.length ? { sources } : {}) },
+  });
   await convRef.update({
     lastMessage: preview(text),
     messageCount: increment(1),
@@ -292,6 +307,16 @@ const getOwnedMessage = async (userId, conversationId, messageId) => {
   const msgSnap = await msgRef.get();
   if (!msgSnap.exists) throw notFoundError();
   return { convRef, msgRef, msgSnap };
+};
+
+// Thumbs up/down on an assistant reply; null clears it.
+const rateMessage = async (userId, conversationId, messageId, { rating }) => {
+  const { msgRef, msgSnap } = await getOwnedMessage(userId, conversationId, messageId);
+  if (msgSnap.get('role') !== 'assistant') {
+    throw validationFailed({ messageId: 'Only assistant messages can be rated' });
+  }
+  await msgRef.update({ 'metadata.rating': rating ?? admin.firestore.FieldValue.delete() });
+  return serializeMessage(await msgRef.get());
 };
 
 // Only the user's own messages can be edited.
@@ -319,7 +344,9 @@ const regenerateMessage = async (userId, conversationId, messageId) => {
     throw validationFailed({ messageId: 'Must be an assistant message that follows a user message' });
   }
 
-  const { text, model } = await aiService.generateResponse(prompt.get('content'), toHistory(docs.slice(0, index - 1)));
+  // Attachments are not stored, so a regenerated reply sees only their names.
+  const promptMeta = prompt.get('metadata') || {};
+  const { text, model, sources } = await aiService.generateResponse(historyText(prompt), toHistory(docs.slice(0, index - 1)), { search: wantsSearch(promptMeta) });
 
   const db = requireDb();
   const removed = docs.slice(index);
@@ -329,9 +356,10 @@ const regenerateMessage = async (userId, conversationId, messageId) => {
     await batch.commit();
   }
 
-  const metadata = { ...(prompt.get('metadata') || {}), regenerated: true };
+  const metadata = { ...promptMeta, regenerated: true, ...(sources.length ? { sources } : {}) };
   delete metadata.editedAt;
   delete metadata.legacyIndex;
+  delete metadata.attachments;
   const msgRef = await addMessage(convRef, { role: 'assistant', content: text, model, metadata });
   await convRef.update({
     lastMessage: preview(text),
@@ -353,5 +381,6 @@ module.exports = {
   getMessages,
   sendMessage,
   editMessage,
+  rateMessage,
   regenerateMessage,
 };

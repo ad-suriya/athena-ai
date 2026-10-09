@@ -56,6 +56,7 @@ Collections:
 - calendarEvents
 - wellnessEntries
 - mindMaps (one document per user, ID = userId)
+- feedback
 
 Messages subcollection:
 

@@ -1,118 +1,106 @@
-import React, { useState } from 'react';
-import { X, ChevronDown } from 'lucide-react';
+import { useState } from 'react';
+import PropTypes from 'prop-types';
+import { X } from 'lucide-react';
+import { sendFeedback } from '../../../services/feedbackService';
 
-const ReportIssueModal = ({ isOpen, onClose }) => {
-  const [selectedType, setSelectedType] = useState('');
-  const [feedback, setFeedback] = useState('');
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+const REPORT_TYPES = [
+  { id: 'inaccurate', label: 'Inaccurate or made up' },
+  { id: 'harmful', label: 'Harmful or unsafe' },
+  { id: 'unhelpful', label: 'Not helpful' },
+  { id: 'bug', label: 'Something is broken' },
+  { id: 'other', label: 'Other' },
+];
 
-  const reportTypes = [
-    'Bug Report',
-    'Feature Request', 
-    'Performance Issue',
-    'Content Issue',
-    'Other'
-  ];
+// Reports a problem with one Athena reply. The report is saved with the
+// conversation and message IDs so it can be looked up later.
+const ReportIssueModal = ({ isOpen, onClose, conversationId, messageId }) => {
+  const [type, setType] = useState('');
+  const [details, setDetails] = useState('');
+  const [status, setStatus] = useState('idle'); // idle | sending | sent | error
 
-  const handleSubmit = () => {
-    if (selectedType && feedback.trim()) {
-      console.log('Report submitted:', { type: selectedType, feedback });
-      onClose(); // Close the modal by calling the parent's onClose function
-    } else {
-      alert('Please select a report type and provide feedback.');
+  if (!isOpen) return null;
+
+  const submit = async (e) => {
+    e.preventDefault();
+    if (!type || !details.trim()) return;
+    setStatus('sending');
+    try {
+      await sendFeedback({
+        type,
+        message: details.trim(),
+        context: { page: 'chat', ...(conversationId ? { conversationId } : {}), ...(messageId ? { messageId } : {}) },
+      });
+      setStatus('sent');
+    } catch {
+      setStatus('error');
     }
   };
 
-  const handleCancel = () => {
-    onClose(); // Close the modal by calling the parent's onClose function
-  };
-
-  if (!isOpen) return null; // Render nothing if not open
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-100">
-          <h2 className="text-xl font-semibold text-gray-900">Report an issue</h2>
-          <button 
-            onClick={handleCancel}
-            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <X className="w-5 h-5 text-gray-500" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true" aria-labelledby="report-title">
+      <div className="w-full max-w-md rounded-2xl border border-line bg-white shadow-card">
+        <div className="flex items-center justify-between border-b border-line px-6 py-4">
+          <h2 id="report-title" className="text-lg font-semibold text-ink">Report this reply</h2>
+          <button onClick={onClose} className="rounded-lg p-1.5 text-ink-muted hover:bg-brand-50" aria-label="Close">
+            <X className="h-5 w-5" />
           </button>
         </div>
 
-        {/* Content */}
-        <div className="p-6 space-y-6">
-          {/* Feedback Type */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              Feedback type
-            </label>
-            <div className="relative">
-              <button
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="w-full px-4 py-3 text-left bg-gray-50 border border-gray-200 rounded-xl hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-              >
-                <span className={selectedType ? 'text-gray-900' : 'text-gray-500'}>
-                  {selectedType || 'Select report type'}
-                </span>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-              </button>
-              
-              {dropdownOpen && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-10">
-                  {reportTypes.map((type) => (
-                    <button
-                      key={type}
-                      onClick={() => {
-                        setSelectedType(type);
-                        setDropdownOpen(false);
-                      }}
-                      className="w-full px-4 py-3 text-left hover:bg-gray-50 first:rounded-t-xl last:rounded-b-xl transition-colors"
-                    >
-                      {type}
-                    </button>
-                  ))}
-                </div>
-              )}
+        {status === 'sent' ? (
+          <div className="space-y-4 px-6 py-6">
+            <p className="text-sm text-ink">Thanks — your report was sent.</p>
+            <div className="flex justify-end">
+              <button onClick={onClose} className="rounded-xl bg-brand-500 px-5 py-2 text-sm font-semibold text-white hover:bg-brand-600">Done</button>
             </div>
           </div>
-
-          {/* Feedback Text */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              Your feedback
-            </label>
-            <textarea
-              value={feedback}
-              onChange={(e) => setFeedback(e.target.value)}
-              placeholder="Please describe any issues or feedback you have for Yudle."
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-              rows={6}
-            />
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-between p-6 border-t border-gray-100">
-          <button
-            onClick={handleCancel}
-            className="px-6 py-2 text-gray-600 hover:text-gray-800 transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSubmit}
-            className="px-6 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors"
-          >
-            Send
-          </button>
-        </div>
+        ) : (
+          <form onSubmit={submit} className="space-y-5 px-6 py-5">
+            <fieldset>
+              <legend className="mb-2 text-sm font-medium text-ink">What went wrong?</legend>
+              <div className="space-y-1.5">
+                {REPORT_TYPES.map((t) => (
+                  <label key={t.id} className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-ink hover:bg-brand-50">
+                    <input type="radio" name="report-type" value={t.id} checked={type === t.id} onChange={() => setType(t.id)} className="accent-brand-500" />
+                    {t.label}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+            <div>
+              <label htmlFor="report-details" className="mb-2 block text-sm font-medium text-ink">Details</label>
+              <textarea
+                id="report-details"
+                value={details}
+                onChange={(e) => setDetails(e.target.value)}
+                maxLength={5000}
+                rows={5}
+                placeholder="Tell us what happened"
+                className="w-full resize-none rounded-xl border border-line px-3 py-2 text-sm text-ink placeholder:text-ink-faint focus:border-brand-300 focus:outline-none focus:ring-4 focus:ring-brand-100"
+              />
+            </div>
+            {status === 'error' && <p className="text-sm text-brand-700" role="alert">Couldn’t send the report. Please try again.</p>}
+            <div className="flex items-center justify-end gap-2">
+              <button type="button" onClick={onClose} className="rounded-xl px-4 py-2 text-sm font-medium text-ink-muted hover:bg-brand-50">Cancel</button>
+              <button
+                type="submit"
+                disabled={!type || !details.trim() || status === 'sending'}
+                className="rounded-xl bg-brand-500 px-5 py-2 text-sm font-semibold text-white hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {status === 'sending' ? 'Sending…' : 'Send report'}
+              </button>
+            </div>
+          </form>
+        )}
       </div>
     </div>
   );
+};
+
+ReportIssueModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  conversationId: PropTypes.string,
+  messageId: PropTypes.string,
 };
 
 export default ReportIssueModal;

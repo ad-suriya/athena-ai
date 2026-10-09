@@ -6,7 +6,6 @@ import ProfilePage from '../../pages/profile/Profile';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ConversationPanel from './components/history/ConversationPanel.jsx';
 import { auth } from '../../config/firebase.js';
-import { searchOptions } from './data/ChatCategoriesData.js';
 import { extractUrls, fetchLinkPreview, formatMessageContent, exportToPDF } from './utils/ChatUtils.jsx';
 import { useVoiceRecording } from '../../hooks/useVoiceRecording.jsx';
 import { useChatManager } from './hooks/useChatManager.jsx';
@@ -16,22 +15,19 @@ import { createChatHandlers } from './hooks/useChatHandlers.jsx';
 import { ChatModals } from './components/ChatModals.jsx';
 
 const Chat = ({ setIsAuthenticated }) => {
-  const [showSearchOptions, setShowSearchOptions] = useState(false);
   const navigate = useNavigate();
   const [showFileCategoryPanel, setShowFileCategoryPanel] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [currentView, setCurrentView] = useState('chat');
   const [showDocsNotification, setShowDocsNotification] = useState(true);
-  const [uploadedFiles, setUploadedFiles] = useState([]);
-  const [uploadedImages, setUploadedImages] = useState([]);
-  const [activeUploadPanel, setActiveUploadPanel] = useState(null);
-  const [messageRatings, setMessageRatings] = useState({});
+  const [attachments, setAttachments] = useState([]);
+  const [attachmentError, setAttachmentError] = useState(null);
+  const [chatCopied, setChatCopied] = useState(false);
   const [editingMessageId, setEditingMessageId] = useState(null);
   const [selectedModel, setSelectedModel] = useState('GPT');
   const [showModelDropdown, setShowModelDropdown] = useState(false);
   const [activeAction, setActiveAction] = useState(null);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const [activeMode, setActiveMode] = useState('message');
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [selectedMessageIndex, setSelectedMessageIndex] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -51,6 +47,7 @@ const Chat = ({ setIsAuthenticated }) => {
     handleSaveEdit: handleSaveEditInternal,
     handleRegenerate,
     sendMessage,
+    rateMessage,
     startNewChat,
     renameConversation,
     archiveConversation,
@@ -104,7 +101,6 @@ const Chat = ({ setIsAuthenticated }) => {
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const attachmentPanelRef = useRef(null);
-  const modelDropdownRef = useRef(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -122,7 +118,8 @@ const Chat = ({ setIsAuthenticated }) => {
 
   const {
     handleFilesUpload,
-    handleImagesUpload,
+    removeAttachment,
+    toggleSearch,
     handleCategoryClick,
     handleCategoryOptionSelect,
     handleSubmit,
@@ -130,9 +127,7 @@ const Chat = ({ setIsAuthenticated }) => {
     handleCancelEdit,
     handleSaveEdit,
     handleRateMessage,
-    handleActionClick,
     handleReportIssue,
-    toggleUploadPanel,
     onArchive,
     onDelete,
     handleDeleteConversation
@@ -141,7 +136,6 @@ const Chat = ({ setIsAuthenticated }) => {
     inputValue,
     activeAction,
     selectedCategory,
-    activeUploadPanel,
     stopRecording,
     sendMessage,
     currentConversationId,
@@ -149,12 +143,11 @@ const Chat = ({ setIsAuthenticated }) => {
     setActiveAction,
     setShowCategoryPanel,
     setSelectedCategory,
-    setUploadedFiles,
-    setUploadedImages,
-    setActiveUploadPanel,
-    setShowSearchOptions,
+    attachments,
+    setAttachments,
+    setAttachmentError,
     setEditingMessageId,
-    setMessageRatings,
+    rateMessage,
     setIsReportModalOpen,
     setSelectedMessageIndex,
     archiveConversation,
@@ -173,16 +166,12 @@ const Chat = ({ setIsAuthenticated }) => {
     setInputValue,
     isLoading,
     attachmentPanelRef,
-    activeUploadPanel,
-    toggleUploadPanel,
     handleFilesUpload,
-    handleImagesUpload,
-    setActiveUploadPanel,
-    setActiveMode,
-    modelDropdownRef,
-    showSearchOptions,
-    setShowSearchOptions,
-    searchOptions,
+    attachments,
+    removeAttachment,
+    attachmentError,
+    searchOn: activeAction === 'search',
+    toggleSearch,
     setActiveAction,
     isRecording,
     stopRecording,
@@ -191,10 +180,19 @@ const Chat = ({ setIsAuthenticated }) => {
     toggleRecording,
     activeAction,
     currentConversationId,
-    onShareClick: () => {
-      console.log('Share clicked');
-      navigator.clipboard.writeText(window.location.href);
-      alert('Chat link copied to clipboard!');
+    chatCopied,
+    // Copies the conversation as plain text (only the owner can open a chat, so a link would not work for others).
+    onCopyChat: async () => {
+      const transcript = messages
+        .map((m) => `${m.role === 'user' ? 'You' : 'Athena'}: ${m.content}`)
+        .join('\n\n');
+      try {
+        await navigator.clipboard.writeText(transcript);
+        setChatCopied(true);
+        setTimeout(() => setChatCopied(false), 2000);
+      } catch {
+        setErrorMessage('Could not copy the conversation.');
+      }
     },
     onArchive,
     onDelete
@@ -249,7 +247,6 @@ const Chat = ({ setIsAuthenticated }) => {
                 handleSaveEdit,
                 handleCancelEdit,
                 handleRegenerate,
-                messageRatings,
                 handleRateMessage,
                 activeAction,
                 setActiveAction,
@@ -273,6 +270,7 @@ const Chat = ({ setIsAuthenticated }) => {
         isReportModalOpen={isReportModalOpen}
         setIsReportModalOpen={setIsReportModalOpen}
         messages={messages}
+        conversationId={currentConversationId}
         selectedMessageIndex={selectedMessageIndex}
         showFileCategoryPanel={showFileCategoryPanel}
         setShowFileCategoryPanel={setShowFileCategoryPanel}

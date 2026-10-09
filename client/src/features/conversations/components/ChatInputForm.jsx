@@ -1,7 +1,9 @@
-import React from 'react';
+import PropTypes from 'prop-types';
 import { Tooltip } from './ChatUIComponents.jsx';
-import { Paperclip, FileText, ImageIcon, Globe, StopCircle, Send, X, Mic } from 'lucide-react';
-import ToggleButtons from './ToggleButtons';
+import { Paperclip, FileText, ImageIcon, Globe, StopCircle, Send, X, Mic, Copy, Check } from 'lucide-react';
+import { ATTACHMENT_ACCEPT, MAX_ATTACHMENTS } from '../utils/attachments';
+
+const formatSize = (bytes) => (bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / 1024 / 1024).toFixed(1)} MB`);
 
 const ChatInputForm = ({
   handleSubmit,
@@ -10,16 +12,12 @@ const ChatInputForm = ({
   setInputValue,
   isLoading,
   attachmentPanelRef,
-  activeUploadPanel,
-  toggleUploadPanel,
   handleFilesUpload,
-  handleImagesUpload,
-  setActiveUploadPanel,
-  setActiveMode,
-  modelDropdownRef,
-  showSearchOptions,
-  setShowSearchOptions,
-  searchOptions,
+  attachments = [],
+  removeAttachment,
+  attachmentError,
+  searchOn,
+  toggleSearch,
   setActiveAction,
   isRecording,
   stopRecording,
@@ -27,9 +25,9 @@ const ChatInputForm = ({
   requestPermissionAgain,
   toggleRecording,
   isAbsolute = false,
-  onShareClick,
+  onCopyChat,
+  chatCopied,
   activeAction,
-  currentConversationId,
   onArchive,
   onDelete,
 }) => {
@@ -91,30 +89,14 @@ const ChatInputForm = ({
     >
       {!isAbsolute && (
         <div className="absolute top-2 right-2 flex items-center gap-1">
-          <Tooltip text="Share">
+          <Tooltip text={chatCopied ? 'Copied' : 'Copy chat'}>
             <button
               type="button"
               className="rounded-lg p-1.5 text-ink-muted transition-colors hover:bg-brand-50 hover:text-brand-500"
-              onClick={onShareClick}
-              aria-label="Share"
+              onClick={onCopyChat}
+              aria-label={chatCopied ? 'Conversation copied' : 'Copy conversation'}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="18" cy="5" r="3"></circle>
-                <circle cx="6" cy="12" r="3"></circle>
-                <circle cx="18" cy="19" r="3"></circle>
-                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-              </svg>
+              {chatCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
             </button>
           </Tooltip>
 
@@ -208,116 +190,104 @@ const ChatInputForm = ({
           autoFocus
         />
 
+        {(attachments.length > 0 || attachmentError) && (
+          <div className="flex flex-wrap items-center gap-2" aria-label="Attachments">
+            {attachments.map((file, index) => (
+              <span key={`${file.name}-${index}`} className="flex max-w-[16rem] items-center gap-1.5 rounded-lg border border-line bg-[#FFFAF9] py-1 pl-2 pr-1 text-xs text-ink">
+                {file.mimeType.startsWith('image/') ? <ImageIcon className="h-3.5 w-3.5 shrink-0 text-brand-500" /> : <FileText className="h-3.5 w-3.5 shrink-0 text-brand-500" />}
+                <span className="truncate">{file.name}</span>
+                <span className="shrink-0 text-ink-faint">{formatSize(file.size)}</span>
+                <button type="button" onClick={() => removeAttachment(index)} className="rounded p-0.5 text-ink-faint hover:bg-brand-50 hover:text-brand-500" aria-label={`Remove ${file.name}`}>
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </span>
+            ))}
+            {attachmentError && <span className="text-xs text-brand-700" role="alert">{attachmentError}</span>}
+          </div>
+        )}
+
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2.5">
-            <div className="relative" ref={attachmentPanelRef}>
-              <Tooltip text="Attach files">
-                <button
-                  type="button"
-                  className={`flex h-10 w-10 items-center justify-center rounded-full transition-colors attachment-button ${
-                    activeUploadPanel === 'attachment'
-                      ? 'bg-brand-100 text-brand-600'
+            <div ref={attachmentPanelRef}>
+              <Tooltip text="Attach images, PDFs or text files">
+                <label
+                  className={`flex h-10 w-10 cursor-pointer items-center justify-center rounded-full transition-colors attachment-button ${
+                    attachments.length >= MAX_ATTACHMENTS
+                      ? 'cursor-not-allowed bg-[#F3F1F1] text-ink-faint'
                       : 'bg-[#F3F1F1] text-ink-muted hover:bg-brand-50 hover:text-brand-500'
                   }`}
                   aria-label="Attach files"
-                  onClick={() => toggleUploadPanel('attachment')}
                 >
                   <Paperclip className="w-5 h-5" />
-                </button>
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept={ATTACHMENT_ACCEPT}
+                    multiple
+                    disabled={attachments.length >= MAX_ATTACHMENTS || isLoading}
+                    onChange={(e) => {
+                      handleFilesUpload(e.target.files);
+                      e.target.value = ''; // allow picking the same file again
+                    }}
+                    data-testid="attach-input"
+                  />
+                </label>
               </Tooltip>
-              {activeUploadPanel === 'attachment' && (
-                <div className="absolute bottom-full left-0 z-10 mb-2 w-48 rounded-2xl border border-line bg-white p-1.5 shadow-card">
-                  <div className="flex flex-col gap-1">
-                    <label className="flex cursor-pointer items-center gap-2 rounded-xl px-3 py-2 text-sm text-ink hover:bg-brand-50">
-                      <FileText className="h-4 w-4 text-brand-500" />
-                      <span>Upload File</span>
-                      <input
-                        type="file"
-                        className="hidden"
-                        onChange={(e) => {
-                          handleFilesUpload(e.target.files);
-                          setActiveUploadPanel(null);
-                        }}
-                        multiple
-                      />
-                    </label>
-                    <label className="flex cursor-pointer items-center gap-2 rounded-xl px-3 py-2 text-sm text-ink hover:bg-brand-50">
-                      <ImageIcon className="h-4 w-4 text-brand-500" />
-                      <span>Upload Image</span>
-                      <input
-                        type="file"
-                        className="hidden"
-                        accept="image/*"
-                        onChange={(e) => {
-                          handleImagesUpload(e.target.files);
-                          setActiveUploadPanel(null);
-                        }}
-                        multiple
-                      />
-                    </label>
-                  </div>
-                </div>
-              )}
             </div>
 
-            <ToggleButtons onModeChange={setActiveMode} />
+            <Tooltip text={searchOn ? 'Web search is on for this message' : 'Search the web for this message'}>
+              <button
+                type="button"
+                onClick={toggleSearch}
+                aria-pressed={searchOn}
+                className={`flex h-10 items-center gap-1.5 rounded-full px-3 text-sm font-medium transition-colors ${
+                  searchOn ? 'bg-brand-500 text-white' : 'bg-[#F3F1F1] text-ink-muted hover:bg-brand-50 hover:text-brand-500'
+                }`}
+              >
+                <Globe className="h-4 w-4" />
+                Search
+              </button>
+            </Tooltip>
           </div>
 
           <div className="flex items-center gap-2">
-            {isAbsolute && (
-              <div className="relative" ref={modelDropdownRef}>
-                <Tooltip text="Search options">
-                  <button
-                    type="button"
-                    onClick={() => setShowSearchOptions(!showSearchOptions)}
-                    className="flex h-11 w-11 items-center justify-center rounded-full bg-[#F3F1F1] text-ink transition-colors hover:bg-brand-50"
-                    aria-label="Search options"
-                  >
-                    <Globe className="w-5 h-5" />
-                  </button>
-                </Tooltip>
-
-                {showSearchOptions && (
-                  <div className="absolute right-0 top-full z-50 mt-2 w-64 rounded-2xl border border-line bg-white shadow-card">
-                    <div className="border-b border-line px-4 py-3">
-                      <h3 className="text-sm font-semibold text-ink">Search options</h3>
-                    </div>
-                    <div className="p-2">
-                      {searchOptions?.map((option) => {
-                        const Icon = option.icon;
-                        return (
-                          <button
-                            key={option.id}
-                            className="flex w-full items-start gap-3 rounded-xl px-3 py-2 text-left text-sm transition-colors hover:bg-brand-50"
-                            onClick={() => {
-                              setActiveAction('search');
-                              setInputValue(`[${option.label}] `);
-                              setShowSearchOptions(false);
-                              if (inputRef && inputRef.current) inputRef.current.focus();
-                            }}
-                          >
-                            <div className="rounded-lg bg-brand-50 p-1.5 text-brand-500">
-                              <Icon className="w-4 h-4" />
-                            </div>
-                            <div className="flex-1">
-                              <div className="font-medium text-ink">{option.label}</div>
-                              <div className="text-xs text-ink-faint">{option.description}</div>
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
             {renderInputButton()}
           </div>
         </div>
       </div>
     </form>
   );
+};
+
+ChatInputForm.propTypes = {
+  handleSubmit: PropTypes.func.isRequired,
+  inputRef: PropTypes.oneOfType([PropTypes.func, PropTypes.shape({ current: PropTypes.any })]),
+  inputValue: PropTypes.string.isRequired,
+  setInputValue: PropTypes.func.isRequired,
+  isLoading: PropTypes.bool,
+  attachmentPanelRef: PropTypes.oneOfType([PropTypes.func, PropTypes.shape({ current: PropTypes.any })]),
+  handleFilesUpload: PropTypes.func.isRequired,
+  attachments: PropTypes.arrayOf(PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    mimeType: PropTypes.string.isRequired,
+    size: PropTypes.number.isRequired,
+  })),
+  removeAttachment: PropTypes.func.isRequired,
+  attachmentError: PropTypes.string,
+  searchOn: PropTypes.bool,
+  toggleSearch: PropTypes.func.isRequired,
+  setActiveAction: PropTypes.func.isRequired,
+  isRecording: PropTypes.bool,
+  stopRecording: PropTypes.func,
+  permissionState: PropTypes.string,
+  requestPermissionAgain: PropTypes.func,
+  toggleRecording: PropTypes.func,
+  isAbsolute: PropTypes.bool,
+  onCopyChat: PropTypes.func,
+  chatCopied: PropTypes.bool,
+  activeAction: PropTypes.string,
+  onArchive: PropTypes.func,
+  onDelete: PropTypes.func,
 };
 
 export default ChatInputForm;

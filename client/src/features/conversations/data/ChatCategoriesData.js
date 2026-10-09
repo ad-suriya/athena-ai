@@ -1,4 +1,4 @@
-import { Heart, Anchor, Brain, Coffee, Sparkles, Search, BookOpen, MessageSquare, FileText } from 'lucide-react';
+import { Heart, Anchor, Brain, Coffee, Sparkles } from 'lucide-react';
 
 export const categories = [
   { id: 'mood', label: 'Mood Check-In', icon: Heart },
@@ -56,9 +56,3 @@ export const categoryOptions = {
   choice: choiceOptions,
 };
 
-export const searchOptions = [
-  { id: 'web', label: 'Web', icon: Search, description: 'Search across the entire Internet' },
-  { id: 'academic', label: 'Academic', icon: BookOpen, description: 'Search academic papers' },
-  { id: 'social', label: 'Social', icon: MessageSquare, description: 'Discussions and opinions' },
-  { id: 'finance', label: 'Finance', icon: FileText, description: 'Search SEC filings' }
-];

@@ -61,7 +61,12 @@ Do not embed tasks, notes, messages, or other collections inside the user docume
   content:        string,
   createdAt:      timestamp,
   model:          string,    // e.g. "gemini-2.5-flash"
-  metadata:       map,       // optional — e.g. { isSearch, isDeepResearch, isCriticalAnalysis, legacyIndex }
+  metadata:       map,       // optional:
+                             //   search: true          — answered with Google Search (legacy: isSearch)
+                             //   sources: [{ title, url }]   — web pages used (assistant, search only)
+                             //   attachments: [{ name, mimeType, size }] — files sent to the AI (bytes are not stored)
+                             //   rating: 'up' | 'down' — user's thumbs on an assistant reply
+                             //   editedAt, regenerated, legacyIndex, isDeepResearch, isCriticalAnalysis (legacy)
 }
 ```
 
@@ -199,6 +204,23 @@ Saved whole by `PUT /api/mindmap`.
 
 ---
 
+## feedback
+
+`feedback/{id}` — "Send feedback" and Chat's "Report issue". Written by `POST /api/feedback`.
+
+```js
+{
+  userId:    string,
+  type:      'bug' | 'suggestion' | 'harmful' | 'inaccurate' | 'unhelpful' | 'other',
+  message:   string,     // max 5000
+  email:     string,     // optional reply address
+  context:   { page?, conversationId?, messageId? },
+  createdAt: timestamp,
+}
+```
+
+---
+
 ## Relationship Model
 
 ```
@@ -210,7 +232,8 @@ User
  ├── Journal Entries (journalEntries/{id} where userId == user.uid)
  ├── Calendar Events (calendarEvents/{id} where userId == user.uid)
  ├── Wellness Entries (wellnessEntries/{id} where userId == user.uid)
- └── Mind Map       (mindMaps/{userId})
+ ├── Mind Map       (mindMaps/{userId})
+ └── Feedback       (feedback/{id} where userId == user.uid)
 ```
 
 Every user-owned document must carry a `userId` field.

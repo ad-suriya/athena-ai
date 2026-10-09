@@ -10,7 +10,7 @@ import Profile from './pages/profile/Profile.jsx';
 import Settings from './pages/settings/Settings.jsx';
 import './App.css';
 import MindMap from './features/mindmap/MindMapInterface.jsx';
-import YudleFeedbackForm from './pages/feedback/YudleFeedbackForm.jsx';
+import Feedback from './pages/feedback/Feedback.jsx';
 import { auth } from './config/firebase.js';
 import AppShell from './components/layout/AppShell';
 import Home from './features/home/Home';
@@ -60,7 +60,7 @@ function App() {
             <Route path="/mindmap" element={<MindMap />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/profile" element={<Profile />} />
-            <Route path="/feedback" element={<YudleFeedbackForm />} />
+            <Route path="/feedback" element={<Feedback />} />
           </Route>
 
           <Route path="*" element={<Navigate to={isAuthenticated ? '/home' : '/login'} replace />} />
