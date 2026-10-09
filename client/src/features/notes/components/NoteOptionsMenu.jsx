@@ -1,23 +1,22 @@
 import { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import {
-  Bell, Clock, Copy, Download, Edit3, Languages, Link as LinkIcon, Lock, Maximize,
-  Mic, Monitor, Move, RotateCcw, Square, Trash2, Type, Undo, Upload, Users
-} from 'lucide-react';
+import { Copy, Download, Link as LinkIcon, Lock, Maximize, Mic, Square, Trash2, Type, Undo } from 'lucide-react';
 import { exportToPDF, extractEditorContent, getNoteMetadata } from '../utils/notePdfExport';
 import { MenuDivider, MenuItem, MenuToggleItem } from './NoteMenuItems';
 import { menuIconClass, menuItemThemeClass } from '../utils/menuStyles';
 
-// Items not implemented yet: they close the menu and log, as before.
-const placeholder = (name) => () => console.log(name);
+const wordCount = (editor) => (editor?.getText().trim().match(/\S+/g) || []).length;
 
-// The note's "⋮" menu: dictation, delete, view toggles, lock, undo, PDF export,
-// and several placeholder actions. Closes on outside click or after an action.
+// The note's "⋮" menu: dictation, copy link, duplicate, delete, view toggles,
+// lock, undo, PDF export, and word count / last saved. Closes on outside click
+// or after an action.
 const NoteOptionsMenu = ({
   isDarkMode,
   editor,
   note,
+  savedNote,
   onDelete,
+  onDuplicate,
   dictation,
   fullWidth,
   onToggleFullWidth,
@@ -29,6 +28,7 @@ const NoteOptionsMenu = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -55,6 +55,17 @@ const NoteOptionsMenu = ({
     }
   };
 
+  // Link to this entry inside Athena (opens for the signed-in owner).
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}/notes?id=${encodeURIComponent(savedNote.id)}`);
+      setLinkCopied(true);
+      setTimeout(() => { setLinkCopied(false); setIsOpen(false); }, 900);
+    } catch {
+      setIsOpen(false);
+    }
+  };
+
   const handleExport = async () => {
     setIsExporting(true);
     setIsOpen(false);
@@ -66,7 +77,6 @@ const NoteOptionsMenu = ({
 
       if (result.success) {
         onExportComplete?.({ success: true, filename: result.filename, note: metadata });
-        console.log(`PDF exported successfully: ${result.filename}`);
       } else {
         throw new Error(result.error);
       }
@@ -127,25 +137,23 @@ const NoteOptionsMenu = ({
 
             <MenuDivider {...itemProps} />
 
-            <MenuItem {...itemProps} icon={LinkIcon} label="Copy link" hint="Ctrl+Alt+L" onClick={act(placeholder('Copy link'))} />
-            <MenuItem {...itemProps} icon={Copy} label="Duplicate" hint="Ctrl+D" onClick={act(placeholder('Duplicate note'))} />
-            <MenuItem {...itemProps} icon={Move} label="Move to" hint="Ctrl+↑+P" onClick={act(placeholder('Move to'))} />
+            {savedNote?.id && (
+              <MenuItem {...itemProps} icon={LinkIcon} label={linkCopied ? 'Link copied' : 'Copy link'} onClick={handleCopyLink} />
+            )}
+            {onDuplicate && (
+              <MenuItem {...itemProps} icon={Copy} label="Duplicate" onClick={act(onDuplicate)} />
+            )}
             <MenuItem {...itemProps} icon={Trash2} label="Move to Trash" onClick={handleMoveToTrash} />
 
             <MenuDivider {...itemProps} />
 
             <MenuToggleItem {...itemProps} icon={Type} label="Small text" checked={smallText} onChange={onToggleSmallText} />
             <MenuToggleItem {...itemProps} icon={Maximize} label="Full width" checked={fullWidth} onChange={onToggleFullWidth} />
-            <MenuItem {...itemProps} icon={Edit3} label="Customize page" onClick={act(placeholder('Customize page'))} />
 
             <MenuDivider {...itemProps} />
 
             <MenuToggleItem {...itemProps} icon={Lock} label="Lock page" checked={isLocked} onChange={act(onToggleLock)} />
 
-            <MenuDivider {...itemProps} />
-
-            <MenuItem {...itemProps} icon={Edit3} label="Suggest edits" onClick={act(placeholder('Suggest edits'))} />
-            <MenuItem {...itemProps} icon={Languages} label="Translate" hasSubmenu onClick={act(placeholder('Translate'))} />
 
             <MenuDivider {...itemProps} />
 
@@ -158,8 +166,6 @@ const NoteOptionsMenu = ({
             />
 
             <MenuDivider {...itemProps} />
-
-            <MenuItem {...itemProps} icon={Upload} label="Import" onClick={act(placeholder('Import'))} />
 
             <button
               onClick={handleExport}
@@ -183,33 +189,16 @@ const NoteOptionsMenu = ({
 
             <MenuDivider {...itemProps} />
 
-            <MenuItem {...itemProps} icon={RotateCcw} label="Turn into wiki" onClick={act(placeholder('Turn into wiki'))} />
-
-            <MenuDivider {...itemProps} />
-
-            <MenuItem {...itemProps} icon={Clock} label="Updates & analytics" onClick={act(placeholder('Updates & analytics'))} />
-            <MenuItem {...itemProps} icon={Clock} label="Version history" onClick={act(placeholder('Version history'))} />
-
-            <MenuDivider {...itemProps} />
-
-            <MenuItem {...itemProps} icon={Bell} label="Notify me" hasSubmenu submenuLabel="Comments" onClick={act(placeholder('Notify me'))} />
-            <MenuItem {...itemProps} icon={Users} label="Connections" hasSubmenu submenuLabel="None" onClick={act(placeholder('Connections'))} />
-
-            <MenuDivider {...itemProps} />
-
-            <MenuItem {...itemProps} icon={Monitor} label="Open in Windows app" onClick={act(placeholder('Open in Windows app'))} />
-
-            <MenuDivider {...itemProps} />
-
             <div className={`px-4 py-2.5 text-xs ${
               isDarkMode
                 ? 'text-[#F5D9D1]/70'
                 : 'text-ink-faint'
             }`}>
-              <div className="font-medium">Word count: {note?.wordCount || 0} words</div>
-              <div className="mt-1">Last edited by {note?.author || 'Unknown'}</div>
-              <div className="text-[10px] opacity-75">
-                {note?.lastEdited ? new Date(note.lastEdited).toLocaleString() : new Date().toLocaleString()}
+              <div className="font-medium">{wordCount(editor)} words</div>
+              <div className="mt-1">
+                {savedNote?.id && savedNote.updatedAt
+                  ? `Last saved ${new Date(savedNote.updatedAt).toLocaleString()}`
+                  : 'Not saved yet'}
               </div>
             </div>
           </div>
@@ -226,13 +215,17 @@ NoteOptionsMenu.propTypes = {
     chain: PropTypes.func.isRequired,
     getText: PropTypes.func.isRequired,
   }),
+  // Editor's working copy (used for the PDF title).
   note: PropTypes.shape({
     title: PropTypes.string,
-    author: PropTypes.string,
-    lastEdited: PropTypes.string,
-    wordCount: PropTypes.number,
+  }),
+  // The note as last saved on the server (null id = not saved yet).
+  savedNote: PropTypes.shape({
+    id: PropTypes.string,
+    updatedAt: PropTypes.string,
   }),
   onDelete: PropTypes.func,
+  onDuplicate: PropTypes.func,
   dictation: PropTypes.shape({
     isDictating: PropTypes.bool.isRequired,
     toggle: PropTypes.func.isRequired,

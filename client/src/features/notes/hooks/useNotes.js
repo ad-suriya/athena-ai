@@ -111,5 +111,19 @@ export const useNotes = ({ noteId = null, startNew = false } = {}) => {
 
   const startNewNote = useCallback(() => selectNote(createDraft()), [selectNote]);
 
-  return { notes, selectedNote, selectionKey, isLoading, error, saveNote, deleteNote, openNote, startNewNote };
+  // Saves a copy of { title, content } as a new entry and opens it. Returns it, or null.
+  const duplicateNote = useCallback(async ({ title, content }) => {
+    try {
+      const copy = await noteService.createNote({ title: `${title || 'Untitled'} (copy)`, content: content ?? '' });
+      setNotes((prev) => [...prev, copy]);
+      selectNote(copy);
+      setError(null);
+      return copy;
+    } catch (err) {
+      setError(`Could not duplicate entry: ${err.message}`);
+      return null;
+    }
+  }, [selectNote]);
+
+  return { notes, selectedNote, selectionKey, isLoading, error, saveNote, deleteNote, openNote, startNewNote, duplicateNote };
 };

@@ -25,7 +25,7 @@ const Profile = ({ onBack }) => {
             </div>
             <div>
               <h2 className="text-2xl font-semibold">{name}</h2>
-              <p className="text-gray-500">Administrator</p>
+              <p className="text-gray-500">{email}</p>
             </div>
           </div>
           

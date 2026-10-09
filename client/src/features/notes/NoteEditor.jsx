@@ -16,7 +16,7 @@ const formatEntryDate = (iso) => new Date(iso || Date.now()).toLocaleDateString(
 
 // Rich-text note editor: title, TipTap body, formatting toolbar, options menu.
 // Works standalone (no props) or with a note and save/delete callbacks from useNotes.
-const NoteEditor = ({ isDarkMode = false, initialNote, onSave, onDelete, onDirtyChange, headerLeading }) => {
+const NoteEditor = ({ isDarkMode = false, initialNote, onSave, onDelete, onDuplicate, onDirtyChange, headerLeading }) => {
   const { note, setTitle, editor, isLocked, toggleLock, insertImage, setLink, insertTable, isDirty, markSaved } = useNoteEditor(initialNote);
   const dictation = useDictation(editor);
 
@@ -63,7 +63,9 @@ const NoteEditor = ({ isDarkMode = false, initialNote, onSave, onDelete, onDirty
             isDarkMode={isDarkMode}
             editor={editor}
             note={note}
+            savedNote={onSave ? initialNote : null}
             onDelete={onDelete}
+            onDuplicate={onDuplicate ? () => onDuplicate(note) : undefined}
             dictation={dictation}
             fullWidth={fullWidth}
             onToggleFullWidth={() => setFullWidth(!fullWidth)}
@@ -147,6 +149,7 @@ NoteEditor.propTypes = {
   }),
   onSave: PropTypes.func,
   onDelete: PropTypes.func,
+  onDuplicate: PropTypes.func,
   onDirtyChange: PropTypes.func,
   headerLeading: PropTypes.node,
 };

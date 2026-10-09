@@ -16,7 +16,7 @@ const Notes = () => {
   const isNew = params.get('new') === '1';
   const {
     notes, selectedNote, selectionKey, isLoading, error,
-    saveNote, deleteNote, openNote, startNewNote,
+    saveNote, deleteNote, openNote, startNewNote, duplicateNote,
   } = useNotes({ noteId: paramId, startNew: isNew });
 
   const entries = useMemo(
@@ -35,6 +35,13 @@ const Notes = () => {
     if (!confirmDiscard()) return;
     openNote(id);
     setParams({ id });
+  };
+
+  // Copies what the editor shows; unsaved edits stay only in the copy.
+  const duplicateEntry = async (editorNote) => {
+    if (!confirmDiscard()) return;
+    const copy = await duplicateNote(editorNote);
+    if (copy) setParams({ id: copy.id });
   };
 
   const newEntry = () => {
@@ -89,6 +96,7 @@ const Notes = () => {
             initialNote={selectedNote}
             onSave={saveNote}
             onDelete={deleteNote}
+            onDuplicate={duplicateEntry}
             onDirtyChange={handleDirtyChange}
             headerLeading={
               <button
