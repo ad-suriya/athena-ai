@@ -27,7 +27,7 @@ and, for conversations, against the live Firestore project (read-only document c
 | `App.jsx`, `login.jsx`, `EnhancedControlButton.jsx` | `isLoggedIn` flag | Auth UI flag — Phase 4 (auth boundary) |
 | `components/ReadAloudButton.jsx`    | `preferredVoice`                | UI preference — acceptable |
 | `components/KnowledgeModal.jsx`     | `knowledgeEntries`              | User data — later phase |
-| `pages/CodeEditor/CodeEditor.jsx`   | code files                      | User data — later phase |
+| `pages/CodeEditor/CodeEditor.jsx`   | code files                      | Feature removed (archived) |
 | `components/CodeCompiler.jsx`       | `pythonCode`                    | User data — later phase |
 | `pages/TaskManager/OldTask.jsx`, `TaskManager.jsx` | `tasks`, `archivedTasks`, ... | Dead code — not imported anywhere |
 | `pages/settings/settings.jsx`       | "Engagement Dashboard" heatmap  | Mock data generated in the component (today = 1 login, every other day = 0) |

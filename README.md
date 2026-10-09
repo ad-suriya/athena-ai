@@ -78,7 +78,7 @@ Tooling:
 │   │   ├── assets/
 │   │   ├── config/        # Firebase Auth init
 │   │   ├── features/      # conversations, tasks, notes, calendar, mindmap
-│   │   ├── pages/         # login, profile, settings, code-editor, feedback
+│   │   ├── pages/         # login, profile, settings, feedback
 │   │   ├── components/    # shared UI
 │   │   ├── services/      # API clients
 │   │   ├── App.jsx
@@ -107,7 +107,6 @@ Tooling:
 - Daily task management
 - Calendar scheduling
 - Visual mind mapping
-- Code editor module
 - User authentication and profile system
 - Notification and smart interaction controls
 

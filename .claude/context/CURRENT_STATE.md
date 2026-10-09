@@ -63,7 +63,6 @@ Resolved in Phase 2. `client/src` no longer imports `firebase/firestore`.
 Should be Firestore (via API) instead:
 
 - `pages/TaskManager/OldTask.jsx` — all task data in localStorage
-- `pages/CodeEditor/CodeEditor.jsx` — code files in localStorage
 - `components/KnowledgeModal.jsx` — knowledge entries in localStorage
 
 Acceptable localStorage uses (UI preferences, not data):

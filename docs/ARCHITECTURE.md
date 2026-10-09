@@ -82,7 +82,7 @@ client/src/
 │   ├── calendar/           Calendar.jsx + components/ hooks/ utils/
 │   └── mindmap/            MindMapInterface.jsx
 ├── pages/                  Standalone pages that are not a feature:
-│                           login/, profile/, settings/, code-editor/, feedback/
+│                           login/, profile/, settings/, feedback/
 ├── components/             UI shared by more than one feature (sidebar/; ui/ for primitives)
 ├── hooks/                  Hooks shared by more than one feature
 ├── styles/                 Global stylesheets (index.css stays at src/ root)
