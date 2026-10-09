@@ -52,3 +52,52 @@ export const combineDateAndTime = (dateKey, timeText) => {
   date.setHours(time.hours, time.minutes, 0, 0);
   return date;
 };
+
+export const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+];
+
+export const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+export const isToday = (date) => toDateKey(date) === toDateKey(new Date());
+
+// 6x7 month grid starting on Sunday, padded with the previous/next month's days.
+// Each cell: { day: day of month, isCurrentMonth, fullDate }.
+export const buildMonthGrid = (date) => {
+  const year = date.getFullYear();
+  const month = date.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDayOfMonth = new Date(year, month, 1).getDay();
+  const prevMonthDays = new Date(year, month, 0).getDate();
+
+  const days = [];
+  for (let i = firstDayOfMonth - 1; i >= 0; i--) {
+    days.push({ day: prevMonthDays - i, isCurrentMonth: false, fullDate: new Date(year, month - 1, prevMonthDays - i) });
+  }
+  for (let day = 1; day <= daysInMonth; day++) {
+    days.push({ day, isCurrentMonth: true, fullDate: new Date(year, month, day) });
+  }
+  const daysToAdd = 42 - days.length;
+  for (let day = 1; day <= daysToAdd; day++) {
+    days.push({ day, isCurrentMonth: false, fullDate: new Date(year, month + 1, day) });
+  }
+  return days;
+};
+
+// The 7 dates (Sunday first) of the week containing `date`.
+export const getWeekDates = (date) => {
+  const startOfWeek = new Date(date);
+  startOfWeek.setDate(date.getDate() - date.getDay());
+  return Array.from({ length: 7 }, (_, i) => {
+    const day = new Date(startOfWeek);
+    day.setDate(startOfWeek.getDate() + i);
+    return day;
+  });
+};
+
+export const HOURS = Array.from({ length: 24 }, (_, i) => i);
+
+// 0 → "12 AM", 13 → "1 PM"
+export const formatHourLabel = (hour) =>
+  hour === 0 ? '12 AM' : hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`;
