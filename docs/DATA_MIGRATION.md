@@ -193,8 +193,8 @@ or all at once with `--apply`.
 
 ### Open blockers for end-to-end verification
 
-1. **Vertex AI not configured.** `VERTEX_PROJECT_ID` / `VERTEX_LOCATION` are missing
-   from `server/.env`, so message sends return `503 AI_UNAVAILABLE`.
-   The user message is still saved.
+1. ~~Vertex AI not configured~~ Resolved 2026-10-09: `athena-abafd`, `us-central1`,
+   `gemini-2.5-flash`, authenticated with the service-account key via
+   `GOOGLE_APPLICATION_CREDENTIALS`. A real generation succeeded.
 2. **Email/password sign-in** needs the Email/Password provider enabled in Firebase
    Authentication for `athena-abafd` (Google sign-in already works).

@@ -17,7 +17,7 @@ const env = {
   vertex: {
     projectId: process.env.VERTEX_PROJECT_ID,
     location: process.env.VERTEX_LOCATION,
-    model: process.env.GEMINI_MODEL || 'gemini-1.5-flash-001',
+    model: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
     maxTokens: parseInt(process.env.MAX_TOKENS, 10) || 1000,
     temperature: parseFloat(process.env.TEMPERATURE) || 0.7,
   },

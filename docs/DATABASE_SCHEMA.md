@@ -60,7 +60,7 @@ Do not embed tasks, notes, messages, or other collections inside the user docume
   role:           string,    // "user" | "assistant" | "system"
   content:        string,
   createdAt:      timestamp,
-  model:          string,    // e.g. "gemini-1.5-flash-001"
+  model:          string,    // e.g. "gemini-2.5-flash"
   metadata:       map,       // optional — e.g. { isSearch, isDeepResearch, isCriticalAnalysis, legacyIndex }
 }
 ```
