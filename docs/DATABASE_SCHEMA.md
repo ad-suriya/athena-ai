@@ -181,6 +181,24 @@ Journal entries are separate from notes.
 
 ---
 
+## mindMaps
+
+`mindMaps/{userId}` — one map per user; the document ID is the user's UID.
+Saved whole by `PUT /api/mindmap`.
+
+```js
+{
+  userId:      string,
+  nodes:       [{ id: number, x: number, y: number, title: string, content: string,
+                  type: 'main' | 'secondary' | 'note' | 'ai', expanded: boolean }],  // max 500
+  connections: [{ from: number, to: number }],                                       // node ids, max 1000
+  createdAt:   timestamp,
+  updatedAt:   timestamp,
+}
+```
+
+---
+
 ## Relationship Model
 
 ```
@@ -191,7 +209,8 @@ User
  ├── Notes          (notes/{id} where userId == user.uid)
  ├── Journal Entries (journalEntries/{id} where userId == user.uid)
  ├── Calendar Events (calendarEvents/{id} where userId == user.uid)
- └── Wellness Entries (wellnessEntries/{id} where userId == user.uid)
+ ├── Wellness Entries (wellnessEntries/{id} where userId == user.uid)
+ └── Mind Map       (mindMaps/{userId})
 ```
 
 Every user-owned document must carry a `userId` field.

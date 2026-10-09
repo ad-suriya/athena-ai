@@ -1,23 +1,29 @@
-import { Share } from 'lucide-react';
+import PropTypes from 'prop-types';
 
-// Title bar with (placeholder) collaborators and Share button.
-const MindMapHeader = () => (
+const STATUS_TEXT = {
+  loading: 'Loading…',
+  saving: 'Saving…',
+  saved: 'All changes saved',
+  error: 'Couldn’t save — will retry on your next change',
+  'load-error': 'Couldn’t load your mind map',
+};
+
+// Title bar with the save status.
+const MindMapHeader = ({ saveStatus }) => (
   <div className="bg-white border-b border-gray-200 px-3 py-1.5 flex items-center justify-between text-sm">
-    <div className="flex items-center gap-3">
-      <div className="font-medium text-gray-900 text-sm">🧠 Sai&apos;s Mind</div>
-    </div>
-    <div className="flex items-center gap-3">
-      <div className="flex -space-x-1">
-        <div className="w-6 h-6 bg-gradient-to-br from-yellow-400 to-orange-400 rounded-full border border-white"></div>
-        <div className="w-6 h-6 bg-gradient-to-br from-green-400 to-emerald-400 rounded-full border border-white"></div>
-        <div className="w-6 h-6 bg-gray-200 rounded-full border border-white flex items-center justify-center text-xs">+3</div>
-      </div>
-      <button className="flex items-center gap-1 px-2 py-1 border border-gray-300 rounded text-xs font-medium hover:bg-gray-50">
-        <Share size={12} />
-        Share
-      </button>
+    <div className="font-medium text-gray-900 text-sm">🧠 My mind map</div>
+    <div
+      className={`text-xs ${saveStatus === 'error' || saveStatus === 'load-error' ? 'text-red-600' : 'text-gray-500'}`}
+      role="status"
+      aria-live="polite"
+    >
+      {STATUS_TEXT[saveStatus]}
     </div>
   </div>
 );
+
+MindMapHeader.propTypes = {
+  saveStatus: PropTypes.oneOf(Object.keys(STATUS_TEXT)).isRequired,
+};
 
 export default MindMapHeader;

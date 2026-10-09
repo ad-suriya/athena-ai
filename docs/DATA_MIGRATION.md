@@ -133,6 +133,7 @@ verified in production. It needs an explicit decision and is not part of Phase 2
 | Calendar       | `calendarEvents/{id}`                               | `Calendar.jsx`, `UpcomingEvents.jsx` → `useCalendarEvents` → `calendarService` | `/api/calendar/events` |
 | Journal        | `journalEntries/{id}`                               | `journalService` (no UI yet)                | `/api/journal` |
 | Wellness       | `wellnessEntries/{id}`                              | `wellnessService` (no UI yet)               | `/api/wellness` |
+| Mind Map       | `mindMaps/{userId}`                                 | `MindMapInterface` → `useMindMap` → `mindmapService` | `/api/mindmap` |
 | Conversations  | `conversations/{id}` (`userId` field)               | `useChatManager` → `conversationService`    | `/api/conversations` |
 | Messages       | `conversations/{id}/messages/{messageId}`           | `useChatManager` → `conversationService`    | `/api/conversations/:id/messages` |
 | AI             | —                                                   | backend `ai.service.js` only                | via messages endpoint |

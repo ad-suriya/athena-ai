@@ -30,16 +30,6 @@ export const getNodeStyle = (type, isSelected, isConnecting) => {
   }
 };
 
-const TAG_COLORS = {
-  telegram: 'bg-blue-100 text-blue-700',
-  article: 'bg-green-100 text-green-700',
-  notion: 'bg-gray-100 text-gray-700',
-  obsidian: 'bg-purple-100 text-purple-700',
-  new: 'bg-orange-100 text-orange-700'
-};
-
-export const getTagColor = (tag) => TAG_COLORS[tag] || 'bg-gray-100 text-gray-700';
-
 export const nodeAnchor = (node) => ({ x: node.x + NODE_ANCHOR.x, y: node.y + NODE_ANCHOR.y });
 
 // Quadratic curve between two node anchors, bowed 30px to the right.
@@ -56,17 +46,14 @@ export const connectionPath = (fromNode, toNode) => {
 export const nextNodeId = (nodes) => (nodes.length ? Math.max(...nodes.map(n => n.id)) + 1 : 1);
 
 // A new node centered on (x, y).
-export const createNode = (id, x, y) => ({
+export const createNode = (id, x, y, type = 'secondary') => ({
   id,
   x: x - NODE_ANCHOR.x,
   y: y - NODE_ANCHOR.y,
-  title: "New Idea",
-  content: "Click to edit this node...",
-  tags: ["new"],
-  type: "secondary",
+  title: 'New idea',
+  content: '',
+  type,
   expanded: true,
-  likes: 0,
-  comments: 0
 });
 
 // Grid layout: 3 columns, 200px apart horizontally, 150px vertically.

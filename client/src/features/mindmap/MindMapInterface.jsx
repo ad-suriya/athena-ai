@@ -12,8 +12,8 @@ import MindMapContextMenu from './components/MindMapContextMenu';
 import MindMapToolbar from './components/MindMapToolbar';
 import NotificationStack from './components/NotificationStack';
 
-// Mind map page: an in-memory (not persisted) graph of draggable nodes and
-// connections with zoom, a mini map, a context menu, and toast notifications.
+// Mind map page: the user's saved graph of draggable nodes and connections
+// (auto-saved via useMindMap) with zoom, a mini map, a context menu, and toasts.
 const MindMap = () => {
   const { notifications, notify } = useNotifications();
   const map = useMindMap(notify);
@@ -26,7 +26,7 @@ const MindMap = () => {
     canvasRef,
     zoom,
     onMove: map.moveNode,
-    onDragEnd: (nodeId) => notify(`Node "${map.nodes.find(n => n.id === nodeId)?.title}" moved`),
+    onDragEnd: () => {},
   });
 
   // Context-menu actions close the menu after running.
@@ -65,7 +65,7 @@ const MindMap = () => {
           />
         )}
 
-        <MindMapHeader />
+        <MindMapHeader saveStatus={map.saveStatus} />
 
         <div className="flex-1 relative overflow-hidden bg-[#FCF4F1]">
           {showMiniMap && <MindMapMiniMap nodes={map.nodes} onHide={() => setShowMiniMap(false)} />}
@@ -77,6 +77,7 @@ const MindMap = () => {
             className="w-full h-full relative cursor-grab active:cursor-grabbing"
             style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'center center' }}
             onDoubleClick={(e) => {
+              if (!map.isLoaded) return;
               const { x, y } = toCanvasPoint(e);
               map.addNode(x, y);
             }}
@@ -99,18 +100,28 @@ const MindMap = () => {
                 }}
                 onContextMenu={(e) => contextMenu.open(e, node.id)}
                 onClick={() => handleNodeClick(node.id)}
-                onSaveTitle={(title) => map.saveEdit(node.id, title)}
+                onStartEdit={() => map.startEditing(node.id)}
+                onSaveEdit={(fields) => map.saveEdit(node.id, fields)}
+                onCancelEdit={map.cancelEdit}
                 onToggleExpand={() => map.toggleExpand(node.id)}
-                onLike={() => map.likeNode(node.id)}
               />
             ))}
           </div>
+
+          {map.isLoaded && map.nodes.length === 0 && (
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+              <div className="rounded-xl bg-white/80 px-5 py-4 text-center shadow-sm">
+                <p className="text-sm font-medium text-gray-800">Your mind map is empty</p>
+                <p className="mt-1 text-xs text-gray-500">Double-click anywhere or use + to add your first idea.</p>
+              </div>
+            </div>
+          )}
 
           <MindMapToolbar
             showMiniMap={showMiniMap}
             onToggleMiniMap={() => setShowMiniMap(!showMiniMap)}
             onTidy={map.tidyUp}
-            onAddNode={() => map.addNode(300, 200)}
+            onAddNode={() => map.isLoaded && map.addNode(300, 200)}
           />
         </div>
       </div>

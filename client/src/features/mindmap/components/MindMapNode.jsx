@@ -1,10 +1,58 @@
+import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Eye, EyeOff } from 'lucide-react';
-import { getNodeStyle, getTagColor, NODE_TYPE_ICONS } from '../utils/mindMapUtils';
+import { getNodeStyle, NODE_TYPE_ICONS } from '../utils/mindMapUtils';
 import { nodeShape } from './mindMapPropTypes';
 
-// A node card: type icon, title (inline editor while editing), expand toggle,
-// and when expanded its content, tags and like/comment counts.
+// Title and notes editor shown inside a node. Enter in the title or "Done" saves;
+// Escape cancels; clicking outside the form saves.
+const NodeEditor = ({ node, onSave, onCancel }) => {
+  const [title, setTitle] = useState(node.title);
+  const [content, setContent] = useState(node.content);
+  const save = () => onSave({ title: title.trim() || 'Untitled', content: content.trim() });
+
+  return (
+    <div
+      className="node-controls space-y-2"
+      onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) save(); }}
+      onKeyDown={(e) => { if (e.key === 'Escape') onCancel(); }}
+    >
+      <input
+        type="text"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        onKeyDown={(e) => { if (e.key === 'Enter') save(); }}
+        autoFocus
+        maxLength={200}
+        aria-label="Node title"
+        className="w-full border-b border-gray-300 bg-transparent text-xs font-medium text-gray-900 outline-none"
+      />
+      <textarea
+        value={content}
+        onChange={(e) => setContent(e.target.value)}
+        rows={3}
+        maxLength={5000}
+        placeholder="Add notes (optional)"
+        aria-label="Node notes"
+        className="w-full resize-none rounded border border-gray-200 bg-white/70 p-1.5 text-xs text-gray-700 outline-none focus:border-gray-400"
+      />
+      <div className="flex justify-end">
+        <button onClick={save} className="rounded bg-gray-900 px-2 py-0.5 text-xs font-medium text-white hover:bg-gray-700">
+          Done
+        </button>
+      </div>
+    </div>
+  );
+};
+
+NodeEditor.propTypes = {
+  node: nodeShape.isRequired,
+  onSave: PropTypes.func.isRequired,
+  onCancel: PropTypes.func.isRequired,
+};
+
+// A node card: type icon, title, expand toggle, and (when expanded) its notes.
+// Double-click edits title and notes.
 const MindMapNode = ({
   node,
   isSelected,
@@ -13,9 +61,10 @@ const MindMapNode = ({
   onMouseDown,
   onContextMenu,
   onClick,
-  onSaveTitle,
+  onStartEdit,
+  onSaveEdit,
+  onCancelEdit,
   onToggleExpand,
-  onLike,
 }) => (
   <div
     className={`absolute w-48 rounded-lg p-3 cursor-move select-none ${getNodeStyle(node.type, isSelected, isConnecting)}`}
@@ -23,69 +72,36 @@ const MindMapNode = ({
     onMouseDown={onMouseDown}
     onContextMenu={onContextMenu}
     onClick={onClick}
+    onDoubleClick={(e) => {
+      e.stopPropagation(); // the canvas adds a node on double-click
+      onStartEdit();
+    }}
   >
-    <div className="flex items-start justify-between mb-2">
-      <div className="flex items-center gap-1.5 flex-1">
-        {NODE_TYPE_ICONS[node.type] && <span className="text-sm">{NODE_TYPE_ICONS[node.type]}</span>}
-
-        {isEditing ? (
-          <input
-            type="text"
-            defaultValue={node.title}
-            autoFocus
-            className="font-medium text-gray-900 text-xs bg-transparent border-b border-gray-300 outline-none flex-1"
-            onBlur={(e) => onSaveTitle(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && onSaveTitle(e.target.value)}
-          />
-        ) : (
-          <h3 className="font-medium text-gray-900 text-xs flex-1 leading-tight">{node.title}</h3>
-        )}
-      </div>
-
-      <div className="node-controls flex items-center gap-0.5">
-        <button
-          onClick={onToggleExpand}
-          className="text-gray-400 hover:text-gray-600 p-0.5 rounded"
-        >
-          {node.expanded ? <EyeOff size={12} /> : <Eye size={12} />}
-        </button>
-      </div>
-    </div>
-
-    {node.expanded && (
+    {isEditing ? (
+      <NodeEditor node={node} onSave={onSaveEdit} onCancel={onCancelEdit} />
+    ) : (
       <>
-        <p className="text-xs text-gray-600 mb-2 line-clamp-2 leading-relaxed">{node.content}</p>
-
-        <div className="flex gap-1 mb-2">
-          {node.tags.map((tag, index) => (
-            <span key={index} className={`px-1.5 py-0.5 rounded-full text-xs font-medium ${getTagColor(tag)}`}>
-              {tag}
-            </span>
-          ))}
-        </div>
-
-        <div className="flex items-center justify-between text-xs text-gray-500">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={onLike}
-              className="flex items-center gap-1 hover:text-red-500"
-            >
-              {node.likes}
-            </button>
-            <button className="flex items-center gap-1 hover:text-blue-500">
-              {node.comments}
-            </button>
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-1.5 flex-1">
+            {NODE_TYPE_ICONS[node.type] && <span className="text-sm">{NODE_TYPE_ICONS[node.type]}</span>}
+            <h3 className="font-medium text-gray-900 text-xs flex-1 leading-tight">{node.title}</h3>
           </div>
-          <div className="text-xs text-gray-400">2m</div>
+          {node.content && (
+            <div className="node-controls flex items-center gap-0.5">
+              <button
+                onClick={onToggleExpand}
+                className="text-gray-400 hover:text-gray-600 p-0.5 rounded"
+                aria-label={node.expanded ? 'Hide notes' : 'Show notes'}
+              >
+                {node.expanded ? <EyeOff size={12} /> : <Eye size={12} />}
+              </button>
+            </div>
+          )}
         </div>
+        {node.expanded && node.content && (
+          <p className="mt-2 text-xs text-gray-600 line-clamp-2 leading-relaxed whitespace-pre-wrap">{node.content}</p>
+        )}
       </>
-    )}
-
-    {/* Collaborator indicator (sample content) */}
-    {node.id === 5 && (
-      <div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
-        A
-      </div>
     )}
   </div>
 );
@@ -98,9 +114,10 @@ MindMapNode.propTypes = {
   onMouseDown: PropTypes.func.isRequired,
   onContextMenu: PropTypes.func.isRequired,
   onClick: PropTypes.func.isRequired,
-  onSaveTitle: PropTypes.func.isRequired,
+  onStartEdit: PropTypes.func.isRequired,
+  onSaveEdit: PropTypes.func.isRequired,
+  onCancelEdit: PropTypes.func.isRequired,
   onToggleExpand: PropTypes.func.isRequired,
-  onLike: PropTypes.func.isRequired,
 };
 
 export default MindMapNode;

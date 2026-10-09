@@ -55,6 +55,7 @@ Collections:
 - journalEntries
 - calendarEvents
 - wellnessEntries
+- mindMaps (one document per user, ID = userId)
 
 Messages subcollection:
 

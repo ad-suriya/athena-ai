@@ -23,6 +23,8 @@ app.use('/api', apiLimiter);
 // Notes hold rich-text HTML (including inline images), so they get a larger limit.
 // It must be registered before the global parser, which then skips the parsed body.
 app.use('/api/notes', express.json({ limit: '1mb' }));
+// A mind map is saved whole (up to 500 nodes).
+app.use('/api/mindmap', express.json({ limit: '1mb' }));
 app.use(express.json({ limit: '10kb' }));
 
 // === CORS ===
