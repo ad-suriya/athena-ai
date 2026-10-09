@@ -66,7 +66,8 @@ const AppSidebar = ({ isOpen, onClose }) => {
           </ul>
         </nav>
 
-        <div className="p-4">
+        {/* Decorative; only on screens tall enough that it never covers the navigation. */}
+        <div className="hidden p-4 [@media(min-height:960px)]:block">
           <div className="relative overflow-hidden rounded-card bg-gradient-to-b from-brand-50 to-brand-100 px-5 pb-5 pt-[104px]">
             <svg className="absolute inset-x-0 top-0 h-28 w-full" viewBox="0 0 240 112" preserveAspectRatio="none" aria-hidden="true">
               <defs>

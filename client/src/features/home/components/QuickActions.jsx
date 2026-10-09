@@ -12,16 +12,17 @@ const ACTIONS = [
   { id: 'ask', title: 'Ask Athena', text: 'Get a suggestion', icon: Sparkles, tile: 'bg-[#FFF7EC]', bubble: 'bg-[#FFEBD0] text-[#E08A1E]', to: '/chat', state: { category: 'choice' } },
 ];
 
-const tileClass = (a) => `flex items-center gap-4 rounded-2xl border border-line/60 px-4 py-4 text-left transition-shadow hover:shadow-card ${a.tile}`;
+// The last tile spans both columns on tablets so no tile sits alone.
+const tileClass = (a) => `flex items-center gap-3.5 rounded-2xl border border-line/60 px-4 py-4 text-left transition-shadow hover:shadow-card last:sm:col-span-2 last:xl:col-span-1 ${a.tile}`;
 
 const Tile = ({ action }) => (
   <>
-    <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${action.bubble}`}>
+    <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${action.bubble}`}>
       <action.icon className="h-6 w-6" strokeWidth={1.8} />
     </span>
     <span className="min-w-0">
-      <span className="block truncate text-[15px] font-semibold text-ink">{action.title}</span>
-      <span className="block truncate text-sm text-ink-muted">{action.text}</span>
+      <span className="block text-[15px] font-semibold leading-snug text-ink">{action.title}</span>
+      <span className="block text-sm leading-snug text-ink-muted">{action.text}</span>
     </span>
   </>
 );
@@ -29,7 +30,7 @@ const Tile = ({ action }) => (
 Tile.propTypes = { action: PropTypes.object.isRequired };
 
 const QuickActions = ({ onCheckMood }) => (
-  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
+  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
     {ACTIONS.map((a) => (a.id === 'mood' ? (
       <button key={a.id} type="button" onClick={onCheckMood} className={tileClass(a)}><Tile action={a} /></button>
     ) : (
