@@ -9,7 +9,7 @@ export const MAIN_NAV = [
   { label: 'Journal', to: '/notes', icon: BookOpen, match: ['/notes'] },
   { label: 'Mind Map', to: '/mindmap', icon: Network, match: ['/mindmap'] },
   { label: 'Calendar', to: '/calendar', icon: CalendarDays, match: ['/calendar'] },
-  { label: 'Insights', to: '/settings', icon: BarChart3, match: ['/settings'] },
+  { label: 'Insights', to: '/insights', icon: BarChart3, match: ['/insights'] },
 ];
 
 export const WELLNESS_TOOLS = [

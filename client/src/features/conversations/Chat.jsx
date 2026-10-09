@@ -1,8 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 
 import './Chat.css';
-import SettingsPage from '../../pages/settings/Settings';
-import ProfilePage from '../../pages/profile/Profile';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ConversationPanel from './components/history/ConversationPanel.jsx';
 import { auth } from '../../config/firebase.js';
@@ -18,7 +16,6 @@ const Chat = ({ setIsAuthenticated }) => {
   const navigate = useNavigate();
   const [showFileCategoryPanel, setShowFileCategoryPanel] = useState(false);
   const [inputValue, setInputValue] = useState('');
-  const [currentView, setCurrentView] = useState('chat');
   const [showDocsNotification, setShowDocsNotification] = useState(true);
   const [attachments, setAttachments] = useState([]);
   const [attachmentError, setAttachmentError] = useState(null);
@@ -107,10 +104,8 @@ const Chat = ({ setIsAuthenticated }) => {
   };
 
   useEffect(() => {
-    if (currentView === 'chat' && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [currentView, messages]);
+    inputRef.current?.focus();
+  }, [messages]);
 
   useEffect(() => {
     scrollToBottom();
@@ -220,11 +215,6 @@ const Chat = ({ setIsAuthenticated }) => {
           title={currentTitle}
         />
 
-        {currentView === 'settings' ? (
-          <SettingsPage onBack={() => setCurrentView('chat')} />
-        ) : currentView === 'profile' ? (
-          <ProfilePage onBack={() => setCurrentView('chat')} />
-        ) : (
           <div className="flex flex-col h-full overflow-hidden">
             <ChatMainView
               messages={messages}
@@ -263,7 +253,6 @@ const Chat = ({ setIsAuthenticated }) => {
               audioLevel={audioLevel}
             />
           </div>
-        )}
       </div>
 
       <ChatModals

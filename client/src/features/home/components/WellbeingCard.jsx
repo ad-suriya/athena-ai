@@ -15,7 +15,7 @@ Score.propTypes = { label: PropTypes.string.isRequired, value: PropTypes.number,
 
 // Latest mood check-in as three 1–10 rings, and a line about this week's check-ins.
 const WellbeingCard = ({ latest, weekCount, isLoading, error, onCheckIn }) => (
-  <HomeCard icon={Heart} title="Your Wellbeing" action={{ label: 'View insights', to: '/settings' }}>
+  <HomeCard icon={Heart} title="Your Wellbeing" action={{ label: 'View insights', to: '/insights' }}>
     {error ? (
       <p className="text-sm text-brand-600">Couldn&apos;t load check-ins. {error}</p>
     ) : isLoading ? (

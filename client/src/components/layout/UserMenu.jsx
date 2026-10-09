@@ -43,7 +43,7 @@ const UserMenu = () => {
           </div>
           <div className="my-1 h-px bg-line" />
           <Link to="/profile" className={menuItem} onClick={close}><User className="h-4 w-4" /> Profile</Link>
-          <Link to="/settings" className={menuItem} onClick={close}><BarChart3 className="h-4 w-4" /> Insights</Link>
+          <Link to="/insights" className={menuItem} onClick={close}><BarChart3 className="h-4 w-4" /> Insights</Link>
           <Link to="/feedback" className={menuItem} onClick={close}><MessageSquareText className="h-4 w-4" /> Send feedback</Link>
           <div className="my-1 h-px bg-line" />
           <button className={`${menuItem} text-brand-600`} onClick={() => { close(); signOutUser(); }}>

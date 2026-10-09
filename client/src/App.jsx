@@ -7,7 +7,7 @@ import NoteEditor from './features/notes/NoteEditor';
 import Calendar from './features/calendar/Calendar';
 import TaskManager from './features/tasks/Task';
 import Profile from './pages/profile/Profile.jsx';
-import Settings from './pages/settings/Settings.jsx';
+import Insights from './features/insights/Insights.jsx';
 import './App.css';
 import MindMap from './features/mindmap/MindMapInterface.jsx';
 import Feedback from './pages/feedback/Feedback.jsx';
@@ -58,7 +58,8 @@ function App() {
             <Route path="/notes/:noteId" element={<NoteEditor />} />
             <Route path="/calendar" element={<Calendar />} />
             <Route path="/mindmap" element={<MindMap />} />
-            <Route path="/settings" element={<Settings />} />
+            <Route path="/insights" element={<Insights />} />
+            <Route path="/settings" element={<Navigate to="/insights" replace />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/feedback" element={<Feedback />} />
           </Route>

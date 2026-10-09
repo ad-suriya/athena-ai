@@ -18,5 +18,6 @@ router.use('/conversations', require('./conversations.routes'));
 router.use('/users', require('./users.routes'));
 router.use('/mindmap', require('./mindmap.routes'));
 router.use('/feedback', require('./feedback.routes'));
+router.use('/insights', require('./insights.routes'));
 
 module.exports = router;
