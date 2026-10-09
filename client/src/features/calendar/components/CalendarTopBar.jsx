@@ -1,166 +1,97 @@
-import React, { useState } from 'react';
-import { Home, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
+import PropTypes from 'prop-types';
+import { ChevronLeft, ChevronRight, Plus, Search } from 'lucide-react';
 
-// Reusable UserAvatar component
-const UserAvatar = ({ user, className = '' }) => {
-  const [imageError, setImageError] = useState(false);
+const VIEWS = [
+  { id: 'month', label: 'Month' },
+  { id: 'week', label: 'Week' },
+  { id: 'day', label: 'Day' },
+];
 
-  const getInitials = (name) => {
-    if (!name || name.trim() === '') return 'A'; // Fallback to 'A' for "Avatar"
-    return name
-      .split(' ')
-      .filter((n) => n) // Remove empty strings
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2); // Limit to 2 characters
-  };
-
-  const initials = user?.displayName || user?.email
-    ? getInitials(user.displayName || user.email)
-    : 'A';
-
-  return user?.photoURL && !imageError ? (
-    <img
-      src={user.photoURL}
-      alt={`${user?.displayName || 'User'}'s profile picture`}
-      className={`w-10 h-10 rounded-full object-cover ${className}`}
-      onError={() => setImageError(true)} // Fallback to initials if image fails
-    />
-  ) : (
-    <div
-      className={`w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white text-base font-medium ${className}`}
-    >
-      {initials}
-    </div>
-  );
+// Moves currentDate by one unit of the current view.
+const shift = (date, viewMode, direction) => {
+  const next = new Date(date);
+  if (viewMode === 'month') next.setMonth(date.getMonth() + direction);
+  else if (viewMode === 'week') next.setDate(date.getDate() + direction * 7);
+  else next.setDate(date.getDate() + direction);
+  return next;
 };
 
-const CalendarTopBar = ({ viewMode, setViewMode, currentDate, setCurrentDate, user }) => {
-  const [showViewDropdown, setShowViewDropdown] = useState(false);
-  const safeUser = user || { displayName: '', email: '', photoURL: '' };
-  console.log('User object:', safeUser); // Debug user data
-
-  // Format month for display
-  const formatMonth = (date) => {
-    return date.toLocaleString('default', { month: 'long', year: 'numeric' });
-  };
-
-  // Navigate to today
-  const goToToday = () => {
-    setCurrentDate(new Date());
-  };
-
-  // Navigate by month
-  const navigateMonth = (direction) => {
-    setCurrentDate((prev) => {
-      const newDate = new Date(prev);
-      newDate.setMonth(prev.getMonth() + direction);
-      return newDate;
-    });
-  };
-
-  // Navigate by week
-  const navigateWeek = (direction) => {
-    setCurrentDate((prev) => {
-      const newDate = new Date(prev);
-      newDate.setDate(prev.getDate() + direction * 7);
-      return newDate;
-    });
-  };
-
-  // Navigate by day
-  const navigateDay = (direction) => {
-    setCurrentDate((prev) => {
-      const newDate = new Date(prev);
-      newDate.setDate(prev.getDate() + direction);
-      return newDate;
-    });
-  };
-
-  const viewOptions = ['Day', 'Week', 'Month'];
-
-  return (
-    <div className="bg-white border-b border-gray-200 px-4 py-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center space-x-4">
-          <button
-            onClick={() => window.history.back()}
-            className="p-2 rounded-full hover:bg-gray-100"
-            title="Go back home"
-            aria-label="Go back home"
-          >
-            <Home className="w-5 h-5 text-gray-600" />
-          </button>
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900">
-            {formatMonth(currentDate)}
-          </h1>
-        </div>
-        <div className="flex flex-wrap items-center gap-2 md:gap-4">
-          <UserAvatar user={safeUser} className="hover:bg-orange-600 transition-colors" />
-          <div className="relative">
-            <button
-              onClick={() => setShowViewDropdown(!showViewDropdown)}
-              className="flex items-center space-x-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-              aria-label={`View mode: ${viewMode}`}
-            >
-              <span className="font-medium text-gray-700">{viewMode}</span>
-              <ChevronDown className="w-4 h-4 text-gray-500" />
-            </button>
-            {showViewDropdown && (
-              <div className="absolute top-full mt-1 left-0 bg-white border border-gray-200 rounded-md shadow-lg z-10">
-                {viewOptions.map((option) => (
-                  <button
-                    key={option}
-                    onClick={() => {
-                      setViewMode(option.toLowerCase());
-                      setShowViewDropdown(false);
-                    }}
-                    className={`block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 transition-colors ${
-                      viewMode === option.toLowerCase() ? 'bg-blue-50 text-blue-600' : 'text-gray-700'
-                    }`}
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-          <button
-            onClick={goToToday}
-            className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 hover:bg-gray-50 rounded-md transition-colors"
-            aria-label="Go to today"
-          >
-            Today
-          </button>
-          <div className="flex items-center space-x-1">
-            <button
-              onClick={() => {
-                if (viewMode === 'month') navigateMonth(-1);
-                else if (viewMode === 'week') navigateWeek(-1);
-                else navigateDay(-1);
-              }}
-              className="p-2 hover:bg-gray-100 rounded-md transition-colors"
-              aria-label={`Previous ${viewMode}`}
-            >
-              <ChevronLeft className="w-5 h-5 text-gray-600" />
-            </button>
-            <button
-              onClick={() => {
-                if (viewMode === 'month') navigateMonth(1);
-                else if (viewMode === 'week') navigateWeek(1);
-                else navigateDay(1);
-              }}
-              className="p-2 hover:bg-gray-100 rounded-md transition-colors"
-              aria-label={`Next ${viewMode}`}
-            >
-              <ChevronRight className="w-5 h-5 text-gray-600" />
-            </button>
-          </div>
-        </div>
-      </div>
+// Calendar toolbar: today / previous / next, the month, search, view switch, new event.
+const CalendarTopBar = ({ viewMode, setViewMode, currentDate, setCurrentDate, searchQuery, setSearchQuery, onNewEvent }) => (
+  <div className="flex flex-wrap items-center gap-x-4 gap-y-3 border-b border-line bg-white px-4 py-4 sm:px-6">
+    <div className="flex items-center gap-2">
+      <button
+        onClick={() => setCurrentDate(new Date())}
+        className="rounded-xl border border-line px-3.5 py-2 text-sm font-medium text-ink hover:bg-brand-50"
+        aria-label="Go to today"
+      >
+        Today
+      </button>
+      <button
+        onClick={() => setCurrentDate((d) => shift(d, viewMode, -1))}
+        className="rounded-lg p-2 text-ink-muted hover:bg-brand-50 hover:text-brand-500"
+        aria-label={`Previous ${viewMode}`}
+      >
+        <ChevronLeft className="h-5 w-5" />
+      </button>
+      <button
+        onClick={() => setCurrentDate((d) => shift(d, viewMode, 1))}
+        className="rounded-lg p-2 text-ink-muted hover:bg-brand-50 hover:text-brand-500"
+        aria-label={`Next ${viewMode}`}
+      >
+        <ChevronRight className="h-5 w-5" />
+      </button>
+      <h1 className="ml-1 text-2xl font-bold tracking-[-0.02em] text-ink">
+        {currentDate.toLocaleString('en-US', { month: 'long', year: 'numeric' })}
+      </h1>
     </div>
-  );
+
+    <div className="flex w-full flex-wrap items-center gap-2 sm:ml-auto sm:w-auto">
+      <div className="relative min-w-0 flex-1 sm:w-56 sm:flex-none">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
+        <input
+          type="search"
+          placeholder="Search events"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full rounded-xl border border-line bg-[#F8F6F6] py-2 pl-9 pr-3 text-sm text-ink placeholder:text-ink-faint focus:border-brand-300 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-100"
+          data-testid="search-input"
+          aria-label="Search events"
+        />
+      </div>
+      <div className="flex rounded-xl border border-line bg-[#F8F6F6] p-1" role="group" aria-label="Calendar view">
+        {VIEWS.map((v) => (
+          <button
+            key={v.id}
+            onClick={() => setViewMode(v.id)}
+            aria-pressed={viewMode === v.id}
+            className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+              viewMode === v.id ? 'bg-white text-brand-600 shadow-sm' : 'text-ink-muted hover:text-ink'
+            }`}
+          >
+            {v.label}
+          </button>
+        ))}
+      </div>
+      <button
+        onClick={onNewEvent}
+        className="flex items-center gap-1.5 rounded-xl bg-brand-500 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-600"
+        data-testid="new-event-button"
+      >
+        <Plus className="h-4 w-4" /> New event
+      </button>
+    </div>
+  </div>
+);
+
+CalendarTopBar.propTypes = {
+  viewMode: PropTypes.oneOf(['month', 'week', 'day']).isRequired,
+  setViewMode: PropTypes.func.isRequired,
+  currentDate: PropTypes.instanceOf(Date).isRequired,
+  setCurrentDate: PropTypes.func.isRequired,
+  searchQuery: PropTypes.string.isRequired,
+  setSearchQuery: PropTypes.func.isRequired,
+  onNewEvent: PropTypes.func.isRequired,
 };
 
 export default CalendarTopBar;

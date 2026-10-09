@@ -3,7 +3,7 @@ import * as calendarService from '../../../services/calendarService';
 import { toDateKey, formatTime, combineDateAndTime } from '../utils/calendarDates';
 
 // The calendar UI works with { id, title, date: "YYYY-MM-DD", time: "3:30 PM - 4:00 PM",
-// type, color, description }. The API stores startTime/endTime timestamps.
+// type, color, description, location }. The API stores startTime/endTime timestamps.
 export const toUiEvent = (event) => {
   const start = new Date(event.startTime);
   const end = event.endTime ? new Date(event.endTime) : null;
@@ -15,6 +15,7 @@ export const toUiEvent = (event) => {
     type: event.category || 'meeting',
     color: event.color || 'blue',
     description: event.description || '',
+    location: event.location || '',
   };
 };
 
@@ -34,6 +35,7 @@ const toApiEvent = (uiEvent) => {
   return {
     title: uiEvent.title,
     description: uiEvent.description || '',
+    location: uiEvent.location || '',
     startTime: startTime.toISOString(),
     endTime: endTime ? endTime.toISOString() : null,
     category: uiEvent.type || 'meeting',

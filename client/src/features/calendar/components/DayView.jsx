@@ -9,9 +9,9 @@ const EventCard = ({ event, className, onClick }) => (
     className={`${className} rounded-lg border-l-4 cursor-pointer ${getEventColorClass(event.color)}`}
   >
     <div className="font-medium text-sm">{event.title}</div>
-    <div className="text-sm mt-1 text-gray-600">{event.time}</div>
+    <div className="text-sm mt-1 text-ink-muted">{event.time}</div>
     {event.description && (
-      <div className="text-xs mt-2 text-gray-600">{event.description}</div>
+      <div className="text-xs mt-2 text-ink-muted">{event.description}</div>
     )}
   </div>
 );
@@ -27,9 +27,9 @@ const DayView = ({ date, events, isMobile, onEventClick }) => {
   const dayEvents = eventsOnDate(events, date);
 
   return (
-    <div className="bg-white rounded-lg shadow-sm">
-      <div className="p-4 border-b border-gray-200">
-        <h2 className="text-lg font-semibold text-gray-900">
+    <div className="rounded-card border border-line bg-white shadow-card">
+      <div className="p-4 border-b border-line">
+        <h2 className="text-lg font-semibold text-ink">
           {date.toLocaleDateString('en-US', {
             weekday: 'long',
             month: 'long',
@@ -42,8 +42,8 @@ const DayView = ({ date, events, isMobile, onEventClick }) => {
         {isMobile ? (
           <div className="space-y-4">
             {dayEvents.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                No events scheduled for today
+              <div className="text-center py-8 text-ink-muted">
+                Nothing scheduled for this day
               </div>
             ) : (
               dayEvents.map(event => (
@@ -55,10 +55,10 @@ const DayView = ({ date, events, isMobile, onEventClick }) => {
           <div className="space-y-4">
             {HOURS.map(hour => (
               <div key={hour} className="flex">
-                <div className="w-16 text-sm pt-1 text-gray-500">
+                <div className="w-16 text-sm pt-1 text-ink-muted">
                   {formatHourLabel(hour)}
                 </div>
-                <div className="flex-1 border-t pt-2 border-gray-100">
+                <div className="flex-1 border-t pt-2 border-line/60">
                   {dayEvents.filter(event => occursInHour(event, hour)).map(event => (
                     <EventCard key={event.id} event={event} className="mb-2 p-3" onClick={onEventClick} />
                   ))}

@@ -15,15 +15,15 @@ const MobileWeek = ({ weekDates, events, onOpenDay, onEventClick }) => (
         return (
           <div
             key={index}
-            className={`flex-shrink-0 w-16 border rounded-lg p-2 mx-1 ${today ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}`}
+            className={`w-16 flex-shrink-0 cursor-pointer rounded-xl border p-2 mx-1 ${today ? 'border-brand-300 bg-brand-50' : 'border-line'}`}
             onClick={() => onOpenDay(date)}
           >
-            <div className="text-xs text-center text-gray-500">{DAYS_OF_WEEK[index]}</div>
-            <div className={`text-center text-sm font-medium my-1 ${today ? 'text-blue-600' : 'text-gray-900'}`}>
+            <div className="text-xs text-center text-ink-muted">{DAYS_OF_WEEK[index]}</div>
+            <div className={`text-center text-sm font-medium my-1 ${today ? 'text-brand-600' : 'text-ink'}`}>
               {date.getDate()}
             </div>
             {dayEvents.length > 0 && (
-              <div className="text-xs text-center text-blue-600">
+              <div className="text-xs text-center text-brand-600">
                 {dayEvents.length} event{dayEvents.length !== 1 ? 's' : ''}
               </div>
             )}
@@ -36,8 +36,8 @@ const MobileWeek = ({ weekDates, events, onOpenDay, onEventClick }) => (
         const dayEvents = eventsOnDate(events, date);
         if (dayEvents.length === 0) return null;
         return (
-          <div key={index} className="border rounded-lg p-3">
-            <div className="font-medium text-gray-900">
+          <div key={index} className="rounded-xl border border-line p-3">
+            <div className="font-medium text-ink">
               {date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
             </div>
             <div className="mt-2 space-y-2">
@@ -70,14 +70,14 @@ MobileWeek.propTypes = {
 const DesktopWeek = ({ weekDates, events, onEventClick }) => (
   <div className="overflow-x-auto">
     <div className="min-w-max">
-      <div className="grid grid-cols-8 border-b border-gray-200">
+      <div className="grid grid-cols-8 border-b border-line">
         <div className="p-2"></div>
         {weekDates.map((date, index) => {
           const today = isToday(date);
           return (
-            <div key={index} className={`p-2 text-center ${today ? 'border-b-2 border-blue-500' : ''}`}>
-              <div className="text-xs text-gray-500">{DAYS_OF_WEEK[index]}</div>
-              <div className={`mx-auto w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium ${today ? 'bg-blue-600 text-white' : 'text-gray-900'}`}>
+            <div key={index} className={`p-2 text-center ${today ? 'border-b-2 border-brand-500' : ''}`}>
+              <div className="text-xs text-ink-muted">{DAYS_OF_WEEK[index]}</div>
+              <div className={`mx-auto w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium ${today ? 'bg-brand-500 text-white' : 'text-ink'}`}>
                 {date.getDate()}
               </div>
             </div>
@@ -85,19 +85,19 @@ const DesktopWeek = ({ weekDates, events, onEventClick }) => (
         })}
       </div>
       <div className="grid grid-cols-8">
-        <div className="border-r border-gray-200">
+        <div className="border-r border-line">
           {HOURS.map(hour => (
-            <div key={hour} className="h-16 flex items-start justify-end pr-2 text-xs text-gray-500">
+            <div key={hour} className="h-16 flex items-start justify-end pr-2 text-xs text-ink-muted">
               {formatHourLabel(hour)}
             </div>
           ))}
         </div>
         {weekDates.map((date, dayIndex) => (
-          <div key={dayIndex} className="relative border-r border-gray-200">
+          <div key={dayIndex} className="relative border-r border-line">
             {HOURS.map(hour => (
               <div
                 key={hour}
-                className="h-16 border-b border-gray-100"
+                className="h-16 border-b border-line/60"
               ></div>
             ))}
             {eventsOnDate(events, date).map(event => {
@@ -136,17 +136,10 @@ const WeekView = ({ currentDate, events, isMobile, onOpenDay, onEventClick }) =>
   const weekDates = getWeekDates(currentDate);
 
   return (
-    <div className="bg-white rounded-lg shadow-sm">
-      <div className="p-4 border-b border-gray-200">
-        <h2 className="text-lg font-semibold text-gray-900">
-          {isMobile ? (
-            <>
-              {shortDate(weekDates[0])} - 
-              {shortDate(weekDates[6])}
-            </>
-          ) : (
-            `Week of ${shortDate(weekDates[0])} - ${shortDate(weekDates[6])}`
-          )}
+    <div className="rounded-card border border-line bg-white shadow-card">
+      <div className="p-4 border-b border-line">
+        <h2 className="text-lg font-semibold text-ink">
+          {`${isMobile ? '' : 'Week of '}${shortDate(weekDates[0])} – ${shortDate(weekDates[6])}`}
         </h2>
       </div>
       {isMobile ? (

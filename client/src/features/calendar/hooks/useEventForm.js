@@ -3,23 +3,14 @@ import { parseDateKey, parseFormDate } from '../utils/calendarDates';
 
 const formatFormDate = (date) => date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 
-// Fields the form shows. Only title, times, date and description are saved today.
+// The fields the form edits; all of them are saved.
 const emptyForm = (currentDate) => ({
   title: '',
   startTime: '3:30 PM',
   endTime: '4:00 PM',
   date: formatFormDate(currentDate),
-  isAllDay: false,
-  timeZone: 'Time zone',
-  repeat: 'Repeat',
-  participants: '',
-  conferencing: '',
-  aiNotes: '',
   location: '',
   description: '',
-  visibility: 'Default visibility',
-  status: 'Busy',
-  reminders: '30 min before'
 });
 
 const formFromEvent = (event, currentDate) => ({
@@ -28,6 +19,7 @@ const formFromEvent = (event, currentDate) => ({
   startTime: event.time?.split(' - ')[0] || '3:30 PM',
   endTime: event.time?.split(' - ')[1] || '4:00 PM',
   date: event.date ? formatFormDate(parseDateKey(event.date)) : formatFormDate(currentDate),
+  location: event.location || '',
   description: event.description || '',
 });
 
@@ -64,6 +56,7 @@ export const useEventForm = (selectedEvent, currentDate) => {
         time: eventData.startTime + (eventData.endTime ? ` - ${eventData.endTime}` : ''),
         date,
         description: eventData.description,
+        location: eventData.location.trim(),
         type: selectedEvent?.type || 'meeting',
         color: selectedEvent?.color || 'blue'
       }

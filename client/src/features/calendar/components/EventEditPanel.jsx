@@ -1,162 +1,68 @@
 import PropTypes from 'prop-types';
-import { Bell, Clock, FileText, MapPin, Plus, Users, Video } from 'lucide-react';
+import { AlignLeft, CalendarDays, Clock, MapPin, Trash2, X } from 'lucide-react';
 
-// Right column while creating/editing an event. Controlled by useEventForm.
-const EventEditPanel = ({ eventData, onFieldChange, isNew, onSave, onBack, user }) => (
-  <div className="w-full md:w-56 bg-white md:h-screen flex flex-col border-b md:border-b-0 md:border-l border-gray-200 overflow-hidden">
-    <div className="p-2 border-b border-gray-100">
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-1.5">
-          <button
-            onClick={onBack}
-            className="p-0.5 hover:bg-gray-100 rounded"
-            data-testid="back-button"
-          >
-            <Plus className="w-2.5 h-2.5 text-gray-600 rotate-45" />
-          </button>
-          <span className="text-[11px] font-medium text-gray-900 truncate">{isNew ? 'New Event' : 'Edit Event'}</span>
-        </div>
-        <button
-          onClick={onSave}
-          className="px-1.5 py-0.5 bg-blue-600 text-white rounded-md text-[11px] hover:bg-blue-700"
-          data-testid="save-button"
-        >
-          Save
-        </button>
-      </div>
-      <input
-        type="text"
-        placeholder="Title"
-        value={eventData.title}
-        onChange={(e) => onFieldChange('title', e.target.value)}
-        className="w-full p-1.5 bg-gray-50 rounded-lg text-[11px] placeholder-gray-400 border-none focus:outline-none focus:bg-gray-100"
-        data-testid="title-input"
-      />
+const inputClass = 'w-full rounded-xl border border-line bg-white px-3 py-2 text-sm text-ink placeholder:text-ink-faint focus:border-brand-300 focus:outline-none focus:ring-4 focus:ring-brand-100';
+
+const Field = ({ icon: Icon, label, htmlFor, children }) => (
+  <div>
+    <label htmlFor={htmlFor} className="mb-1.5 flex items-center gap-2 text-xs font-medium text-ink-muted">
+      <Icon className="h-3.5 w-3.5" /> {label}
+    </label>
+    {children}
+  </div>
+);
+
+Field.propTypes = { icon: PropTypes.elementType.isRequired, label: PropTypes.string.isRequired, htmlFor: PropTypes.string.isRequired, children: PropTypes.node.isRequired };
+
+// Create/edit form for an event. Controlled by useEventForm; every field is saved.
+const EventEditPanel = ({ eventData, onFieldChange, isNew, onSave, onBack, onDelete }) => (
+  <div className="flex w-full flex-col bg-white md:h-full md:w-80">
+    <div className="flex items-center justify-between gap-2 border-b border-line px-5 py-4">
+      <h2 className="text-base font-semibold text-ink">{isNew ? 'New event' : 'Edit event'}</h2>
+      <button onClick={onBack} className="rounded-lg p-1.5 text-ink-muted hover:bg-brand-50" aria-label="Close" data-testid="back-button">
+        <X className="h-4 w-4" />
+      </button>
     </div>
 
-    <div className="flex-1 overflow-y-auto">
-      <div className="p-2 border-b border-gray-100">
-        <div className="flex items-center gap-1.5 mb-1.5">
-          <Clock className="w-2.5 h-2.5 text-gray-400" />
-          <div className="flex items-center gap-0.5">
-            <input
-              type="text"
-              value={eventData.startTime}
-              onChange={(e) => onFieldChange('startTime', e.target.value)}
-              className="text-[11px] text-gray-900 bg-transparent border-none focus:outline-none font-medium w-16"
-              data-testid="start-time-input"
-            />
-            <span className="text-gray-400">→</span>
-            <input
-              type="text"
-              value={eventData.endTime}
-              onChange={(e) => onFieldChange('endTime', e.target.value)}
-              className="text-[11px] text-gray-900 bg-transparent border-none focus:outline-none font-medium w-16"
-              data-testid="end-time-input"
-            />
-            <span className="text-[9px] text-gray-400 bg-gray-100 px-0.5 py-0.25 rounded">30 min</span>
-          </div>
-        </div>
-        <div className="ml-4 mb-1.5">
-          <input
-            type="text"
-            value={eventData.date}
-            onChange={(e) => onFieldChange('date', e.target.value)}
-            className="text-[11px] text-gray-700 bg-transparent border-none focus:outline-none w-full"
-            data-testid="date-input"
-          />
-        </div>
-        <div className="ml-4 flex gap-3 text-[9px]">
-          <button className="text-gray-400 hover:text-gray-600">All-day</button>
-          <button className="text-gray-400 hover:text-gray-600">Time zone</button>
-          <button className="text-gray-400 hover:text-gray-600">Repeat</button>
-        </div>
+    <div className="flex-1 space-y-4 overflow-y-auto px-5 py-5">
+      <input
+        type="text"
+        placeholder="Add a title"
+        value={eventData.title}
+        onChange={(e) => onFieldChange('title', e.target.value)}
+        className="w-full border-0 border-b border-line bg-transparent px-0 pb-2 text-lg font-semibold text-ink placeholder:text-ink-faint focus:border-brand-400 focus:outline-none focus:ring-0"
+        data-testid="title-input"
+        aria-label="Title"
+      />
+      <Field icon={CalendarDays} label="Date" htmlFor="event-date">
+        <input id="event-date" type="text" value={eventData.date} onChange={(e) => onFieldChange('date', e.target.value)} className={inputClass} data-testid="date-input" />
+      </Field>
+      <div className="grid grid-cols-2 gap-3">
+        <Field icon={Clock} label="Starts" htmlFor="event-start">
+          <input id="event-start" type="text" value={eventData.startTime} onChange={(e) => onFieldChange('startTime', e.target.value)} className={inputClass} data-testid="start-time-input" />
+        </Field>
+        <Field icon={Clock} label="Ends" htmlFor="event-end">
+          <input id="event-end" type="text" value={eventData.endTime} onChange={(e) => onFieldChange('endTime', e.target.value)} className={inputClass} data-testid="end-time-input" />
+        </Field>
       </div>
+      <Field icon={MapPin} label="Location" htmlFor="event-location">
+        <input id="event-location" type="text" value={eventData.location} onChange={(e) => onFieldChange('location', e.target.value)} placeholder="Optional" className={inputClass} />
+      </Field>
+      <Field icon={AlignLeft} label="Description" htmlFor="event-description">
+        <textarea id="event-description" rows="4" value={eventData.description} onChange={(e) => onFieldChange('description', e.target.value)} placeholder="Optional" className={`${inputClass} resize-none`} />
+      </Field>
+    </div>
 
-      <div className="p-2 border-b border-gray-100">
-        <div className="flex items-center gap-1.5">
-          <Users className="w-2.5 h-2.5 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Participants"
-            value={eventData.participants}
-            onChange={(e) => onFieldChange('participants', e.target.value)}
-            className="flex-1 text-[11px] text-gray-400 bg-transparent border-none focus:outline-none placeholder-gray-400"
-          />
-        </div>
-      </div>
-
-      <div className="p-2 border-b border-gray-100">
-        <div className="flex items-center gap-1.5">
-          <Video className="w-2.5 h-2.5 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Conferencing"
-            value={eventData.conferencing}
-            onChange={(e) => onFieldChange('conferencing', e.target.value)}
-            className="flex-1 text-[11px] text-gray-400 bg-transparent border-none focus:outline-none placeholder-gray-400"
-          />
-        </div>
-      </div>
-
-      <div className="p-2 border-b border-gray-100">
-        <div className="flex items-center gap-1.5">
-          <FileText className="w-2.5 h-2.5 text-gray-400" />
-          <input
-            type="text"
-            placeholder="AI Meeting Notes and Docs"
-            value={eventData.aiNotes}
-            onChange={(e) => onFieldChange('aiNotes', e.target.value)}
-            className="flex-1 text-[11px] text-gray-400 bg-transparent border-none focus:outline-none placeholder-gray-400"
-          />
-        </div>
-      </div>
-
-      <div className="p-2 border-b border-gray-100">
-        <div className="flex items-center gap-1.5">
-          <MapPin className="w-2.5 h-2.5 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Location"
-            value={eventData.location}
-            onChange={(e) => onFieldChange('location', e.target.value)}
-            className="flex-1 text-[11px] text-gray-400 bg-transparent border-none focus:outline-none placeholder-gray-400"
-          />
-        </div>
-      </div>
-
-      <div className="p-2 border-b border-gray-100">
-        <textarea
-          placeholder="Description"
-          value={eventData.description}
-          onChange={(e) => onFieldChange('description', e.target.value)}
-          className="w-full text-[11px] text-gray-400 bg-transparent border-none focus:outline-none resize-none placeholder-gray-400"
-          rows="2"
-        />
-      </div>
-
-      <div className="p-2 border-b border-gray-100">
-        <div className="flex items-center gap-1.5">
-          <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
-            <span className="text-[9px] text-white font-medium">A</span>
-          </div>
-          <span className="text-[11px] text-gray-900 truncate">{user?.email || 'No email'}</span>
-        </div>
-        <div className="mt-1.5 ml-5.5 flex gap-3">
-          <button className="text-[9px] text-gray-900 hover:text-gray-700 font-medium">Busy</button>
-          <button className="text-[9px] text-gray-400 hover:text-gray-600">Default visibility</button>
-        </div>
-      </div>
-
-      <div className="p-2">
-        <div className="flex items-center gap-1.5">
-          <Bell className="w-2.5 h-2.5 text-gray-400" />
-          <span className="text-[11px] text-gray-400 truncate">Reminders</span>
-        </div>
-        <div className="ml-4 mt-1">
-          <span className="text-[11px] text-gray-900">30 min before</span>
-        </div>
-      </div>
+    <div className="flex items-center gap-2 border-t border-line px-5 py-4">
+      {!isNew && (
+        <button onClick={onDelete} className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium text-brand-600 hover:bg-brand-50">
+          <Trash2 className="h-4 w-4" /> Delete
+        </button>
+      )}
+      <button onClick={onBack} className="ml-auto rounded-xl px-4 py-2 text-sm text-ink-muted hover:bg-brand-50">Cancel</button>
+      <button onClick={onSave} className="rounded-xl bg-brand-500 px-5 py-2 text-sm font-semibold text-white hover:bg-brand-600" data-testid="save-button">
+        Save
+      </button>
     </div>
   </div>
 );
@@ -167,9 +73,6 @@ EventEditPanel.propTypes = {
     startTime: PropTypes.string.isRequired,
     endTime: PropTypes.string.isRequired,
     date: PropTypes.string.isRequired,
-    participants: PropTypes.string.isRequired,
-    conferencing: PropTypes.string.isRequired,
-    aiNotes: PropTypes.string.isRequired,
     location: PropTypes.string.isRequired,
     description: PropTypes.string.isRequired,
   }).isRequired,
@@ -177,7 +80,7 @@ EventEditPanel.propTypes = {
   isNew: PropTypes.bool.isRequired,
   onSave: PropTypes.func.isRequired,
   onBack: PropTypes.func.isRequired,
-  user: PropTypes.shape({ email: PropTypes.string }),
+  onDelete: PropTypes.func.isRequired,
 };
 
 export default EventEditPanel;

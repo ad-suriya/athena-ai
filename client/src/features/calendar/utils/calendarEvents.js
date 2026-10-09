@@ -17,15 +17,16 @@ export const eventsOnDate = (events, date) => {
   return events.filter(event => event.date === key);
 };
 
+// "blue" is the stored default (there is no colour picker yet), so it is drawn in the brand tint.
 const COLOR_CLASSES = {
-  blue: 'bg-blue-100 text-blue-800 border-blue-200',
+  blue: 'bg-brand-50 text-brand-700 border-brand-200',
   purple: 'bg-purple-100 text-purple-800 border-purple-200',
   green: 'bg-green-100 text-green-800 border-green-200',
   orange: 'bg-orange-100 text-orange-800 border-orange-200',
   red: 'bg-red-100 text-red-800 border-red-200'
 };
 
-export const getEventColorClass = (color) => COLOR_CLASSES[color] || 'bg-gray-100 text-gray-800 border-gray-200';
+export const getEventColorClass = (color) => COLOR_CLASSES[color] || 'bg-canvas text-ink border-line';
 
 // "3:30 PM" → minutes since midnight
 const timeToMinutes = (timeStr) => {
@@ -33,7 +34,7 @@ const timeToMinutes = (timeStr) => {
   const [time, period] = timeStr.split(' ');
   const [hours, minutes] = time.split(':').map(Number);
   let totalMinutes = (hours % 12) * 60 + (minutes || 0);
-  if (period === 'PM' && hours !== 12) totalMinutes += 12 * 60;
+  if (period === 'PM') totalMinutes += 12 * 60; // 12 PM → 12:00 (hours % 12 already made 12 AM → 0)
   return totalMinutes;
 };
 

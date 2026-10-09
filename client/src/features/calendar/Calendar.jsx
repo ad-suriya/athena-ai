@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import CalendarTopBar from './components/CalendarTopBar';
 import CalendarMiniMonth from './components/CalendarMiniMonth';
-import CalendarInfoPanel from './components/CalendarInfoPanel';
 import EventEditPanel from './components/EventEditPanel';
 import MonthView from './components/MonthView';
 import WeekView from './components/WeekView';
@@ -12,22 +11,34 @@ import { useEventForm } from './hooks/useEventForm';
 import { useIsMobile } from './hooks/useIsMobile';
 import { filterEvents } from './utils/calendarEvents';
 
-const VIEW_MODES = ['month', 'week', 'day'];
-
-// Calendar page: navigation state, search, and the create/edit flow.
-// Views and side panels live in ./components; event data in useCalendarEvents.
+// Calendar page: navigation (one current date drives every view), search, and the
+// create / edit / delete flow. Views and panels live in ./components.
 const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState('week');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedDate, setSelectedDate] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const isMobile = useIsMobile();
-  const { events: allEvents, error, clearError, saveEvent } = useCalendarEvents();
+  const { events: allEvents, error, clearError, saveEvent, deleteEvent } = useCalendarEvents();
   const eventForm = useEventForm(selectedEvent, currentDate);
 
   const events = filterEvents(allEvents, searchQuery);
+
+  const closeForm = () => {
+    setIsEditMode(false);
+    setSelectedEvent(null);
+  };
+
+  const handleEventClick = (event) => {
+    setSelectedEvent(event);
+    setIsEditMode(true);
+  };
+
+  const handleNewEvent = () => {
+    setSelectedEvent(null);
+    setIsEditMode(true);
+  };
 
   // Home's "Add event" links here with { newEvent: true }: open the new-event form once.
   const location = useLocation();
@@ -40,17 +51,6 @@ const Calendar = () => {
     }
   }, [location.state, location.pathname, navigate]);
 
-  const handleEventClick = (event) => {
-    setSelectedEvent(event);
-    setIsEditMode(true);
-  };
-
-  // "Scheduling" edit button: start a new event.
-  const handleNewEvent = () => {
-    setSelectedEvent(null);
-    setIsEditMode(true);
-  };
-
   const handleSaveEvent = async () => {
     const { event, error: formError } = eventForm.buildEvent();
     if (formError) {
@@ -59,95 +59,65 @@ const Calendar = () => {
     }
     const saved = await saveEvent(selectedEvent ? selectedEvent.id : null, event);
     if (!saved) return; // keep the form open so the user can fix and retry
-    setIsEditMode(false);
-    setSelectedEvent(null);
+    closeForm();
+  };
+
+  const handleDeleteEvent = async () => {
+    if (!selectedEvent || !window.confirm(`Delete "${selectedEvent.title}"?`)) return;
+    if (await deleteEvent(selectedEvent.id)) closeForm();
+  };
+
+  const openDay = (date) => {
+    setCurrentDate(date);
+    setViewMode('day');
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="flex h-full flex-col bg-white">
       <CalendarTopBar
         viewMode={viewMode}
         setViewMode={setViewMode}
         currentDate={currentDate}
         setCurrentDate={setCurrentDate}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        onNewEvent={handleNewEvent}
       />
-      <div className="flex flex-col md:flex-row">
-        <CalendarMiniMonth
-          currentDate={currentDate}
-          setCurrentDate={setCurrentDate}
-          onEditClick={handleNewEvent}
-        />
-        <div className="flex-1 min-w-0 p-4 md:p-6">
+      <div className="flex min-h-0 flex-1 flex-col md:flex-row">
+        <aside className="hidden w-72 shrink-0 border-r border-line bg-[#FFFAF9] md:block">
+          <CalendarMiniMonth currentDate={currentDate} setCurrentDate={setCurrentDate} />
+        </aside>
+
+        <div className="min-w-0 flex-1 overflow-y-auto p-4 md:p-6">
           {error && (
-            <div className="mb-4 bg-red-50 border border-red-200 text-red-700 rounded-md px-3 py-2 text-sm flex items-center justify-between">
+            <div className="mb-4 flex items-center justify-between rounded-xl border border-brand-200 bg-brand-50 px-4 py-3 text-sm text-brand-700" role="alert">
               <span>{error}</span>
-              <button onClick={clearError} className="text-red-500 hover:text-red-700" title="Dismiss">✕</button>
+              <button onClick={clearError} className="rounded-md p-1 text-brand-500 hover:bg-brand-100" aria-label="Dismiss">✕</button>
             </div>
           )}
-          {isMobile && (
-            <div className="mb-4">
-              <div className="flex space-x-1 p-1 rounded-lg bg-gray-100">
-                {VIEW_MODES.map((viewType) => (
-                  <button
-                    key={viewType}
-                    onClick={() => setViewMode(viewType)}
-                    className={`flex-1 py-2 px-3 text-sm font-medium rounded-md capitalize transition-colors ${
-                      viewMode === viewType
-                        ? 'bg-blue-600 text-white'
-                        : 'text-gray-600 hover:bg-gray-200'
-                    }`}
-                  >
-                    {viewType}
-                  </button>
-                ))}
-              </div>
-            </div>
+          {viewMode === 'month' && (
+            <MonthView currentDate={currentDate} events={events} isMobile={isMobile} onSelectDate={setCurrentDate} onEventClick={handleEventClick} />
           )}
-          <div className="space-y-6">
-            {viewMode === 'month' && (
-              <MonthView
-                currentDate={currentDate}
-                events={events}
-                isMobile={isMobile}
-                onSelectDate={setSelectedDate}
-                onEventClick={handleEventClick}
-              />
-            )}
-            {viewMode === 'week' && (
-              <WeekView
-                currentDate={currentDate}
-                events={events}
-                isMobile={isMobile}
-                onOpenDay={(date) => {
-                  setSelectedDate(date);
-                  setViewMode('day');
-                }}
-                onEventClick={handleEventClick}
-              />
-            )}
-            {viewMode === 'day' && (
-              <DayView
-                date={selectedDate || currentDate}
-                events={events}
-                isMobile={isMobile}
-                onEventClick={handleEventClick}
-              />
-            )}
-          </div>
+          {viewMode === 'week' && (
+            <WeekView currentDate={currentDate} events={events} isMobile={isMobile} onOpenDay={openDay} onEventClick={handleEventClick} />
+          )}
+          {viewMode === 'day' && (
+            <DayView date={currentDate} events={events} isMobile={isMobile} onEventClick={handleEventClick} />
+          )}
         </div>
-        <div className={`flex-none ${isEditMode ? 'order-first md:order-none' : ''}`}>
-          {isEditMode ? (
+
+        {isEditMode && (
+          <aside className="order-first shrink-0 border-b border-line md:order-none md:border-b-0 md:border-l">
             <EventEditPanel
               eventData={eventForm.eventData}
               onFieldChange={eventForm.setField}
               isNew={!selectedEvent}
               onSave={handleSaveEvent}
-              onBack={() => setIsEditMode(false)}
+              onBack={closeForm}
+              onDelete={handleDeleteEvent}
             />
-          ) : (
-            <CalendarInfoPanel searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-          )}
-        </div>
+          </aside>
+        )}
       </div>
     </div>
   );

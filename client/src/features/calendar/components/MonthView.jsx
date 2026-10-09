@@ -8,10 +8,10 @@ const MonthView = ({ currentDate, events, isMobile, onSelectDate, onEventClick }
   const visibleCount = isMobile ? 1 : 2;
 
   return (
-    <div className="bg-white rounded-lg shadow-sm">
-      <div className="grid grid-cols-7 border-b border-gray-200">
+    <div className="overflow-hidden rounded-card border border-line bg-white shadow-card">
+      <div className="grid grid-cols-7 border-b border-line">
         {DAYS_OF_WEEK.map(day => (
-          <div key={day} className="p-2 text-center text-xs font-medium text-gray-500">
+          <div key={day} className="p-2 text-center text-xs font-medium text-ink-muted">
             {day}
           </div>
         ))}
@@ -24,9 +24,9 @@ const MonthView = ({ currentDate, events, isMobile, onSelectDate, onEventClick }
             <div
               key={index}
               onClick={() => day.isCurrentMonth && onSelectDate(day.fullDate)}
-              className="min-h-24 p-2 border-r border-b cursor-pointer border-gray-200 hover:bg-gray-50"
+              className="min-h-24 p-2 border-r border-b cursor-pointer border-line hover:bg-brand-50/50"
             >
-              <div className={`text-sm font-medium mb-1 ${!day.isCurrentMonth ? 'text-gray-400' : today ? 'text-blue-600 bg-blue-100 w-6 h-6 rounded-full flex items-center justify-center' : 'text-gray-900'}`}>
+              <div className={`text-sm font-medium mb-1 ${!day.isCurrentMonth ? 'text-ink-faint' : today ? 'text-white bg-brand-500 w-6 h-6 rounded-full flex items-center justify-center' : 'text-ink'}`}>
                 {day.day}
               </div>
               <div className="space-y-1">
@@ -44,7 +44,7 @@ const MonthView = ({ currentDate, events, isMobile, onSelectDate, onEventClick }
                   </div>
                 ))}
                 {dayEvents.length > visibleCount && (
-                  <div className="text-xs px-2 text-gray-500">
+                  <div className="text-xs px-2 text-ink-muted">
                     +{dayEvents.length - visibleCount} more
                   </div>
                 )}
