@@ -6,7 +6,7 @@ import {
   provider, 
   signInWithPopup
 } from '../../config/firebase.js';
-import { syncUserProfile } from '../../services/authService';
+import { signInWithEmail, syncUserProfile } from '../../services/authService';
 import logoLight from '../../assets/logo-01.png';
 import aiLogo from '../../assets/logo-07.png';
 import budhaImage from '../../assets/budha.png'; // Import the budha.png image
@@ -17,9 +17,6 @@ const Login = ({ setIsAuthenticated }) => {
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-
-  const CORRECT_EMAIL = 'admin@yudle.com'; 
-  const CORRECT_PASSWORD = "Sai_Ani_Sur_2006_2025";
 
   const handleGoogleLogin = async () => {
     setIsLoading(true);
@@ -52,37 +49,43 @@ const Login = ({ setIsAuthenticated }) => {
     }
   };
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setErrorMessage('');
-    setIsLoading(true);
 
     const trimmedEmail = email.trim();
     const trimmedPassword = password.trim();
 
     if (!trimmedEmail || !trimmedPassword) {
       setErrorMessage('Email and password are required');
-      setIsLoading(false);
       return;
     }
 
     // Validate email contains @ symbol
     if (!trimmedEmail.includes('@')) {
       setErrorMessage('Please enter a valid email address. @ symbol is required.');
-      setIsLoading(false);
       return;
     }
 
-    setTimeout(() => {
-      if (trimmedEmail === CORRECT_EMAIL && trimmedPassword === CORRECT_PASSWORD) {
-        localStorage.setItem('isLoggedIn', 'true');
-        setIsAuthenticated(true);
-        navigate('/chat');
-      } else {
-        setErrorMessage('Invalid email or password');
+    setIsLoading(true);
+    try {
+      await signInWithEmail(trimmedEmail, trimmedPassword);
+
+      // Creates/updates users/{uid} on the server. Not fatal: sign-in has already succeeded.
+      try {
+        await syncUserProfile();
+      } catch (profileError) {
+        console.error('User profile sync failed:', profileError);
       }
+
+      localStorage.setItem('isLoggedIn', 'true');
+      setIsAuthenticated(true);
+      navigate('/chat');
+    } catch (error) {
+      setErrorMessage(error.message);
+    } finally {
       setIsLoading(false);
-    }, 500);
+    }
   };
 
   return (
