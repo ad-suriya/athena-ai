@@ -75,19 +75,26 @@ client/src/
 ├── main.jsx, App.jsx       Bootstrapping and routes
 ├── config/firebase.js      Firebase Auth only (no Firestore)
 ├── services/               HTTP API clients (api.js + one per resource). The only code that calls the backend.
+├── components/layout/      App shell: AppShell (sidebar + top bar + <Outlet/>), search, account menu
 ├── features/               One folder per feature; feature code stays inside it
-│   ├── conversations/      Chat.jsx + components/ hooks/ utils/ data/
+│   ├── home/               Home dashboard (landing page) + components/ hooks/ utils/
+│   ├── conversations/      Chat.jsx + components/ (history/ drawer) hooks/ utils/ data/
 │   ├── tasks/              Task.jsx + hooks/
 │   ├── notes/              Notes.jsx, NoteEditor.jsx + components/ hooks/
 │   ├── calendar/           Calendar.jsx + components/ hooks/ utils/
 │   └── mindmap/            MindMapInterface.jsx
 ├── pages/                  Standalone pages that are not a feature:
 │                           login/, profile/, settings/, feedback/
-├── components/             UI shared by more than one feature (sidebar/; ui/ for primitives)
-├── hooks/                  Hooks shared by more than one feature
+├── components/             UI shared by more than one feature (layout/; ui/ for primitives)
+├── hooks/                  Hooks shared by more than one feature (useCurrentUser,
+│                           useClickOutside, useVoiceRecording)
 ├── styles/                 Global stylesheets (index.css stays at src/ root)
 └── assets/
 ```
+
+Every signed-in route renders inside `AppShell` (see `App.jsx`); pages fill the main
+area with `h-full`, not `h-screen`. Brand colors are Tailwind tokens (`brand-*`, `ink`,
+`line`, `canvas`) in `tailwind.config.js`.
 
 Rules: a component used by one feature lives in that feature. Move it to `components/`
 only when a second feature needs it. Folders are lowercase/kebab-case, and component
