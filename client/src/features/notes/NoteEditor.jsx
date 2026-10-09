@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { EditorContent } from '@tiptap/react';
 import { useNoteEditor } from './hooks/useNoteEditor';
@@ -9,14 +9,15 @@ import NoteFormattingToolbar from './components/NoteFormattingToolbar';
 import NoteImageInput from './components/NoteImageInput';
 import NoteEditorStyles from './components/NoteEditorStyles';
 
-const formatToday = () => new Date().toLocaleDateString('en-US', {
+// The day the entry was written (today for a new entry).
+const formatEntryDate = (iso) => new Date(iso || Date.now()).toLocaleDateString('en-US', {
   weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
 });
 
 // Rich-text note editor: title, TipTap body, formatting toolbar, options menu.
 // Works standalone (no props) or with a note and save/delete callbacks from useNotes.
-const NoteEditor = ({ isDarkMode = false, initialNote, onSave, onDelete }) => {
-  const { note, setTitle, editor, isLocked, toggleLock, insertImage, setLink, insertTable } = useNoteEditor(initialNote);
+const NoteEditor = ({ isDarkMode = false, initialNote, onSave, onDelete, onDirtyChange, headerLeading }) => {
+  const { note, setTitle, editor, isLocked, toggleLock, insertImage, setLink, insertTable, isDirty, markSaved } = useNoteEditor(initialNote);
   const dictation = useDictation(editor);
 
   const [showImageInput, setShowImageInput] = useState(false);
@@ -24,10 +25,15 @@ const NoteEditor = ({ isDarkMode = false, initialNote, onSave, onDelete }) => {
   const [fullWidth, setFullWidth] = useState(false);
   const [smallText, setSmallText] = useState(false);
 
-  const handleSave = () => {
-    if (onSave) {
-      onSave(note);
-    }
+  // Tell the page about unsaved changes (it asks before switching entries).
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
+
+  const handleSave = async () => {
+    if (!onSave) return;
+    const saved = await onSave(note);
+    if (saved) markSaved();
   };
 
   const handleAddImage = () => {
@@ -42,12 +48,14 @@ const NoteEditor = ({ isDarkMode = false, initialNote, onSave, onDelete }) => {
   }
 
   return (
-    <div className={`flex flex-col h-full transition-colors duration-300 ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-[#FCF4F1] text-gray-900'}`}>
+    <div className={`flex flex-col h-full transition-colors duration-300 ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-ink'}`}>
       <NoteEditorHeader
         isDarkMode={isDarkMode}
         editor={editor}
         isLocked={isLocked}
         isDictating={dictation.isDictating}
+        isDirty={isDirty}
+        leading={headerLeading}
         onStopDictation={dictation.stop}
         onSave={handleSave}
         menu={
@@ -70,8 +78,8 @@ const NoteEditor = ({ isDarkMode = false, initialNote, onSave, onDelete }) => {
       <div className="flex-1 overflow-auto">
         <div className={`h-full py-6 ${fullWidth ? '' : 'max-w-3xl mx-auto'}`}>
           <div className="px-6 mb-6">
-            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} italic`}>
-              {formatToday()}
+            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-ink-faint'}`}>
+              {formatEntryDate(note.createdAt)}
             </p>
           </div>
           <div className="px-6 mb-2">
@@ -80,7 +88,8 @@ const NoteEditor = ({ isDarkMode = false, initialNote, onSave, onDelete }) => {
               value={note.title}
               onChange={(e) => setTitle(e.target.value)}
               readOnly={isLocked}
-              className={`${smallText ? 'text-2xl' : 'text-4xl'} font-bold bg-transparent border-none outline-none w-full placeholder-gray-400 ${isDarkMode ? 'text-white' : 'text-gray-900'} ${isLocked ? 'cursor-not-allowed opacity-70' : ''}`}
+              className={`${smallText ? 'text-2xl' : 'text-[34px]'} w-full border-none bg-transparent font-bold tracking-[-0.02em] outline-none placeholder:text-ink-faint ${isDarkMode ? 'text-white' : 'text-ink'} ${isLocked ? 'cursor-not-allowed opacity-70' : ''}`}
+              aria-label="Entry title"
               placeholder="New journal"
             />
           </div>
@@ -138,6 +147,8 @@ NoteEditor.propTypes = {
   }),
   onSave: PropTypes.func,
   onDelete: PropTypes.func,
+  onDirtyChange: PropTypes.func,
+  headerLeading: PropTypes.node,
 };
 
 export default NoteEditor;

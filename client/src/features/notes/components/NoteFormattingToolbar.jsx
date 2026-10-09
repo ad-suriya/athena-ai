@@ -5,8 +5,8 @@ import {
   Link2 as LinkIcon, Minus, Strikethrough, Table as TableIcon
 } from 'lucide-react';
 
-const ACTIVE = 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300';
-const IDLE = 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400';
+const ACTIVE = 'bg-brand-100 text-brand-600 dark:bg-brand-700 dark:text-brand-100';
+const IDLE = 'hover:bg-brand-50 dark:hover:bg-gray-700 text-ink-muted dark:text-gray-400';
 
 // isActive: undefined for buttons that never show an active state.
 const ToolbarButton = ({ onClick, isActive, title, disabled, children }) => (
@@ -29,7 +29,7 @@ ToolbarButton.propTypes = {
 };
 
 const Separator = ({ isDarkMode }) => (
-  <div className={`w-px h-6 mx-1 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+  <div className={`w-px h-6 mx-1 ${isDarkMode ? 'bg-gray-700' : 'bg-line'}`}></div>
 );
 
 Separator.propTypes = { isDarkMode: PropTypes.bool };
@@ -53,10 +53,10 @@ const NoteFormattingToolbar = ({ editor, isDarkMode, isLocked, onSetLink, onTogg
         placement: 'top',
         maxWidth: 'none'
       }}
-      className={`flex flex-wrap items-center rounded-lg shadow-lg border p-2 gap-1 ${
+      className={`flex flex-wrap items-center gap-1 rounded-2xl border p-2 ${
         isDarkMode
           ? 'bg-gray-800 border-gray-700'
-          : 'bg-white border-gray-200'
+          : 'bg-white border-line shadow-card'
       }`}
     >
       <select
@@ -68,7 +68,7 @@ const NoteFormattingToolbar = ({ editor, isDarkMode, isLocked, onSetLink, onTogg
             editor.chain().focus().toggleHeading({ level }).run();
           }
         }}
-        className={`px-2 py-1 rounded text-sm border-none ${isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'} cursor-pointer outline-none`}
+        className={`px-2 py-1 rounded text-sm border-none ${isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-[#F5F2F1] text-ink'} cursor-pointer outline-none`}
         value={currentHeadingLevel(editor)}
       >
         <option value={0}>Paragraph</option>

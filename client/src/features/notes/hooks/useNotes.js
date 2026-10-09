@@ -11,7 +11,11 @@ const createDraft = () => ({
   updatedAt: new Date().toISOString(),
 });
 
-// Opens on `noteId` when given (falling back to the latest note), or on a fresh
+// Most recently edited note, or undefined. (The API returns notes oldest first.)
+const newest = (list) =>
+  [...list].sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))[0];
+
+// Opens on `noteId` when given (falling back to the most recently edited note), or on a fresh
 // draft when `startNew` is true.
 export const useNotes = ({ noteId = null, startNew = false } = {}) => {
   const [notes, setNotes] = useState([]);
@@ -44,7 +48,7 @@ export const useNotes = ({ noteId = null, startNew = false } = {}) => {
         if (cancelled) return;
         setNotes(data);
         const requested = noteId && data.find((n) => n.id === noteId);
-        selectNote(startNew ? createDraft() : requested || (data.length > 0 ? data[0] : createDraft()));
+        selectNote(startNew ? createDraft() : requested || newest(data) || createDraft());
       })
       .catch((err) => {
         if (cancelled) return;
@@ -92,12 +96,20 @@ export const useNotes = ({ noteId = null, startNew = false } = {}) => {
       if (current.id) await noteService.deleteNote(current.id);
       const remaining = notesRef.current.filter((n) => n.id !== current.id);
       setNotes(remaining);
-      selectNote(remaining.length > 0 ? remaining[0] : createDraft());
+      selectNote(newest(remaining) || createDraft());
       setError(null);
     } catch (err) {
       setError(`Could not delete note: ${err.message}`);
     }
   }, [selectNote]);
 
-  return { notes, selectedNote, selectionKey, isLoading, error, saveNote, deleteNote };
+  // Switch the editor to an already-loaded entry. Unknown ids are ignored.
+  const openNote = useCallback((id) => {
+    const note = notesRef.current.find((n) => n.id === id);
+    if (note && note.id !== selectedRef.current?.id) selectNote(note);
+  }, [selectNote]);
+
+  const startNewNote = useCallback(() => selectNote(createDraft()), [selectNote]);
+
+  return { notes, selectedNote, selectionKey, isLoading, error, saveNote, deleteNote, openNote, startNewNote };
 };

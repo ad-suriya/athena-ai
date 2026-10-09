@@ -4,7 +4,7 @@ import * as taskService from '../../services/taskService';
 import * as noteService from '../../services/noteService';
 import * as calendarService from '../../services/calendarService';
 
-const stripHtml = (html) => (html || '').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+import { stripHtml } from '../../utils/text';
 
 // Builds one searchable list from the user's conversations, tasks, notes and events.
 // Loaded once, on first use; a failed source is skipped rather than blocking search.

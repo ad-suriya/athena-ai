@@ -88,7 +88,7 @@ const NoteOptionsMenu = ({
         className={`p-2 rounded-md transition-colors ${
           isDarkMode
             ? 'text-gray-400 hover:text-[#F5D9D1] hover:bg-[#E65C52]/20'
-            : 'text-[#E65C52] hover:text-[#E14C42] hover:bg-[#F5D9D1]'
+            : 'text-ink-muted hover:bg-brand-50 hover:text-brand-500'
         }`}
         aria-label="More options"
       >
@@ -105,22 +105,22 @@ const NoteOptionsMenu = ({
       </button>
 
       {isOpen && (
-        <div className={`absolute right-0 top-full mt-1 w-64 rounded-lg shadow-xl border-2 border-[#E65C52]/20 py-2 z-50 ${
-          isDarkMode ? 'bg-gradient-to-b from-gray-800 to-gray-900' : 'bg-gradient-to-b from-white to-[#F5D9D1]/20'
+        <div className={`absolute right-0 top-full z-50 mt-1 w-64 rounded-2xl border border-line p-1.5 shadow-card ${
+          isDarkMode ? 'bg-gradient-to-b from-gray-800 to-gray-900' : 'bg-white'
         }`}>
           <div className="max-h-96 overflow-y-auto">
             <button
               onClick={act(dictation.toggle)}
-              className={`flex items-center w-full px-4 py-2.5 text-sm transition-colors ${
+              className={`flex items-center w-full rounded-xl px-3 py-2 text-sm transition-colors ${
                 dictation.isDictating
-                  ? 'text-[#E14C42] bg-gradient-to-r from-[#F5D9D1] to-[#F5D9D1]/80 border-l-2 border-[#E65C52]'
+                  ? 'rounded-xl bg-brand-50 text-brand-600'
                   : menuItemThemeClass(isDarkMode)
               }`}
             >
               {dictation.isDictating ? (
-                <Square size={16} className="mr-3 text-[#E14C42]" />
+                <Square size={16} className="mr-3 text-brand-600" />
               ) : (
-                <Mic size={16} className="mr-3 text-[#E65C52]" />
+                <Mic size={16} className="mr-3 text-brand-500" />
               )}
               {dictation.isDictating ? 'Stop Dictation' : 'Dictate'}
             </button>
@@ -164,14 +164,14 @@ const NoteOptionsMenu = ({
             <button
               onClick={handleExport}
               disabled={isExporting}
-              className={`flex items-center w-full px-4 py-2.5 text-sm transition-colors ${
+              className={`flex items-center w-full rounded-xl px-3 py-2 text-sm transition-colors ${
                 isExporting ? 'cursor-not-allowed' : menuItemThemeClass(isDarkMode)
               }`}
             >
               {isExporting ? (
                 <>
-                  <div className="mr-3 w-4 h-4 border-2 border-[#F5D9D1] border-t-[#E65C52] rounded-full animate-spin"></div>
-                  <span className={isDarkMode ? 'text-[#F5D9D1]' : 'text-[#E14C42]'}>Exporting...</span>
+                  <div className="mr-3 w-4 h-4 border-2 border-brand-100 border-t-brand-500 rounded-full animate-spin"></div>
+                  <span className={isDarkMode ? 'text-[#F5D9D1]' : 'text-brand-600'}>Exporting...</span>
                 </>
               ) : (
                 <>
@@ -204,7 +204,7 @@ const NoteOptionsMenu = ({
             <div className={`px-4 py-2.5 text-xs ${
               isDarkMode
                 ? 'text-[#F5D9D1]/70'
-                : 'text-[#E65C52]'
+                : 'text-ink-faint'
             }`}>
               <div className="font-medium">Word count: {note?.wordCount || 0} words</div>
               <div className="mt-1">Last edited by {note?.author || 'Unknown'}</div>

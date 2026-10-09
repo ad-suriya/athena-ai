@@ -4,7 +4,7 @@ import { menuIconClass, menuItemThemeClass } from '../utils/menuStyles';
 
 // Building blocks for NoteOptionsMenu, themed for light/dark mode.
 
-const accentClass = (isDarkMode) => (isDarkMode ? 'text-[#E65C52]/60' : 'text-[#E65C52]');
+const accentClass = (isDarkMode) => (isDarkMode ? 'text-[#E65C52]/60' : 'text-ink-faint');
 
 // A menu button. Optional right side: a shortcut `hint`, or a submenu chevron
 // with an optional `submenuLabel`.
@@ -31,7 +31,7 @@ export const MenuItem = ({ isDarkMode, icon: Icon, label, onClick, hint, hasSubm
   return (
     <button
       onClick={onClick}
-      className={`flex items-center ${hasRight ? 'justify-between ' : ''}w-full px-4 py-2.5 text-sm transition-colors ${menuItemThemeClass(isDarkMode)}`}
+      className={`flex items-center ${hasRight ? 'justify-between ' : ''}w-full rounded-xl px-3 py-2 text-sm transition-colors ${menuItemThemeClass(isDarkMode)}`}
     >
       {hasRight ? (
         <>
@@ -66,8 +66,8 @@ const ToggleSwitch = ({ isDarkMode, checked, onChange }) => (
     <div
       className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
         checked
-          ? 'bg-gradient-to-r from-[#E65C52] to-[#E14C42]'
-          : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
+          ? 'bg-brand-500'
+          : isDarkMode ? 'bg-gray-600' : 'bg-[#E3DDDC]'
       }`}
       onClick={onChange}
     >
@@ -88,8 +88,8 @@ ToggleSwitch.propTypes = {
 
 // A row with a label and an on/off switch.
 export const MenuToggleItem = ({ isDarkMode, icon: Icon, label, checked, onChange }) => (
-  <div className={`flex items-center justify-between w-full px-4 py-2.5 text-sm ${
-    isDarkMode ? 'text-gray-300' : 'text-gray-700'
+  <div className={`flex items-center justify-between w-full px-3 py-2 text-sm ${
+    isDarkMode ? 'text-gray-300' : 'text-ink'
   }`}>
     <div className="flex items-center">
       <Icon size={16} className={menuIconClass(isDarkMode)} />
@@ -108,7 +108,7 @@ MenuToggleItem.propTypes = {
 };
 
 export const MenuDivider = ({ isDarkMode }) => (
-  <div className={`my-1 h-px ${isDarkMode ? 'bg-[#E65C52]/20' : 'bg-[#E65C52]/10'}`}></div>
+  <div className={`my-1 h-px ${isDarkMode ? 'bg-[#E65C52]/20' : 'bg-line'}`}></div>
 );
 
 MenuDivider.propTypes = {

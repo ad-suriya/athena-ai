@@ -20,11 +20,22 @@ const createDefaultNote = () => ({
 export const useNoteEditor = (initialNote) => {
   const [note, setNote] = useState(() => initialNote || createDefaultNote());
   const [isLocked, setIsLocked] = useState(false);
+  // Last saved title/content, to tell whether there are unsaved changes.
+  const [saved, setSaved] = useState(() => ({ title: note.title, content: note.content }));
+  const isDirty = note.title !== saved.title || note.content !== saved.content;
+  const markSaved = () => setSaved({ title: note.title, content: note.content });
 
   const editor = useEditor({
     extensions: createEditorExtensions(),
     content: note.content,
     editable: !isLocked,
+    // TipTap normalizes the stored HTML (e.g. '' becomes '<p></p>'). Use its version
+    // as both the working copy and the saved baseline, so opening isn't a change.
+    onCreate: ({ editor }) => {
+      const content = editor.getHTML();
+      setNote(prev => ({ ...prev, content }));
+      setSaved(prev => ({ ...prev, content }));
+    },
     onUpdate: ({ editor }) => {
       if (!isLocked) {
         const content = editor.getHTML();
@@ -92,5 +103,5 @@ export const useNoteEditor = (initialNote) => {
       .run();
   }, [editor, isLocked]);
 
-  return { note, setTitle, editor, isLocked, toggleLock, insertImage, setLink, insertTable };
+  return { note, setTitle, editor, isLocked, toggleLock, insertImage, setLink, insertTable, isDirty, markSaved };
 };

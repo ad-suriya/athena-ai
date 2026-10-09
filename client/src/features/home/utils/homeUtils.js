@@ -51,8 +51,7 @@ export const checkInLine = (count) => {
   return `You've checked in ${count} times this week. Keep it up!`;
 };
 
-export const stripHtml = (html) =>
-  (html || '').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim();
+export { stripHtml } from '../../../utils/text';
 
 export const formatLongDate = (iso) =>
   new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
