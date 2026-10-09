@@ -19,7 +19,7 @@ const CalendarMiniMonth = ({ currentDate, setCurrentDate, onEditClick, user }) =
   };
 
   return (
-    <div className="w-56 bg-white h-screen flex flex-col border-r border-gray-200 overflow-hidden">
+    <div className="w-full md:w-56 bg-white md:h-screen flex flex-col border-b md:border-b-0 md:border-r border-gray-200 overflow-hidden">
       <div className="p-2 border-b border-gray-100">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-1.5">

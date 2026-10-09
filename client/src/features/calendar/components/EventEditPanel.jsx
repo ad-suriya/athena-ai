@@ -3,7 +3,7 @@ import { Bell, Clock, FileText, MapPin, Plus, Users, Video } from 'lucide-react'
 
 // Right column while creating/editing an event. Controlled by useEventForm.
 const EventEditPanel = ({ eventData, onFieldChange, isNew, onSave, onBack, user }) => (
-  <div className="w-56 bg-white h-screen flex flex-col border-l border-gray-200 overflow-hidden">
+  <div className="w-full md:w-56 bg-white md:h-screen flex flex-col border-b md:border-b-0 md:border-l border-gray-200 overflow-hidden">
     <div className="p-2 border-b border-gray-100">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-1.5">

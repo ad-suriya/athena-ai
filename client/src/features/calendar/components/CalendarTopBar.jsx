@@ -82,7 +82,7 @@ const CalendarTopBar = ({ viewMode, setViewMode, currentDate, setCurrentDate, us
 
   return (
     <div className="bg-white border-b border-gray-200 px-4 py-3">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center space-x-4">
           <button
             onClick={() => window.history.back()}
@@ -92,11 +92,11 @@ const CalendarTopBar = ({ viewMode, setViewMode, currentDate, setCurrentDate, us
           >
             <Home className="w-5 h-5 text-gray-600" />
           </button>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900">
             {formatMonth(currentDate)}
           </h1>
         </div>
-        <div className="flex items-center space-x-4">
+        <div className="flex flex-wrap items-center gap-2 md:gap-4">
           <UserAvatar user={safeUser} className="hover:bg-orange-600 transition-colors" />
           <div className="relative">
             <button

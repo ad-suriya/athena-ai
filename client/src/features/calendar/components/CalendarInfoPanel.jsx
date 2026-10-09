@@ -10,7 +10,7 @@ const SHORTCUTS = [
 
 // Right column when not editing: event search, quick meeting, shortcut hints.
 const CalendarInfoPanel = ({ searchQuery, setSearchQuery }) => (
-  <div className="w-56 bg-white border-l border-gray-200 p-3 flex flex-col gap-5 h-screen overflow-hidden">
+  <div className="w-full md:w-56 bg-white border-t md:border-t-0 md:border-l border-gray-200 p-3 flex flex-col gap-5 md:h-screen overflow-hidden">
     <div className="relative">
       <Search className="absolute left-1.5 top-1/2 transform -translate-y-1/2 w-2.5 h-2.5 text-gray-400" />
       <input

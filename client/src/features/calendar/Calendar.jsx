@@ -59,13 +59,13 @@ const Calendar = () => {
         currentDate={currentDate}
         setCurrentDate={setCurrentDate}
       />
-      <div className="flex">
+      <div className="flex flex-col md:flex-row">
         <CalendarMiniMonth
           currentDate={currentDate}
           setCurrentDate={setCurrentDate}
           onEditClick={handleNewEvent}
         />
-        <div className="flex-1 p-4 md:p-6">
+        <div className="flex-1 min-w-0 p-4 md:p-6">
           {error && (
             <div className="mb-4 bg-red-50 border border-red-200 text-red-700 rounded-md px-3 py-2 text-sm flex items-center justify-between">
               <span>{error}</span>
@@ -123,7 +123,7 @@ const Calendar = () => {
             )}
           </div>
         </div>
-        <div className="flex-none">
+        <div className={`flex-none ${isEditMode ? 'order-first md:order-none' : ''}`}>
           {isEditMode ? (
             <EventEditPanel
               eventData={eventForm.eventData}

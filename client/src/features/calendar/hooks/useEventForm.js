@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { parseDateKey, parseFormDate } from '../utils/calendarDates';
 
 const formatFormDate = (date) => date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
@@ -34,14 +34,16 @@ const formFromEvent = (event, currentDate) => ({
 // State for the event edit panel. Resets when a different event is selected or the
 // calendar date changes; otherwise a draft survives closing and reopening the panel.
 export const useEventForm = (selectedEvent, currentDate) => {
-  const [eventData, setEventData] = useState(() =>
-    selectedEvent ? formFromEvent(selectedEvent, currentDate) : emptyForm(currentDate)
-  );
+  const initialForm = () => (selectedEvent ? formFromEvent(selectedEvent, currentDate) : emptyForm(currentDate));
+  const [eventData, setEventData] = useState(initialForm);
 
-  // Syncs the form with an external selection (not derived render data).
-  useEffect(() => {
-    setEventData(selectedEvent ? formFromEvent(selectedEvent, currentDate) : emptyForm(currentDate));
-  }, [selectedEvent, currentDate]);
+  // Reset during render (not in an effect) so the panel never shows one frame of
+  // the previous event's data before the new one appears.
+  const [source, setSource] = useState({ selectedEvent, currentDate });
+  if (source.selectedEvent !== selectedEvent || source.currentDate !== currentDate) {
+    setSource({ selectedEvent, currentDate });
+    setEventData(initialForm());
+  }
 
   const setField = (field, value) => {
     setEventData(prev => ({ ...prev, [field]: value }));
