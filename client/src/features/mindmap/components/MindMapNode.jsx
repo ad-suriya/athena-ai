@@ -25,7 +25,7 @@ const NodeEditor = ({ node, onSave, onCancel }) => {
         autoFocus
         maxLength={200}
         aria-label="Node title"
-        className="w-full border-b border-gray-300 bg-transparent text-xs font-medium text-gray-900 outline-none"
+        className="w-full border-b border-line bg-transparent pb-0.5 text-sm font-medium text-ink outline-none focus:border-brand-400"
       />
       <textarea
         value={content}
@@ -34,10 +34,10 @@ const NodeEditor = ({ node, onSave, onCancel }) => {
         maxLength={5000}
         placeholder="Add notes (optional)"
         aria-label="Node notes"
-        className="w-full resize-none rounded border border-gray-200 bg-white/70 p-1.5 text-xs text-gray-700 outline-none focus:border-gray-400"
+        className="w-full resize-none rounded-lg border border-line bg-white p-1.5 text-xs text-ink placeholder:text-ink-faint outline-none focus:border-brand-300"
       />
       <div className="flex justify-end">
-        <button onClick={save} className="rounded bg-gray-900 px-2 py-0.5 text-xs font-medium text-white hover:bg-gray-700">
+        <button onClick={save} className="rounded-lg bg-brand-500 px-2.5 py-1 text-xs font-semibold text-white hover:bg-brand-600">
           Done
         </button>
       </div>
@@ -67,7 +67,7 @@ const MindMapNode = ({
   onToggleExpand,
 }) => (
   <div
-    className={`absolute w-48 rounded-lg p-3 cursor-move select-none ${getNodeStyle(node.type, isSelected, isConnecting)}`}
+    className={`absolute w-48 rounded-xl p-3 cursor-move select-none ${getNodeStyle(node.type, isSelected, isConnecting)}`}
     style={{ left: node.x, top: node.y }}
     onMouseDown={onMouseDown}
     onContextMenu={onContextMenu}
@@ -84,13 +84,13 @@ const MindMapNode = ({
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-1.5 flex-1">
             {NODE_TYPE_ICONS[node.type] && <span className="text-sm">{NODE_TYPE_ICONS[node.type]}</span>}
-            <h3 className="font-medium text-gray-900 text-xs flex-1 leading-tight">{node.title}</h3>
+            <h3 className="flex-1 text-sm font-medium leading-tight text-ink">{node.title}</h3>
           </div>
           {node.content && (
             <div className="node-controls flex items-center gap-0.5">
               <button
                 onClick={onToggleExpand}
-                className="text-gray-400 hover:text-gray-600 p-0.5 rounded"
+                className="rounded p-0.5 text-ink-faint hover:bg-brand-50 hover:text-brand-500"
                 aria-label={node.expanded ? 'Hide notes' : 'Show notes'}
               >
                 {node.expanded ? <EyeOff size={12} /> : <Eye size={12} />}
@@ -99,7 +99,7 @@ const MindMapNode = ({
           )}
         </div>
         {node.expanded && node.content && (
-          <p className="mt-2 text-xs text-gray-600 line-clamp-2 leading-relaxed whitespace-pre-wrap">{node.content}</p>
+          <p className="mt-2 line-clamp-2 whitespace-pre-wrap text-xs leading-relaxed text-ink-muted">{node.content}</p>
         )}
       </>
     )}

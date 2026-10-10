@@ -1,24 +1,26 @@
 import PropTypes from 'prop-types';
 import { Copy, Edit3, Link, Trash2 } from 'lucide-react';
 
+const item = 'flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left text-sm';
+
 // Node actions shown at the cursor after a right-click.
 const MindMapContextMenu = ({ x, y, onEdit, onDuplicate, onConnect, onDelete }) => (
   <div
-    className="fixed z-50 bg-white border border-gray-200 rounded-md shadow-lg py-1 min-w-36 text-sm"
+    className="fixed z-50 min-w-40 rounded-xl border border-line bg-white p-1 shadow-card"
     style={{ left: x, top: y }}
   >
-    <button onClick={onEdit} className="w-full px-3 py-1 text-left hover:bg-gray-50 flex items-center gap-2">
-      <Edit3 size={12} /> Edit
+    <button onClick={onEdit} className={`${item} text-ink hover:bg-brand-50`}>
+      <Edit3 className="h-3.5 w-3.5 text-ink-muted" /> Edit
     </button>
-    <button onClick={onDuplicate} className="w-full px-3 py-1 text-left hover:bg-gray-50 flex items-center gap-2">
-      <Copy size={12} /> Duplicate
+    <button onClick={onDuplicate} className={`${item} text-ink hover:bg-brand-50`}>
+      <Copy className="h-3.5 w-3.5 text-ink-muted" /> Duplicate
     </button>
-    <button onClick={onConnect} className="w-full px-3 py-1 text-left hover:bg-gray-50 flex items-center gap-2">
-      <Link size={12} /> Connect
+    <button onClick={onConnect} className={`${item} text-ink hover:bg-brand-50`}>
+      <Link className="h-3.5 w-3.5 text-ink-muted" /> Connect
     </button>
-    <hr className="my-1" />
-    <button onClick={onDelete} className="w-full px-3 py-1 text-left hover:bg-red-50 text-red-600 flex items-center gap-2">
-      <Trash2 size={12} /> Delete
+    <div className="my-1 border-t border-line" />
+    <button onClick={onDelete} className={`${item} text-brand-600 hover:bg-brand-50`}>
+      <Trash2 className="h-3.5 w-3.5" /> Delete
     </button>
   </div>
 );

@@ -11,22 +11,20 @@ export const NODE_TYPE_ICONS = {
 };
 
 export const getNodeStyle = (type, isSelected, isConnecting) => {
-  let base = 'transition-all duration-200 hover:scale-105';
+  let base = 'transition-shadow duration-150 hover:shadow-card';
 
-  if (isSelected) base += ' ring-2 ring-blue-400 shadow-lg';
-  if (isConnecting) base += ' ring-2 ring-green-400 shadow-lg animate-pulse';
+  if (isSelected) base += ' ring-2 ring-brand-400';
+  if (isConnecting) base += ' ring-2 ring-brand-300 animate-pulse';
 
   switch (type) {
     case 'main':
-      return `${base} bg-gradient-to-br from-blue-50 to-indigo-100 border border-blue-200 shadow-md`;
-    case 'secondary':
-      return `${base} bg-gradient-to-br from-gray-50 to-slate-100 border border-gray-200 shadow-sm`;
+      return `${base} bg-white border-2 border-brand-400 shadow-card`;
     case 'note':
-      return `${base} bg-gradient-to-br from-yellow-50 to-amber-100 border border-yellow-200 shadow-sm`;
+      return `${base} bg-[#FFF8EC] border border-amber-200`;
     case 'ai':
-      return `${base} bg-gradient-to-br from-purple-50 to-violet-100 border border-purple-200 shadow-sm`;
+      return `${base} bg-brand-50 border border-brand-200`;
     default:
-      return `${base} bg-white border border-gray-200 shadow-sm`;
+      return `${base} bg-white border border-line`;
   }
 };
 

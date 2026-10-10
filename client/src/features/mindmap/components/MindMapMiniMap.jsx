@@ -4,18 +4,18 @@ import { nodeShape } from './mindMapPropTypes';
 
 // Overview in the top-left corner: one dot per node at 1/15 scale.
 const MindMapMiniMap = ({ nodes, onHide }) => (
-  <div className="absolute top-2 left-2 z-10 bg-white rounded shadow-md p-1.5 w-32 h-20 border text-xs">
-    <div className="text-xs font-medium text-gray-500 mb-1 flex items-center justify-between">
-      Map
-      <button onClick={onHide}>
-        <EyeOff size={10} />
+  <div className="absolute left-4 top-4 z-10 w-36 rounded-xl border border-line bg-white p-2 shadow-card">
+    <div className="mb-1 flex items-center justify-between text-xs font-medium text-ink-muted">
+      Overview
+      <button onClick={onHide} className="rounded p-0.5 hover:bg-brand-50" aria-label="Hide overview">
+        <EyeOff size={12} />
       </button>
     </div>
-    <div className="w-full h-12 bg-gray-50 rounded relative overflow-hidden">
+    <div className="relative h-14 w-full overflow-hidden rounded-lg bg-[#FFFAF9]">
       {nodes.map(node => (
         <div
           key={node.id}
-          className="absolute w-1.5 h-1.5 bg-blue-400 rounded-sm"
+          className="absolute h-1.5 w-1.5 rounded-sm bg-brand-400"
           style={{
             left: (node.x / 15),
             top: (node.y / 15)

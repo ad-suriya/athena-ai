@@ -2,9 +2,9 @@ import PropTypes from 'prop-types';
 
 // Toasts in the top-right corner (see useNotifications).
 const NotificationStack = ({ notifications }) => (
-  <div className="fixed top-16 right-4 z-50 space-y-1">
+  <div className="fixed right-4 top-20 z-50 space-y-1.5" aria-live="polite">
     {notifications.map(notif => (
-      <div key={notif.id} className="bg-white border border-gray-200 rounded-md shadow-md px-3 py-1 text-xs animate-fade-in">
+      <div key={notif.id} className="animate-fade-in rounded-xl border border-line bg-white px-3 py-1.5 text-xs text-ink shadow-card">
         {notif.message}
       </div>
     ))}

@@ -50,8 +50,8 @@ const MindMap = () => {
   };
 
   return (
-    <div className="h-full bg-[#FCF4F1] flex relative overflow-hidden">
-      <div className="flex-1 flex flex-col bg-[#FCF4F1]">
+    <div className="relative flex h-full overflow-hidden bg-[#FFFCFB]">
+      <div className="flex flex-1 flex-col">
         <NotificationStack notifications={notifications} />
 
         {contextMenu.menu.visible && (
@@ -67,7 +67,7 @@ const MindMap = () => {
 
         <MindMapHeader saveStatus={map.saveStatus} />
 
-        <div className="flex-1 relative overflow-hidden bg-[#FCF4F1]">
+        <div className="relative flex-1 overflow-hidden bg-[radial-gradient(#F1DCD8_1px,transparent_1px)] [background-size:22px_22px]">
           {showMiniMap && <MindMapMiniMap nodes={map.nodes} onHide={() => setShowMiniMap(false)} />}
 
           <MindMapZoomControls zoom={zoom} onZoomChange={setZoom} />
@@ -110,9 +110,9 @@ const MindMap = () => {
 
           {map.isLoaded && map.nodes.length === 0 && (
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-              <div className="rounded-xl bg-white/80 px-5 py-4 text-center shadow-sm">
-                <p className="text-sm font-medium text-gray-800">Your mind map is empty</p>
-                <p className="mt-1 text-xs text-gray-500">Double-click anywhere or use + to add your first idea.</p>
+              <div className="rounded-card border border-line bg-white px-6 py-5 text-center shadow-card">
+                <p className="text-sm font-semibold text-ink">Your mind map is empty</p>
+                <p className="mt-1 text-xs text-ink-muted">Double-click anywhere, use +, or ask Athena in Chat to add ideas.</p>
               </div>
             </div>
           )}

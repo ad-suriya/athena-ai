@@ -13,7 +13,7 @@ const MindMapConnections = ({ nodes, connections, connectingFrom }) => {
       <defs>
         <marker id="arrowhead" markerWidth="8" markerHeight="6"
                 refX="7" refY="3" orient="auto">
-          <polygon points="0 0, 8 3, 0 6" fill="#94a3b8" />
+          <polygon points="0 0, 8 3, 0 6" fill="#E9A49E" />
         </marker>
       </defs>
       {connections.map((conn, index) => {
@@ -25,12 +25,10 @@ const MindMapConnections = ({ nodes, connections, connectingFrom }) => {
           <g key={index}>
             <path
               d={connectionPath(fromNode, toNode)}
-              stroke="#94a3b8"
-              strokeWidth="1.5"
+              stroke="#E9A49E"
+              strokeWidth="1.75"
               fill="none"
-              strokeDasharray={conn.from === 1 && conn.to === 5 ? "3,3" : "none"}
               markerEnd="url(#arrowhead)"
-              className="hover:stroke-blue-400 cursor-pointer"
             />
           </g>
         );
@@ -39,7 +37,7 @@ const MindMapConnections = ({ nodes, connections, connectingFrom }) => {
       {connectingNode && (
         <circle cx={nodeAnchor(connectingNode).x}
                 cy={nodeAnchor(connectingNode).y}
-                r="3" fill="#10b981" className="animate-ping" />
+                r="4" fill="#E65C52" className="animate-ping" />
       )}
     </svg>
   );

@@ -10,10 +10,10 @@ const STATUS_TEXT = {
 
 // Title bar with the save status.
 const MindMapHeader = ({ saveStatus }) => (
-  <div className="bg-white border-b border-gray-200 px-3 py-1.5 flex items-center justify-between text-sm">
-    <div className="font-medium text-gray-900 text-sm">🧠 My mind map</div>
+  <div className="flex h-14 shrink-0 items-center justify-between border-b border-line bg-white px-4 sm:px-6">
+    <h1 className="text-lg font-semibold text-ink">Mind map</h1>
     <div
-      className={`text-xs ${saveStatus === 'error' || saveStatus === 'load-error' ? 'text-red-600' : 'text-gray-500'}`}
+      className={`text-xs ${saveStatus === 'error' || saveStatus === 'load-error' ? 'text-brand-700' : 'text-ink-muted'}`}
       role="status"
       aria-live="polite"
     >
