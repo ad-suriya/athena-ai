@@ -1,7 +1,8 @@
 'use strict';
 
+// Skips sending if the request already timed out (see timeout.middleware.js).
 const success = (res, data, status = 200) =>
-  res.status(status).json({ success: true, data });
+  (res.headersSent ? undefined : res.status(status).json({ success: true, data }));
 
 const list = (res, data, meta = {}) =>
   res.status(200).json({ success: true, data, meta });

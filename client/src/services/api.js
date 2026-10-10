@@ -16,22 +16,43 @@ export class ApiError extends Error {
   }
 }
 
+// AI replies can take a while; everything else should answer quickly.
+const TIMEOUT_MS = 30000;
+const AI_TIMEOUT_MS = 130000;
+const isAiRequest = (method, path) => method === 'POST' && /\/messages(\/[^/]+\/regenerate)?$/.test(path);
+
 const request = async (method, path, body) => {
   const headers = { Accept: 'application/json' };
   if (body !== undefined) headers['Content-Type'] = 'application/json';
 
-  const token = await auth.currentUser?.getIdToken();
+  // On page load Firebase restores the session asynchronously; without this wait,
+  // early requests go out without a token and fail with 401.
+  await auth.authStateReady();
+  let token;
+  try {
+    token = await auth.currentUser?.getIdToken();
+  } catch {
+    throw new ApiError(0, 'NETWORK_ERROR', 'Could not refresh your sign-in. Check your connection.');
+  }
   if (token) headers.Authorization = `Bearer ${token}`;
 
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), isAiRequest(method, path) ? AI_TIMEOUT_MS : TIMEOUT_MS);
   let res;
   try {
     res = await fetch(`${API_BASE_URL}${path}`, {
       method,
       headers,
       body: body === undefined ? undefined : JSON.stringify(body),
+      signal: controller.signal,
     });
-  } catch {
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      throw new ApiError(0, 'TIMEOUT', 'The server took too long to respond. Please try again.');
+    }
     throw new ApiError(0, 'NETWORK_ERROR', 'Could not reach the server. Check your connection.');
+  } finally {
+    clearTimeout(timer);
   }
 
   let payload = null;

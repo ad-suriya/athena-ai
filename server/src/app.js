@@ -9,6 +9,7 @@ const env = require('./config/env');
 const routes = require('./routes');
 const { errorHandler } = require('./middleware/error.middleware');
 const { apiLimiter } = require('./middleware/rateLimit.middleware');
+const { requestTimeout } = require('./middleware/timeout.middleware');
 
 const app = express();
 
@@ -41,6 +42,7 @@ app.use(cors({
 app.options('*', cors());
 
 // === Routes ===
+app.use(requestTimeout);
 app.use('/api', routes);
 
 // === 404 ===
