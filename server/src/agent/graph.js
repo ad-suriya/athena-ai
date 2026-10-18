@@ -2,14 +2,15 @@
 
 // Athena's tool-using chat agent, as a LangGraph state graph:
 //
-//   START → model ─┬─ function calls ──→ tools ─┬─ rounds left ─→ model
-//                  ├─ claims a change it never   └─ out of rounds → giveUp → END
-//                  │  made (once) → model (nudged)
-//                  └─ final reply → END
+//   START → context → model ─┬─ function calls ──→ tools ─┬─ rounds left ─→ model
+//                            ├─ claims a change it never   └─ out of rounds → giveUp → END
+//                            │  made (once) → model (nudged)
+//                            └─ final reply → END
 //
-// The nodes call Gemini through config/vertex (retries, thought signatures and all)
-// and the app's tools through agent/tools, both injected so the graph can be tested
-// without Vertex or Firestore.
+// context loads the "today snapshot" (agent/snapshot) once per message and adds it to
+// the system instruction. The nodes call Gemini through config/vertex (retries,
+// thought signatures and all), the app's tools through agent/tools and the snapshot
+// through loadContext, all injected so the graph can be tested without Vertex or Firestore.
 
 const { StateGraph, Annotation, START, END } = require('@langchain/langgraph');
 
@@ -37,14 +38,27 @@ const AgentState = Annotation.Root({
   rounds: Annotation({ reducer: latest, default: () => 0 }),    // model calls made
   nudged: Annotation({ reducer: latest, default: () => false }),
   text: Annotation({ reducer: latest, default: () => undefined }), // final reply; set → done
+  snapshot: Annotation({ reducer: latest, default: () => '' }),   // today snapshot text
 });
 
 // generate: config/vertex generate. runTool(userId, name, args) → { result, action? }.
 // isReadOnly(name): calls in a round that are all reads run in parallel.
+// loadContext(userId, timeZone) → text added to the system instruction ('' for none).
 // maxRounds: upper bound on model calls per message (each may make several tool calls).
-const buildAgent = ({ generate, runTool, functionDeclarations, isReadOnly = () => false, maxRounds = 8 }) => {
+const buildAgent = ({ generate, runTool, functionDeclarations, isReadOnly = () => false, loadContext = async () => '', maxRounds = 8 }) => {
+  // A missing snapshot must never stop a reply.
+  const context = async (state, config) => {
+    const { userId, timeZone } = config.configurable;
+    try {
+      return { snapshot: (await loadContext(userId, timeZone)) || '' };
+    } catch (err) {
+      console.error('Agent context failed to load:', err);
+      return { snapshot: '' };
+    }
+  };
+
   const model = async (state, config) => {
-    const { systemInstruction } = config.configurable;
+    const systemInstruction = [config.configurable.systemInstruction, state.snapshot].filter(Boolean).join('\n\n');
     const rounds = state.rounds + 1;
     let text;
     let response;
@@ -95,10 +109,12 @@ const buildAgent = ({ generate, runTool, functionDeclarations, isReadOnly = () =
   const afterTools = (state) => (state.rounds < maxRounds ? 'model' : 'giveUp');
 
   const graph = new StateGraph(AgentState)
+    .addNode('context', context)
     .addNode('model', model)
     .addNode('tools', tools)
     .addNode('giveUp', giveUp)
-    .addEdge(START, 'model')
+    .addEdge(START, 'context')
+    .addEdge('context', 'model')
     .addConditionalEdges('model', afterModel, ['tools', 'model', 'giveUp', END])
     .addConditionalEdges('tools', afterTools, ['model', 'giveUp'])
     .addEdge('giveUp', END)
@@ -106,11 +122,11 @@ const buildAgent = ({ generate, runTool, functionDeclarations, isReadOnly = () =
 
   // contents: Gemini contents ending with the user's turn.
   // → { text, actions: [string] }
-  const run = async ({ contents, userId, systemInstruction }) => {
+  const run = async ({ contents, userId, timeZone, systemInstruction }) => {
     const state = await graph.invoke(
       { contents },
-      // Each round is a model step plus a tools step; leave room for giveUp.
-      { configurable: { userId, systemInstruction }, recursionLimit: maxRounds * 2 + 2 },
+      // Each round is a model step plus a tools step; leave room for context and giveUp.
+      { configurable: { userId, timeZone, systemInstruction }, recursionLimit: maxRounds * 2 + 3 },
     );
     return { text: state.text, actions: state.actions };
   };

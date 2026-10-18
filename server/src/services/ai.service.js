@@ -5,6 +5,8 @@ const env = require('../config/env');
 const { AppError } = require('../utils/errors');
 const { functionDeclarations, runTool, isReadOnly } = require('../agent/tools');
 const { buildAgent } = require('../agent/graph');
+const { buildSnapshot } = require('../agent/snapshot');
+const { isCrisis, SAFETY_NOTE, crisisResources } = require('../agent/safety');
 
 const SYSTEM_PROMPT = `You are Athena AI — an empathetic and reflective counseling assistant, running on the Gemini model.
 
@@ -15,8 +17,9 @@ const ATTACHMENT_NOTE = 'The user attached files to this message; their contents
 const SEARCH_NOTE = 'The user turned on web search for this message: use Google Search for current or factual information.';
 
 const AGENT_NOTE = `You can read and change the user's data in the Athena app with your tools: tasks, journal entries, calendar events and the mind map.
+- The tools are an extra, not a limit. Answer general questions (recommend books, explain ideas, give advice) from your own knowledge as usual.
 - When the user asks you to add, change, complete or delete something, do it with the tools straight away. Do not ask for confirmation, including for deletions.
-- Find ids with the list/read tools first. Never invent ids.
+- Find ids in the snapshot below or with the list/read tools first. Never invent ids.
 - If more than one item could match and the request does not say which, ask which one instead of guessing.
 - Every change needs a tool call in this same reply; nothing changes otherwise. Only say you did something if the tool succeeded; if a tool returns an error, explain it plainly.
 - Do each change once, in the turn it is asked for. Never carry out an earlier request later unless the user asks again.
@@ -24,9 +27,12 @@ const AGENT_NOTE = `You can read and change the user's data in the Athena app wi
 - For times, use ISO 8601 with the user's UTC offset.
 - Earlier replies may end with "(Actions taken: …)". That note is added by the app; never write it yourself.`;
 
-// The tool-using agent (LangGraph). Up to 8 model rounds per message; each round may
-// run several tool calls.
-const agent = buildAgent({ generate, runTool, functionDeclarations, isReadOnly, maxRounds: 8 });
+// The tool-using agent (LangGraph). Loads the today snapshot, then up to 8 model
+// rounds per message; each round may run several tool calls.
+const agent = buildAgent({ generate, runTool, functionDeclarations, isReadOnly, loadContext: buildSnapshot, maxRounds: 8 });
+
+// Shown if Gemini fails on a crisis turn: the support contacts must always reach the user.
+const CRISIS_FALLBACK = 'I\'m really glad you told me. What you\'re feeling matters, and you deserve support right now.';
 
 // "Friday, 9 October 2026, 15:04 (Asia/Kolkata, UTC+05:30)" — the model's sense of "now".
 const describeNow = (timeZone) => {
@@ -91,6 +97,8 @@ const assertAvailable = () => {
 // options.attachments: files for this message (images, PDFs, text).
 // options.userId: lets Athena act on this user's data with tools (omit for plain chat).
 // options.timeZone: the user's IANA time zone, for dates like "tomorrow at 3".
+// Safety: if the message has crisis language (agent/safety), the turn runs without
+//   tools or search, and support contacts are added under the reply.
 // → { text, model, sources: [{ title, url }], actions: [string] }
 const generateResponse = async (message, history = [], { search = false, attachments = [], userId = null, timeZone = null } = {}) => {
   assertAvailable();
@@ -102,22 +110,35 @@ const generateResponse = async (message, history = [], { search = false, attachm
     if (last?.role === 'user') last.parts.push(...turn.parts);
     else contents.push(turn);
 
-    const useTools = Boolean(userId) && !search;
+    const crisis = isCrisis(message);
+    const useSearch = search && !crisis;
+    const useTools = Boolean(userId) && !search && !crisis;
     const systemInstruction = [
       SYSTEM_PROMPT,
       `Current date and time for the user: ${describeNow(timeZone)}.`,
       useTools && AGENT_NOTE,
-      search && SEARCH_NOTE,
+      useSearch && SEARCH_NOTE,
       attachments.length && ATTACHMENT_NOTE,
+      crisis && SAFETY_NOTE,
     ].filter(Boolean).join('\n\n');
 
+    if (crisis) {
+      let text;
+      try {
+        ({ text } = await generate({ contents, systemInstruction }));
+      } catch (err) {
+        console.error('Vertex AI error on a crisis turn:', err);
+      }
+      return { text: `${(text || CRISIS_FALLBACK).trim()}\n\n${crisisResources(timeZone)}`, model: env.vertex.model, sources: [], actions: [] };
+    }
+
     if (!useTools) {
-      const { text, sources } = await generate({ contents, systemInstruction, tools: search ? [{ googleSearch: {} }] : undefined });
+      const { text, sources } = await generate({ contents, systemInstruction, tools: useSearch ? [{ googleSearch: {} }] : undefined });
       if (!text) throw new Error('Empty response from Vertex AI');
       return { text, model: env.vertex.model, sources, actions: [] };
     }
 
-    const { text, actions } = await agent.run({ contents, userId, systemInstruction });
+    const { text, actions } = await agent.run({ contents, userId, timeZone, systemInstruction });
     return { text, model: env.vertex.model, sources: [], actions };
   } catch (err) {
     throw handleAIError(err);
