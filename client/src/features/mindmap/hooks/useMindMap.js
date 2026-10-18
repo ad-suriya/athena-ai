@@ -1,14 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import * as mindmapService from '../../../services/mindmapService';
-import { createNode, nextNodeId, tidyLayout } from '../utils/mindMapUtils';
+import { createNode, nextNodeId, tidyLayout, toPayload } from '../utils/mindMapUtils';
+import { hasConnection } from '../utils/proposalUtils';
 
 const SAVE_DELAY_MS = 800;
-
-// Only the saved fields; selection and editing state never reach the API.
-const toPayload = (nodes, connections) => ({
-  nodes: nodes.map(({ id, x, y, title, content, type, expanded }) => ({ id, x, y, title, content, type, expanded })),
-  connections,
-});
 
 // Mind map graph (nodes + connections), loaded from and auto-saved to the API,
 // plus selection/editing/connecting state. notify(message) is called after
@@ -22,6 +17,9 @@ export const useMindMap = (notify) => {
   const [connectingFrom, setConnectingFrom] = useState(null);
   // JSON of the last map the server has; null until the first load succeeds.
   const savedJson = useRef(null);
+  // The current graph, for flushSave and getGraph (called from event handlers).
+  const graph = useRef({ nodes, connections });
+  graph.current = { nodes, connections };
 
   useEffect(() => {
     let cancelled = false;
@@ -49,6 +47,7 @@ export const useMindMap = (notify) => {
     const json = JSON.stringify(payload);
     if (json === savedJson.current) return undefined;
     const timer = setTimeout(() => {
+      if (json === savedJson.current) return; // flushSave got there first
       setSaveStatus('saving');
       mindmapService.saveMap(payload)
         .then(() => {
@@ -59,6 +58,36 @@ export const useMindMap = (notify) => {
     }, SAVE_DELAY_MS);
     return () => clearTimeout(timer);
   }, [nodes, connections]);
+
+  // Saves pending changes now instead of after the pause. Athena's features read the
+  // saved map on the server, so they call this first to see what the user sees.
+  const flushSave = async () => {
+    if (savedJson.current === null) throw new Error('Your mind map has not loaded yet.');
+    const payload = toPayload(graph.current.nodes, graph.current.connections);
+    const json = JSON.stringify(payload);
+    if (json === savedJson.current) return;
+    setSaveStatus('saving');
+    try {
+      await mindmapService.saveMap(payload);
+      savedJson.current = json;
+      setSaveStatus('saved');
+    } catch (err) {
+      setSaveStatus('error');
+      throw err;
+    }
+  };
+
+  const getGraph = () => graph.current;
+
+  // Replaces nodes and connections at once (applying an accepted proposal, or undoing one).
+  const replaceGraph = (next) => {
+    setNodes(next.nodes);
+    setConnections(next.connections);
+    const ids = new Set(next.nodes.map(n => n.id));
+    setSelectedNode(prev => (ids.has(prev) ? prev : null));
+    setEditingNode(null);
+    setConnectingFrom(null);
+  };
 
   const updateNode = (nodeId, update) => {
     setNodes(prev => prev.map(node => (node.id === nodeId ? { ...node, ...update(node) } : node)));
@@ -76,6 +105,9 @@ export const useMindMap = (notify) => {
   const cancelEdit = () => setEditingNode(null);
 
   const toggleExpand = (nodeId) => updateNode(nodeId, node => ({ expanded: !node.expanded }));
+
+  // status: one of utils/nodeStatus NODE_STATUSES, or null to clear it.
+  const setNodeStatus = (nodeId, status) => updateNode(nodeId, () => ({ status: status || undefined }));
 
   const duplicateNode = (nodeId) => {
     const node = nodes.find(n => n.id === nodeId);
@@ -102,8 +134,7 @@ export const useMindMap = (notify) => {
   };
 
   const completeConnection = (toNodeId) => {
-    const exists = connections.some(c => (c.from === connectingFrom && c.to === toNodeId) || (c.from === toNodeId && c.to === connectingFrom));
-    if (connectingFrom && connectingFrom !== toNodeId && !exists) {
+    if (connectingFrom && connectingFrom !== toNodeId && !hasConnection(connections, connectingFrom, toNodeId)) {
       setConnections(prev => [...prev, { from: connectingFrom, to: toNodeId }]);
       notify('Connection created');
     }
@@ -142,5 +173,9 @@ export const useMindMap = (notify) => {
     completeConnection,
     addNode,
     tidyUp,
+    setNodeStatus,
+    flushSave,
+    getGraph,
+    replaceGraph,
   };
 };

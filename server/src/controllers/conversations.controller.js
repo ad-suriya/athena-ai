@@ -116,4 +116,4 @@ const editMessage = async (req, res) => {
 const regenerateMessage = async (req, res) =>
   success(res, await conversationService.regenerateMessage(req.user.uid, req.params.id, req.params.messageId), 201);
 
-module.exports = { list, get, create, update, remove, listMessages, sendMessage, editMessage, rateMessage, regenerateMessage };
+module.exports = { list, get, create, update, remove, listMessages, sendMessage, editMessage, rateMessage, regenerateMessage, isValidTimeZone };

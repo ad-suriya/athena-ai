@@ -1,10 +1,10 @@
 import PropTypes from 'prop-types';
-import { Copy, Edit3, Link, Trash2 } from 'lucide-react';
+import { Copy, Edit3, Link, Sparkles, Trash2 } from 'lucide-react';
 
 const item = 'flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left text-sm';
 
 // Node actions shown at the cursor after a right-click.
-const MindMapContextMenu = ({ x, y, onEdit, onDuplicate, onConnect, onDelete }) => (
+const MindMapContextMenu = ({ x, y, onEdit, onDuplicate, onConnect, onAskAthena, onDelete }) => (
   <div
     className="fixed z-50 min-w-40 rounded-xl border border-line bg-white p-1 shadow-card"
     style={{ left: x, top: y }}
@@ -17,6 +17,9 @@ const MindMapContextMenu = ({ x, y, onEdit, onDuplicate, onConnect, onDelete }) 
     </button>
     <button onClick={onConnect} className={`${item} text-ink hover:bg-brand-50`}>
       <Link className="h-3.5 w-3.5 text-ink-muted" /> Connect
+    </button>
+    <button onClick={onAskAthena} className={`${item} text-ink hover:bg-brand-50`}>
+      <Sparkles className="h-3.5 w-3.5 text-brand-500" /> Ask Athena
     </button>
     <div className="my-1 border-t border-line" />
     <button onClick={onDelete} className={`${item} text-brand-600 hover:bg-brand-50`}>
@@ -31,6 +34,7 @@ MindMapContextMenu.propTypes = {
   onEdit: PropTypes.func.isRequired,
   onDuplicate: PropTypes.func.isRequired,
   onConnect: PropTypes.func.isRequired,
+  onAskAthena: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
 };
 

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Eye, EyeOff } from 'lucide-react';
 import { getNodeStyle, NODE_TYPE_ICONS } from '../utils/mindMapUtils';
+import { statusMeta } from '../utils/nodeStatus';
 import { nodeShape } from './mindMapPropTypes';
 
 // Title and notes editor shown inside a node. Enter in the title or "Done" saves;
@@ -51,10 +52,33 @@ NodeEditor.propTypes = {
   onCancel: PropTypes.func.isRequired,
 };
 
-// A node card: type icon, title, expand toggle, and (when expanded) its notes.
-// Double-click edits title and notes.
+// Optional status dot and linked-task count, kept small so the map stays calm.
+const NodeProgress = ({ status, linked }) => {
+  const meta = statusMeta(status);
+  if (!meta && !linked?.total) return null;
+  return (
+    <div className="mt-1.5 flex items-center gap-2 text-[10px] text-ink-muted">
+      {meta && (
+        <span className="flex items-center gap-1">
+          <span className={`h-1.5 w-1.5 rounded-full ${meta.dot}`} aria-hidden="true" />
+          {meta.label}
+        </span>
+      )}
+      {linked?.total > 0 && <span title="Linked tasks done">{linked.completed}/{linked.total} tasks</span>}
+    </div>
+  );
+};
+
+NodeProgress.propTypes = {
+  status: PropTypes.string,
+  linked: PropTypes.shape({ total: PropTypes.number, completed: PropTypes.number }),
+};
+
+// A node card: type icon, title, expand toggle, (when expanded) its notes, and
+// progress. Double-click edits title and notes.
 const MindMapNode = ({
   node,
+  linked,
   isSelected,
   isConnecting,
   isEditing,
@@ -101,6 +125,7 @@ const MindMapNode = ({
         {node.expanded && node.content && (
           <p className="mt-2 line-clamp-2 whitespace-pre-wrap text-xs leading-relaxed text-ink-muted">{node.content}</p>
         )}
+        <NodeProgress status={node.status} linked={linked} />
       </>
     )}
   </div>
@@ -108,6 +133,7 @@ const MindMapNode = ({
 
 MindMapNode.propTypes = {
   node: nodeShape.isRequired,
+  linked: PropTypes.shape({ total: PropTypes.number, completed: PropTypes.number }),
   isSelected: PropTypes.bool.isRequired,
   isConnecting: PropTypes.bool.isRequired,
   isEditing: PropTypes.bool.isRequired,

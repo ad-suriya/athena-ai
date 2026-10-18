@@ -24,6 +24,7 @@ const AGENT_NOTE = `You can read and change the user's data in the Athena app wi
 - Every change needs a tool call in this same reply; nothing changes otherwise. Only say you did something if the tool succeeded; if a tool returns an error, explain it plainly.
 - Do each change once, in the turn it is asked for. Never carry out an earlier request later unless the user asks again.
 - After acting, briefly say what you did. Keep your usual warm, short style.
+- When you create tasks for an idea on the mind map, pass its node id as mindMapNodeId so the tasks are linked to it.
 - For times, use ISO 8601 with the user's UTC offset.
 - Earlier replies may end with "(Actions taken: …)". That note is added by the app; never write it yourself.`;
 
@@ -145,4 +146,4 @@ const generateResponse = async (message, history = [], { search = false, attachm
   }
 };
 
-module.exports = { generateResponse, toContents, handleAIError, assertAvailable, SYSTEM_PROMPT };
+module.exports = { generateResponse, toContents, handleAIError, assertAvailable, describeNow, SYSTEM_PROMPT };

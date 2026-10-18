@@ -60,3 +60,11 @@ export const tidyLayout = (nodes) => nodes.map((node, index) => ({
   x: 100 + (index % 3) * 200,
   y: 100 + Math.floor(index / 3) * 150
 }));
+
+// The fields saved to the API; selection and editing state never reach it.
+// status and the connection type/label are optional and left out when unset, so maps
+// without them save exactly as before.
+export const toPayload = (nodes, connections) => ({
+  nodes: nodes.map(({ id, x, y, title, content, type, expanded, status }) => ({ id, x, y, title, content, type, expanded, ...(status ? { status } : {}) })),
+  connections: connections.map(({ from, to, type, label }) => ({ from, to, ...(type ? { type } : {}), ...(type && label ? { label } : {}) })),
+});

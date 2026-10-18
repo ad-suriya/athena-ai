@@ -15,7 +15,7 @@ const app = express();
 
 // === Security middleware ===
 app.use(helmet());
-app.use(morgan(env.nodeEnv === 'development' ? 'dev' : 'combined'));
+if (env.nodeEnv !== 'test') app.use(morgan(env.nodeEnv === 'development' ? 'dev' : 'combined'));
 
 // === Rate limiting ===
 app.use('/api', apiLimiter);

@@ -92,6 +92,8 @@ and keep their original order via strictly increasing `createdAt`.
   category:    string,
   tags:        string[],    // Task.jsx "Wellness Category" chips
   icon:        string,      // lucide icon name chosen in Task.jsx, e.g. "Heart"
+  mindMapNodeId: number,    // optional: mind map node the task was planned from (set by
+                            // Athena's planner only; cleared when that node is removed)
   createdAt:   timestamp,
   updatedAt:   timestamp,
 }
@@ -191,12 +193,21 @@ Journal entries are separate from notes.
 `mindMaps/{userId}` — one map per user; the document ID is the user's UID.
 Saved whole by `PUT /api/mindmap`.
 
+`status`, `type` and `label` are optional; documents without them are valid and load
+unchanged. A connection without a `type` is a parent → child link (the map's
+hierarchy); typed connections are cross-links added from Athena's suggestions.
+Task links live on the task (`tasks.mindMapNodeId`), not in this document, so plan
+execution never races the client's auto-save of the whole map.
+
 ```js
 {
   userId:      string,
   nodes:       [{ id: number, x: number, y: number, title: string, content: string,
-                  type: 'main' | 'secondary' | 'note' | 'ai', expanded: boolean }],  // max 500
-  connections: [{ from: number, to: number }],                                       // node ids, max 1000
+                  type: 'main' | 'secondary' | 'note' | 'ai', expanded: boolean,
+                  status?: 'idea' | 'planned' | 'in_progress' | 'blocked' | 'completed' }],  // max 500
+  connections: [{ from: number, to: number,                                          // node ids, max 1000
+                  type?: 'related' | 'dependency' | 'shared_goal' | 'blocker' | 'cause' | 'overlap',
+                  label?: string }],                                                 // max 200 chars
   createdAt:   timestamp,
   updatedAt:   timestamp,
 }

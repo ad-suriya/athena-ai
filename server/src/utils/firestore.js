@@ -4,6 +4,11 @@ const { admin, db } = require('../config/firebase');
 const { notFoundError, serviceUnavailable } = require('./errors');
 
 const serverTimestamp = () => admin.firestore.FieldValue.serverTimestamp();
+const deleteField = () => admin.firestore.FieldValue.delete();
+
+// Firestore's error code when create() finds the document already there.
+const ALREADY_EXISTS = 6;
+const isAlreadyExists = (err) => err?.code === ALREADY_EXISTS || /ALREADY_EXISTS/.test(err?.message || '');
 
 const requireDb = () => {
   if (!db) throw serviceUnavailable('Database is not configured');
@@ -53,6 +58,8 @@ const byTimestamp = (field, direction = 'asc') => (a, b) => {
 module.exports = {
   admin,
   serverTimestamp,
+  deleteField,
+  isAlreadyExists,
   requireDb,
   toIso,
   serializeDoc,

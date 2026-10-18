@@ -3,6 +3,8 @@ import { useMindMap } from './hooks/useMindMap';
 import { useNodeDrag } from './hooks/useNodeDrag';
 import { useContextMenu } from './hooks/useContextMenu';
 import { useNotifications } from './hooks/useNotifications';
+import { useLinkedTasks } from './hooks/useLinkedTasks';
+import { useMindMapAI } from './hooks/useMindMapAI';
 import MindMapHeader from './components/MindMapHeader';
 import MindMapMiniMap from './components/MindMapMiniMap';
 import MindMapZoomControls from './components/MindMapZoomControls';
@@ -11,16 +13,26 @@ import MindMapNode from './components/MindMapNode';
 import MindMapContextMenu from './components/MindMapContextMenu';
 import MindMapToolbar from './components/MindMapToolbar';
 import NotificationStack from './components/NotificationStack';
+import MindMapAIPanel from './components/ai/MindMapAIPanel';
 
 // Mind map page: the user's saved graph of draggable nodes and connections
-// (auto-saved via useMindMap) with zoom, a mini map, a context menu, and toasts.
+// (auto-saved via useMindMap) with zoom, a mini map, a context menu, toasts, and
+// Athena's side panel (proposals the user reviews before anything changes).
 const MindMap = () => {
   const { notifications, notify } = useNotifications();
   const map = useMindMap(notify);
   const contextMenu = useContextMenu();
+  const { linked, refresh: refreshLinked } = useLinkedTasks(map.isLoaded);
+  const ai = useMindMapAI({ map, notify, onLinkedChange: refreshLinked });
   const [zoom, setZoom] = useState(100);
   const [showMiniMap, setShowMiniMap] = useState(true);
+  const [panelOpen, setPanelOpen] = useState(false);
   const canvasRef = useRef(null);
+
+  const openPanel = () => {
+    setPanelOpen(true);
+    refreshLinked(); // tasks may have changed on the Tasks page
+  };
 
   const { startDrag } = useNodeDrag({
     canvasRef,
@@ -61,11 +73,19 @@ const MindMap = () => {
             onEdit={menuAction(map.startEditing)}
             onDuplicate={menuAction(map.duplicateNode)}
             onConnect={menuAction(map.startConnection)}
+            onAskAthena={menuAction((nodeId) => {
+              map.setSelectedNode(nodeId);
+              openPanel();
+            })}
             onDelete={menuAction(map.deleteNode)}
           />
         )}
 
-        <MindMapHeader saveStatus={map.saveStatus} />
+        <MindMapHeader
+          saveStatus={map.saveStatus}
+          panelOpen={panelOpen}
+          onTogglePanel={() => (panelOpen ? setPanelOpen(false) : openPanel())}
+        />
 
         <div className="relative flex-1 overflow-hidden bg-[radial-gradient(#F1DCD8_1px,transparent_1px)] [background-size:22px_22px]">
           {showMiniMap && <MindMapMiniMap nodes={map.nodes} onHide={() => setShowMiniMap(false)} />}
@@ -92,6 +112,7 @@ const MindMap = () => {
               <MindMapNode
                 key={node.id}
                 node={node}
+                linked={linked[node.id]?.progress}
                 isSelected={map.selectedNode === node.id}
                 isConnecting={map.connectingFrom === node.id}
                 isEditing={map.editingNode === node.id}
@@ -112,7 +133,7 @@ const MindMap = () => {
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
               <div className="rounded-card border border-line bg-white px-6 py-5 text-center shadow-card">
                 <p className="text-sm font-semibold text-ink">Your mind map is empty</p>
-                <p className="mt-1 text-xs text-ink-muted">Double-click anywhere, use +, or ask Athena in Chat to add ideas.</p>
+                <p className="mt-1 text-xs text-ink-muted">Double-click anywhere, use +, or open Athena to generate a map.</p>
               </div>
             </div>
           )}
@@ -125,6 +146,8 @@ const MindMap = () => {
           />
         </div>
       </div>
+
+      {panelOpen && <MindMapAIPanel map={map} ai={ai} linked={linked} onClose={() => setPanelOpen(false)} />}
 
       <style>{`
         .animate-fade-in {

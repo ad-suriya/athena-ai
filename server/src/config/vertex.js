@@ -44,17 +44,21 @@ const sourcesOf = (response) => {
 
 // Multi-turn request. contents: [{ role: 'user' | 'model', parts }].
 // Options: systemInstruction (string), tools (SDK tool list, e.g. [{ googleSearch: {} }]).
+// Structured output: responseSchema (Gemini schema) makes the reply JSON of that shape.
+// maxOutputTokens / temperature / thinkingBudget override the env defaults for one call.
 // Returns { text, sources, response } — response is the raw SDK result (function calls etc.).
-const generate = async ({ contents, systemInstruction, tools }) => {
-  const { model, maxTokens, temperature } = env.vertex;
+const generate = async ({ contents, systemInstruction, tools, responseSchema, maxOutputTokens, temperature, thinkingBudget }) => {
+  const { model } = env.vertex;
   const response = await withRetry(() => client.models.generateContent({
     model,
     contents,
     config: {
-      maxOutputTokens: maxTokens,
-      temperature,
+      maxOutputTokens: maxOutputTokens ?? env.vertex.maxTokens,
+      temperature: temperature ?? env.vertex.temperature,
       ...(systemInstruction ? { systemInstruction } : {}),
       ...(tools ? { tools } : {}),
+      ...(responseSchema ? { responseMimeType: 'application/json', responseSchema } : {}),
+      ...(thinkingBudget !== undefined ? { thinkingConfig: { thinkingBudget } } : {}),
     },
   }));
   return { text: textOf(response), sources: sourcesOf(response), response };

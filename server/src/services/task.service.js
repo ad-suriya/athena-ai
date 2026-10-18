@@ -3,6 +3,8 @@
 const {
   requireDb,
   serverTimestamp,
+  deleteField,
+  isAlreadyExists,
   serializeDoc,
   getOwnedDoc,
   listOwnedDocs,
@@ -34,10 +36,11 @@ const getTask = async (userId, taskId) => {
   return serialize(snap);
 };
 
-const createTask = async (userId, data) => {
-  const ref = requireDb().collection(COLLECTION).doc();
+// The stored fields of a new task. mindMapNodeId (optional) links it to the mind map
+// node it was planned from; it is only set by the AI planner, never by the REST API.
+const newTaskDoc = (userId, data) => {
   const status = data.status ?? 'todo';
-  await ref.set({
+  return {
     userId,
     title: data.title.trim(),
     description: data.description ?? '',
@@ -47,11 +50,32 @@ const createTask = async (userId, data) => {
     category: data.category ?? '',
     tags: data.tags ?? [],
     icon: data.icon ?? '',
+    ...(data.mindMapNodeId ? { mindMapNodeId: data.mindMapNodeId } : {}),
     ...completionFields(status),
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
-  });
+  };
+};
+
+const createTask = async (userId, data) => {
+  const ref = requireDb().collection(COLLECTION).doc();
+  await ref.set(newTaskDoc(userId, data));
   return serialize(await ref.get());
+};
+
+// Creates the task with a caller-chosen id, at most once: a retry with the same id
+// returns the task made the first time instead of a duplicate. → { task, created }
+// A matching id owned by someone else is reported as not found.
+const createTaskOnce = async (userId, taskId, data) => {
+  const ref = requireDb().collection(COLLECTION).doc(taskId);
+  try {
+    await ref.create(newTaskDoc(userId, data));
+    return { task: serialize(await ref.get()), created: true };
+  } catch (err) {
+    if (!isAlreadyExists(err)) throw err;
+  }
+  const { snap } = await getOwnedDoc(COLLECTION, taskId, userId);
+  return { task: serialize(snap), created: false };
 };
 
 const updateTask = async (userId, taskId, data) => {
@@ -71,12 +95,36 @@ const deleteTask = async (userId, taskId) => {
   await ref.delete();
 };
 
+// Tasks linked to mind map nodes, grouped by node id: { [nodeId]: [task] }.
+const getTasksByMindMapNode = async (userId) => {
+  const groups = {};
+  for (const task of await getTasks(userId)) {
+    if (task.mindMapNodeId) (groups[task.mindMapNodeId] ||= []).push(task);
+  }
+  return groups;
+};
+
+// Clears the link on tasks whose mind map node was removed, so a later node that
+// reuses the id does not inherit them. The tasks themselves are kept.
+const unlinkMindMapNodes = async (userId, nodeIds) => {
+  const removed = new Set(nodeIds);
+  const docs = (await listOwnedDocs(COLLECTION, userId)).filter((d) => removed.has(d.get('mindMapNodeId')));
+  if (!docs.length) return 0;
+  const batch = requireDb().batch();
+  docs.forEach((d) => batch.update(d.ref, { mindMapNodeId: deleteField(), updatedAt: serverTimestamp() }));
+  await batch.commit();
+  return docs.length;
+};
+
 module.exports = {
   TASK_STATUSES,
   TASK_PRIORITIES,
   getTasks,
   getTask,
   createTask,
+  createTaskOnce,
   updateTask,
   deleteTask,
+  getTasksByMindMapNode,
+  unlinkMindMapNodes,
 };

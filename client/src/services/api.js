@@ -19,7 +19,7 @@ export class ApiError extends Error {
 // AI replies can take a while; everything else should answer quickly.
 const TIMEOUT_MS = 30000;
 const AI_TIMEOUT_MS = 130000;
-const isAiRequest = (method, path) => method === 'POST' && /\/messages(\/[^/]+\/regenerate)?$/.test(path);
+const isAiRequest = (method, path) => method === 'POST' && (/\/messages(\/[^/]+\/regenerate)?$/.test(path) || path.startsWith('/api/mindmap/ai/'));
 
 const request = async (method, path, body) => {
   const headers = { Accept: 'application/json' };

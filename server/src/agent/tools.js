@@ -4,14 +4,19 @@
 // arguments with the same spec as the REST API, then calls the same service, so the
 // AI can do exactly what the user can do in the app — no more.
 //
-// tool: { declaration (Gemini FunctionDeclaration), run(userId, args) → { result, action? }, readOnly? }
+// tool: { declaration (Gemini FunctionDeclaration), run(userId, args, options) → { result, action? }, readOnly? }
 // `action` is a one-line description of a change, shown under the reply.
+// options.idempotencyKey (create_task, create_event; set by agent/executor, never by the
+// model): the same key always maps to the same document, so a retried plan cannot
+// create a second copy. The result then says whether this call created it.
 
 const taskService = require('../services/task.service');
 const noteService = require('../services/note.service');
 const calendarService = require('../services/calendar.service');
 // const wellnessService = require('../services/wellness.service');
 const mindmapService = require('../services/mindmap.service');
+const { nodeContext } = require('./mindmapContext');
+const crypto = require('crypto');
 const { validate } = require('../utils/validate');
 const { validationFailed } = require('../utils/errors');
 const { taskSpec } = require('../controllers/tasks.controller');
@@ -52,9 +57,20 @@ const requireNodeId = (value, name = 'id') => {
   return id;
 };
 
-const taskView = (t) => ({ id: t.id, title: t.title, status: t.status, priority: t.priority, dueDate: t.dueDate, description: t.description || undefined });
+const taskView = (t) => ({ id: t.id, title: t.title, status: t.status, priority: t.priority, dueDate: t.dueDate, description: t.description || undefined, mindMapNodeId: t.mindMapNodeId || undefined });
 const eventView = (e) => ({ id: e.id, title: e.title, startTime: e.startTime, endTime: e.endTime, location: e.location || undefined, description: e.description || undefined });
 // const moodView = (w) => ({ id: w.id, recordedAt: w.recordedAt, mood: w.mood, energy: w.energy, stress: w.stress, sleepHours: w.sleepHours, note: w.note || undefined });
+
+// Document id for an idempotency key. Hashing in the user id keeps one user's keys
+// from ever naming another user's documents.
+const idFor = (userId, key) => `ai${crypto.createHash('sha256').update(`${userId}:${key}`).digest('hex').slice(0, 32)}`;
+
+// The node id, after checking the node is on this user's saved map.
+const requireMapNode = async (userId, value) => {
+  const id = requireNodeId(value, 'mindMapNodeId');
+  mindmapService.findNode(await mindmapService.getMap(userId), id);
+  return id;
+};
 
 const tools = {
   // ---------------- Tasks ----------------
@@ -77,10 +93,17 @@ const tools = {
         description: str('Optional details'),
         priority: { ...S, enum: taskService.TASK_PRIORITIES },
         dueDate: str(`Optional due date, ${ISO}`),
+        mindMapNodeId: int('Optional id of the mind map node this task comes from; links the task to it'),
       }, ['title']),
     },
-    run: async (userId, args) => {
-      const task = await taskService.createTask(userId, validate(defined(args), taskSpec));
+    run: async (userId, { mindMapNodeId, ...args }, { idempotencyKey } = {}) => {
+      const data = validate(defined(args), taskSpec);
+      if (mindMapNodeId !== undefined) data.mindMapNodeId = await requireMapNode(userId, mindMapNodeId);
+      if (idempotencyKey) {
+        const { task, created } = await taskService.createTaskOnce(userId, idFor(userId, idempotencyKey), data);
+        return { result: { task: taskView(task), created }, ...(created ? { action: `Added task “${task.title}”` } : {}) };
+      }
+      const task = await taskService.createTask(userId, data);
       return { result: { task: taskView(task) }, action: `Added task “${task.title}”` };
     },
   },
@@ -196,8 +219,13 @@ const tools = {
         description: S,
       }, ['title', 'startTime']),
     },
-    run: async (userId, args) => {
-      const event = await calendarService.createEvent(userId, validate(defined(args), eventSpec));
+    run: async (userId, args, { idempotencyKey } = {}) => {
+      const data = validate(defined(args), eventSpec);
+      if (idempotencyKey) {
+        const { event, created } = await calendarService.createEventOnce(userId, idFor(userId, idempotencyKey), data);
+        return { result: { event: eventView(event), created }, ...(created ? { action: `Added event “${event.title}”` } : {}) };
+      }
+      const event = await calendarService.createEvent(userId, data);
       return { result: { event: eventView(event) }, action: `Added event “${event.title}”` };
     },
   },
@@ -273,7 +301,20 @@ const tools = {
     declaration: { description: 'Read the user\'s mind map: nodes (id, title, notes) and connections.', parameters: obj({}) },
     run: async (userId) => {
       const map = await mindmapService.getMap(userId);
-      return { result: { nodes: map.nodes.map(({ id, title, content, type }) => ({ id, title, notes: content || undefined, type })), connections: map.connections } };
+      return { result: { nodes: map.nodes.map(({ id, title, content, type, status }) => ({ id, title, notes: content || undefined, type, status })), connections: map.connections } };
+    },
+  },
+  get_mind_map_node: {
+    readOnly: true,
+    declaration: {
+      description: 'Read one mind map node with its parents, children and siblings, and the tasks linked to it with their real, stored status.',
+      parameters: obj({ id: I }, ['id']),
+    },
+    run: async (userId, { id }) => {
+      const nodeId = requireNodeId(id);
+      const [map, linked] = await Promise.all([mindmapService.getMap(userId), taskService.getTasksByMindMapNode(userId)]);
+      mindmapService.findNode(map, nodeId);
+      return { result: { ...nodeContext(map, nodeId), linkedTasks: (linked[nodeId] || []).map(taskView) } };
     },
   },
   add_mind_map_node: {
@@ -329,11 +370,12 @@ const functionDeclarations = Object.entries(tools).map(([name, t]) => ({ name, .
 const isReadOnly = (name) => Boolean(tools[name]?.readOnly);
 
 // Runs one call. Errors become { error } results so the model can explain or retry.
-const runTool = async (userId, name, args = {}) => {
+// options: see the tool comment at the top (agent/executor only).
+const runTool = async (userId, name, args = {}, options = {}) => {
   const tool = tools[name];
   if (!tool) return { result: { error: `Unknown tool ${name}` } };
   try {
-    return await tool.run(userId, args || {});
+    return await tool.run(userId, args || {}, options);
   } catch (err) {
     if (err.expose) {
       const fields = err.fields ? ` (${Object.entries(err.fields).map(([k, v]) => `${k}: ${v}`).join('; ')})` : '';
@@ -344,4 +386,4 @@ const runTool = async (userId, name, args = {}) => {
   }
 };
 
-module.exports = { functionDeclarations, runTool, isReadOnly, htmlToText, textToHtml };
+module.exports = { functionDeclarations, runTool, isReadOnly, htmlToText, textToHtml, idFor };

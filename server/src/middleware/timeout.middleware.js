@@ -8,6 +8,8 @@ const AI_ROUTES = [
   /^\/api\/conversations\/[^/]+\/messages$/,
   /^\/api\/conversations\/[^/]+\/messages\/[^/]+\/regenerate$/,
   /^\/api\/chat$/,
+  // Mind map AI; execute is included because a plan makes up to 24 writes with read-backs.
+  /^\/api\/mindmap\/ai\/(?:generate|expand|connections|plan|ask|execute)$/,
 ];
 
 const requestTimeout = (req, res, next) => {

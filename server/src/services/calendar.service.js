@@ -2,6 +2,7 @@
 
 const {
   requireDb,
+  isAlreadyExists,
   serverTimestamp,
   serializeDoc,
   getOwnedDoc,
@@ -39,23 +40,39 @@ const getEvent = async (userId, eventId) => {
   return serialize(snap);
 };
 
+const newEventDoc = (userId, data) => ({
+  userId,
+  title: data.title.trim(),
+  description: data.description ?? '',
+  startTime: data.startTime,
+  endTime: data.endTime ?? null,
+  location: data.location ?? '',
+  color: data.color ?? '',
+  category: data.category ?? '',
+  allDay: data.allDay ?? false,
+  createdAt: serverTimestamp(),
+  updatedAt: serverTimestamp(),
+});
+
 const createEvent = async (userId, data) => {
   assertValidRange(data.startTime, data.endTime);
   const ref = requireDb().collection(COLLECTION).doc();
-  await ref.set({
-    userId,
-    title: data.title.trim(),
-    description: data.description ?? '',
-    startTime: data.startTime,
-    endTime: data.endTime ?? null,
-    location: data.location ?? '',
-    color: data.color ?? '',
-    category: data.category ?? '',
-    allDay: data.allDay ?? false,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  });
+  await ref.set(newEventDoc(userId, data));
   return serialize(await ref.get());
+};
+
+// Like createTaskOnce: a retry with the same id returns the first event. → { event, created }
+const createEventOnce = async (userId, eventId, data) => {
+  assertValidRange(data.startTime, data.endTime);
+  const ref = requireDb().collection(COLLECTION).doc(eventId);
+  try {
+    await ref.create(newEventDoc(userId, data));
+    return { event: serialize(await ref.get()), created: true };
+  } catch (err) {
+    if (!isAlreadyExists(err)) throw err;
+  }
+  const { snap } = await getOwnedDoc(COLLECTION, eventId, userId);
+  return { event: serialize(snap), created: false };
 };
 
 const updateEvent = async (userId, eventId, data) => {
@@ -76,4 +93,4 @@ const deleteEvent = async (userId, eventId) => {
   await ref.delete();
 };
 
-module.exports = { getEvents, getEvent, createEvent, updateEvent, deleteEvent };
+module.exports = { getEvents, getEvent, createEvent, createEventOnce, updateEvent, deleteEvent };
