@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
-import { ChevronLeft, ChevronRight, Flame, CalendarCheck, MessageCircle, CheckSquare, BookOpen, Smile } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Flame, CalendarCheck, CalendarPlus, MessageCircle, CheckSquare, BookOpen } from 'lucide-react';
+// import { Smile } from 'lucide-react'; // mood check-ins stat, hidden for now
 import { useMonthActivity } from './hooks/useMonthActivity';
 
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -9,7 +10,7 @@ const BREAKDOWN = [
   { key: 'tasksCompleted', label: 'Tasks completed' },
   { key: 'tasksAdded', label: 'Tasks added' },
   { key: 'journal', label: 'Journal entries' },
-  { key: 'moodCheckIns', label: 'Mood check-ins' },
+  // { key: 'moodCheckIns', label: 'Mood check-ins' }, // hidden for now
   { key: 'events', label: 'Events added' },
 ];
 
@@ -70,7 +71,7 @@ const Insights = () => {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold tracking-[-0.02em] text-ink">Insights</h1>
-            <p className="text-sm text-ink-muted">What you did each day, from your chats, tasks, journal, mood check-ins and calendar.</p>
+            <p className="text-sm text-ink-muted">What you did each day, from your chats, tasks, journal and calendar.</p>
           </div>
           <div className="flex items-center gap-1 rounded-xl border border-line bg-white px-2 py-1.5">
             <button onClick={() => shift(-1)} className="rounded-lg p-1 text-ink-muted hover:bg-brand-50" aria-label="Previous month">
@@ -93,7 +94,9 @@ const Insights = () => {
           <Stat icon={MessageCircle} label="Messages to Athena" value={data ? data.totals.messages : '–'} />
           <Stat icon={CheckSquare} label="Tasks completed" value={data ? data.totals.tasksCompleted : '–'} />
           <Stat icon={BookOpen} label="Journal entries" value={data ? data.totals.journal : '–'} />
-          <Stat icon={Smile} label="Mood check-ins" value={data ? data.totals.moodCheckIns : '–'} />
+          {/* Mood check-ins, hidden for now; "Events added" takes its place.
+          <Stat icon={Smile} label="Mood check-ins" value={data ? data.totals.moodCheckIns : '–'} /> */}
+          <Stat icon={CalendarPlus} label="Events added" value={data ? data.totals.events : '–'} />
         </div>
 
         <div className="flex flex-col gap-6 rounded-card border border-line bg-white p-4 shadow-card sm:p-6 lg:flex-row">
@@ -154,7 +157,7 @@ const Insights = () => {
             )}
             {data && data.activeDays === 0 && (
               <p className="mt-4 rounded-xl bg-[#FFFAF9] p-3 text-xs text-ink-muted">
-                No activity this month yet. Chatting with Athena, finishing tasks, writing in your journal and checking in on your mood all show up here.
+                No activity this month yet. Chatting with Athena, finishing tasks, writing in your journal and adding events all show up here.
               </p>
             )}
           </div>

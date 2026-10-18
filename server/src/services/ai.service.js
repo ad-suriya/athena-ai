@@ -14,7 +14,7 @@ const ATTACHMENT_NOTE = 'The user attached files to this message; their contents
 
 const SEARCH_NOTE = 'The user turned on web search for this message: use Google Search for current or factual information.';
 
-const AGENT_NOTE = `You can read and change the user's data in the Athena app with your tools: tasks, journal entries, calendar events, mood check-ins and the mind map.
+const AGENT_NOTE = `You can read and change the user's data in the Athena app with your tools: tasks, journal entries, calendar events and the mind map.
 - When the user asks you to add, change, complete or delete something, do it with the tools straight away. Do not ask for confirmation, including for deletions.
 - Find ids with the list/read tools first. Never invent ids.
 - If more than one item could match and the request does not say which, ask which one instead of guessing.

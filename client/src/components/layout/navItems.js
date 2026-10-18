@@ -1,6 +1,7 @@
 // Sidebar navigation. `match` lists path prefixes that mark the item active.
-// Wellness tools open other screens with a preset (see AppSidebar).
-import { BarChart3, BookOpen, CalendarDays, CheckSquare, GraduationCap, Home, Leaf, MessageCircle, Smile, Network } from 'lucide-react';
+import { BarChart3, BookOpen, CalendarDays, CheckSquare, Home, MessageCircle, Network } from 'lucide-react';
+// Wellness tools are hidden for now; restore GraduationCap, Leaf and Smile above with them.
+// import { GraduationCap, Leaf, Smile } from 'lucide-react';
 
 export const MAIN_NAV = [
   { label: 'Home', to: '/home', icon: Home, match: ['/home'] },
@@ -12,9 +13,10 @@ export const MAIN_NAV = [
   { label: 'Insights', to: '/insights', icon: BarChart3, match: ['/insights'] },
 ];
 
-export const WELLNESS_TOOLS = [
-  { label: 'Mood Check-In', icon: Smile, to: '/home', state: { openMoodCheckIn: true } },
-  { label: 'Calming Tools', icon: Leaf, to: '/chat', state: { category: 'calm' } },
-  { label: 'Learn Skills', icon: GraduationCap, to: '/chat', state: { category: 'learn' } },
-];
+// Wellness tools open other screens with a preset (see AppSidebar). Hidden for now.
+// export const WELLNESS_TOOLS = [
+//   { label: 'Mood Check-In', icon: Smile, to: '/home', state: { openMoodCheckIn: true } },
+//   { label: 'Calming Tools', icon: Leaf, to: '/chat', state: { category: 'calm' } },
+//   { label: 'Learn Skills', icon: GraduationCap, to: '/chat', state: { category: 'learn' } },
+// ];
 

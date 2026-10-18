@@ -2,14 +2,15 @@ import PropTypes from 'prop-types';
 import { Link, useLocation } from 'react-router-dom';
 import { ArrowRight, X } from 'lucide-react';
 import logo from '../../assets/logo-07.png';
-import { MAIN_NAV, WELLNESS_TOOLS } from './navItems';
+import { MAIN_NAV /* , WELLNESS_TOOLS */ } from './navItems';
 
 const itemClass = (active) =>
   `flex items-center gap-4 rounded-xl px-4 py-3 text-[15.5px] transition-colors ${
     active ? 'bg-brand-100/70 font-semibold text-brand-500' : 'text-ink hover:bg-brand-50'
   }`;
 
-// App navigation: brand, main sections, wellness tools and a closing note card.
+// App navigation: brand, main sections and a closing note card. The wellness tools
+// section is hidden for now (commented out below).
 // From lg up it is a fixed column; below lg it slides in as a drawer.
 const AppSidebar = ({ isOpen, onClose }) => {
   const { pathname } = useLocation();
@@ -51,6 +52,7 @@ const AppSidebar = ({ isOpen, onClose }) => {
             ))}
           </ul>
 
+          {/* Wellness tools — hidden for now.
           <div className="mx-3 my-6 h-px bg-line" />
 
           <p className="mb-2 px-3.5 text-xs font-medium uppercase tracking-[0.08em] text-ink-faint">Wellness tools</p>
@@ -64,6 +66,7 @@ const AppSidebar = ({ isOpen, onClose }) => {
               </li>
             ))}
           </ul>
+          */}
         </nav>
 
         {/* Decorative; only on screens tall enough that it never covers the navigation. */}

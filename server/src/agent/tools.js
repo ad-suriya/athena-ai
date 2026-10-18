@@ -10,14 +10,14 @@
 const taskService = require('../services/task.service');
 const noteService = require('../services/note.service');
 const calendarService = require('../services/calendar.service');
-const wellnessService = require('../services/wellness.service');
+// const wellnessService = require('../services/wellness.service');
 const mindmapService = require('../services/mindmap.service');
 const { validate } = require('../utils/validate');
 const { validationFailed } = require('../utils/errors');
 const { taskSpec } = require('../controllers/tasks.controller');
 const { noteSpec } = require('../controllers/notes.controller');
 const { eventSpec } = require('../controllers/calendar.controller');
-const { entrySpec } = require('../controllers/wellness.controller');
+// const { entrySpec } = require('../controllers/wellness.controller');
 
 const S = { type: 'STRING' };
 const N = { type: 'NUMBER' };
@@ -54,7 +54,7 @@ const requireNodeId = (value, name = 'id') => {
 
 const taskView = (t) => ({ id: t.id, title: t.title, status: t.status, priority: t.priority, dueDate: t.dueDate, description: t.description || undefined });
 const eventView = (e) => ({ id: e.id, title: e.title, startTime: e.startTime, endTime: e.endTime, location: e.location || undefined, description: e.description || undefined });
-const moodView = (w) => ({ id: w.id, recordedAt: w.recordedAt, mood: w.mood, energy: w.energy, stress: w.stress, sleepHours: w.sleepHours, note: w.note || undefined });
+// const moodView = (w) => ({ id: w.id, recordedAt: w.recordedAt, mood: w.mood, energy: w.energy, stress: w.stress, sleepHours: w.sleepHours, note: w.note || undefined });
 
 const tools = {
   // ---------------- Tasks ----------------
@@ -222,48 +222,50 @@ const tools = {
   },
 
   // ---------------- Mood / wellbeing ----------------
-  log_mood: {
-    declaration: {
-      description: 'Record a mood check-in. Scores are 1–10. Give at least one of mood, energy, stress, sleepHours.',
-      parameters: obj({
-        mood: num('1 (very low) to 10 (great)'),
-        energy: num('1–10'),
-        stress: num('1 (calm) to 10 (very stressed)'),
-        sleepHours: num('Hours slept last night'),
-        note: str('Short note in the user\'s words'),
-      }),
-    },
-    run: async (userId, args) => {
-      const data = validate(defined(args), entrySpec);
-      if (!['mood', 'energy', 'stress', 'sleepHours'].some((k) => data[k] !== undefined)) {
-        throw validationFailed({ body: 'Give at least one of mood, energy, stress, sleepHours' });
-      }
-      const entry = await wellnessService.createEntry(userId, data);
-      const parts = ['mood', 'energy', 'stress'].filter((k) => entry[k] != null).map((k) => `${k} ${entry[k]}/10`);
-      if (entry.sleepHours != null) parts.push(`sleep ${entry.sleepHours}h`);
-      return { result: { entry: moodView(entry) }, action: `Logged a check-in (${parts.join(', ')})` };
-    },
-  },
-  list_mood_entries: {
-    readOnly: true,
-    declaration: {
-      description: 'List recent mood check-ins (newest first).',
-      parameters: obj({ days: int('How many days back (default 14)') }),
-    },
-    run: async (userId, { days = 14 }) => {
-      const from = new Date(Date.now() - Math.min(Math.max(Number(days) || 14, 1), 365) * 86400000);
-      const entries = await wellnessService.getEntries(userId, { from });
-      return { result: { entries: entries.slice(0, 60).map(moodView) } };
-    },
-  },
-  delete_mood_entry: {
-    declaration: { description: 'Delete a mood check-in.', parameters: obj({ id: S }, ['id']) },
-    run: async (userId, args) => {
-      const id = requireId(args);
-      await wellnessService.deleteEntry(userId, id);
-      return { result: { deleted: id }, action: 'Deleted a mood check-in' };
-    },
-  },
+  // Disabled for now; to be rebuilt later. Re-enable with the wellnessService,
+  // entrySpec and moodView lines above, and add "mood check-ins" back to AGENT_NOTE in ai.service.js.
+  // log_mood: {
+  //   declaration: {
+  //     description: 'Record a mood check-in. Scores are 1–10. Give at least one of mood, energy, stress, sleepHours.',
+  //     parameters: obj({
+  //       mood: num('1 (very low) to 10 (great)'),
+  //       energy: num('1–10'),
+  //       stress: num('1 (calm) to 10 (very stressed)'),
+  //       sleepHours: num('Hours slept last night'),
+  //       note: str('Short note in the user\'s words'),
+  //     }),
+  //   },
+  //   run: async (userId, args) => {
+  //     const data = validate(defined(args), entrySpec);
+  //     if (!['mood', 'energy', 'stress', 'sleepHours'].some((k) => data[k] !== undefined)) {
+  //       throw validationFailed({ body: 'Give at least one of mood, energy, stress, sleepHours' });
+  //     }
+  //     const entry = await wellnessService.createEntry(userId, data);
+  //     const parts = ['mood', 'energy', 'stress'].filter((k) => entry[k] != null).map((k) => `${k} ${entry[k]}/10`);
+  //     if (entry.sleepHours != null) parts.push(`sleep ${entry.sleepHours}h`);
+  //     return { result: { entry: moodView(entry) }, action: `Logged a check-in (${parts.join(', ')})` };
+  //   },
+  // },
+  // list_mood_entries: {
+  //   readOnly: true,
+  //   declaration: {
+  //     description: 'List recent mood check-ins (newest first).',
+  //     parameters: obj({ days: int('How many days back (default 14)') }),
+  //   },
+  //   run: async (userId, { days = 14 }) => {
+  //     const from = new Date(Date.now() - Math.min(Math.max(Number(days) || 14, 1), 365) * 86400000);
+  //     const entries = await wellnessService.getEntries(userId, { from });
+  //     return { result: { entries: entries.slice(0, 60).map(moodView) } };
+  //   },
+  // },
+  // delete_mood_entry: {
+  //   declaration: { description: 'Delete a mood check-in.', parameters: obj({ id: S }, ['id']) },
+  //   run: async (userId, args) => {
+  //     const id = requireId(args);
+  //     await wellnessService.deleteEntry(userId, id);
+  //     return { result: { deleted: id }, action: 'Deleted a mood check-in' };
+  //   },
+  // },
 
   // ---------------- Mind map ----------------
   get_mind_map: {
