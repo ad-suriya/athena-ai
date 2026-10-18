@@ -44,7 +44,7 @@ const AgentState = Annotation.Root({
   snapshot: Annotation({ reducer: latest, default: () => '' }),   // today snapshot text
 });
 
-// generate: config/vertex generate. runTool(userId, name, args) → { result, action? }.
+// generate: config/vertex generate. runTool(userId, name, args, { conversationId }) → { result, action? }.
 // isReadOnly(name): calls in a round that are all reads run in parallel.
 // loadContext(userId, timeZone) → text added to the system instruction ('' for none).
 // isDestructive(name): deletions; they run only when the run's deleteConfirmed is true.
@@ -87,10 +87,10 @@ const buildAgent = ({ generate, runTool, functionDeclarations, isReadOnly = () =
   };
 
   const tools = async (state, config) => {
-    const { userId, deleteConfirmed } = config.configurable;
+    const { userId, deleteConfirmed, conversationId } = config.configurable;
     const run = async (call) => (isDestructive(call.name) && !deleteConfirmed
       ? { result: { error: CONFIRM_FIRST } }
-      : runTool(userId, call.name, call.args));
+      : runTool(userId, call.name, call.args, { conversationId }));
     let outcomes;
     if (state.calls.every((call) => isReadOnly(call.name))) {
       outcomes = await Promise.all(state.calls.map(run));
@@ -128,12 +128,13 @@ const buildAgent = ({ generate, runTool, functionDeclarations, isReadOnly = () =
 
   // contents: Gemini contents ending with the user's turn.
   // deleteConfirmed: the user's message confirms a deletion Athena asked about (agent/safety).
+  // conversationId: the current chat, if any (tools leave it out of memory search).
   // → { text, actions: [string] }
-  const run = async ({ contents, userId, timeZone, systemInstruction, deleteConfirmed = false }) => {
+  const run = async ({ contents, userId, timeZone, systemInstruction, deleteConfirmed = false, conversationId = null }) => {
     const state = await graph.invoke(
       { contents },
       // Each round is a model step plus a tools step; leave room for context and giveUp.
-      { configurable: { userId, timeZone, systemInstruction, deleteConfirmed }, recursionLimit: maxRounds * 2 + 3 },
+      { configurable: { userId, timeZone, systemInstruction, deleteConfirmed, conversationId }, recursionLimit: maxRounds * 2 + 3 },
     );
     return { text: state.text, actions: state.actions };
   };

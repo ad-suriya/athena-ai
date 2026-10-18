@@ -10,5 +10,6 @@ const router = Router();
 router.use(requireAuth);
 
 router.get('/me', asyncHandler(users.me));
+router.patch('/me/settings', asyncHandler(users.updateSettings));
 
 module.exports = router;

@@ -16,9 +16,13 @@ const noteService = require('../services/note.service');
 const calendarService = require('../services/calendar.service');
 // const wellnessService = require('../services/wellness.service');
 const mindmapService = require('../services/mindmap.service');
+const journalSearch = require('../services/journalSearch.service');
+const memoryService = require('../services/memory.service');
 const { nodeContext } = require('./mindmapContext');
 const crypto = require('crypto');
 const { validate } = require('../utils/validate');
+const { htmlToText } = require('../utils/html');
+const { toIso } = require('../utils/firestore');
 const { validationFailed } = require('../utils/errors');
 const { taskSpec } = require('../controllers/tasks.controller');
 const { noteSpec } = require('../controllers/notes.controller');
@@ -38,12 +42,6 @@ const ISO = 'ISO 8601 date-time with the user\'s UTC offset, e.g. 2026-10-09T15:
 // Journal entries are rich text (HTML) in the editor.
 const escapeHtml = (t) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const textToHtml = (text) => text.split(/\n{2,}/).map((p) => `<p>${escapeHtml(p).replace(/\n/g, '<br>')}</p>`).join('');
-const htmlToText = (html = '') => html
-  .replace(/<\/(p|h[1-6]|li|div)>|<br\s*\/?>/gi, '\n')
-  .replace(/<[^>]+>/g, '')
-  .replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')
-  .replace(/\n{3,}/g, '\n\n')
-  .trim();
 const clip = (text, max) => (text.length > max ? `${text.slice(0, max)}…` : text);
 
 // Drops undefined keys so partial updates only touch what the model gave.
@@ -154,6 +152,38 @@ const tools = {
         .slice(0, 30)
         .map((n) => ({ ...n, text: clip(n.text, 200) }));
       return { result: { entries } };
+    },
+  },
+  search_journal: {
+    readOnly: true,
+    declaration: {
+      description: 'Search the user\'s journal by meaning: finds entries about a topic, feeling or event even when they use different words. Returns the best-matching passage of each entry; use read_journal_entry for the full text.',
+      parameters: obj({
+        query: str('What to look for, in natural language, e.g. "feeling burnt out at work"'),
+        limit: int('How many entries to return (1–10, default 5)'),
+      }, ['query']),
+    },
+    run: async (userId, { query, limit = 5 }) => {
+      if (typeof query !== 'string' || !query.trim()) throw validationFailed({ query: 'Required' });
+      const n = Math.min(Math.max(Number(limit) || 5, 1), 10);
+      let matches;
+      try {
+        matches = await journalSearch.searchNotes(userId, clip(query.trim(), 500), n);
+      } catch (err) {
+        console.error('Journal search failed:', err);
+        return { result: { error: 'Journal search is not available right now. Use list_journal_entries with a keyword instead.' } };
+      }
+      return {
+        result: {
+          entries: matches.map((m) => ({
+            id: m.noteId,
+            title: m.title,
+            passage: clip(m.text, 1500),
+            createdAt: toIso(m.createdAt) || undefined,
+            relevance: typeof m.distance === 'number' ? Number((1 - m.distance).toFixed(2)) : undefined,
+          })),
+        },
+      };
     },
   },
   read_journal_entry: {
@@ -298,6 +328,40 @@ const tools = {
   //     return { result: { deleted: id }, action: 'Deleted a mood check-in' };
   //   },
   // },
+
+  // ---------------- Past conversations (memory) ----------------
+  search_past_conversations: {
+    readOnly: true,
+    declaration: {
+      description: 'Search summaries of the user\'s earlier conversations with Athena (not this one) by meaning. Use when the user refers to something they told you before.',
+      parameters: obj({
+        query: str('What to look for, in natural language, e.g. "my sister\'s wedding"'),
+        limit: int('How many conversations to return (1–5, default 3)'),
+      }, ['query']),
+    },
+    run: async (userId, { query, limit = 3 }, { conversationId } = {}) => {
+      if (typeof query !== 'string' || !query.trim()) throw validationFailed({ query: 'Required' });
+      const n = Math.min(Math.max(Number(limit) || 3, 1), 5);
+      let memories;
+      try {
+        memories = await memoryService.searchMemories(userId, clip(query.trim(), 500), { limit: n, excludeConversationId: conversationId || null });
+      } catch (err) {
+        console.error('Memory search failed:', err);
+        return { result: { error: 'Memory of past conversations is not available right now.' } };
+      }
+      if (memories === null) return { result: { error: 'The user has turned off memory of past conversations in their profile. Do not try to recall earlier chats.' } };
+      return {
+        result: {
+          conversations: memories.map((m) => ({
+            title: m.title,
+            summary: m.summary,
+            lastMessageAt: toIso(m.lastMessageAt) || undefined,
+            relevance: typeof m.distance === 'number' ? Number((1 - m.distance).toFixed(2)) : undefined,
+          })),
+        },
+      };
+    },
+  },
 
   // ---------------- Mind map ----------------
   get_mind_map: {

@@ -8,6 +8,8 @@
 // Covers the Firestore surface the services use: collection/doc/where('==')/get, set
 // (with merge), update, create (fails with code 6 if present), delete, batch, and the
 // serverTimestamp/delete sentinels. Dates are stored as Timestamp-like objects.
+// Vector search: FieldValue.vector and where(...).findNearest (cosine), with a fake
+// embed() that maps text to word counts over a small fixed vocabulary.
 
 const path = require('path');
 
@@ -16,6 +18,17 @@ class FakeTimestamp {
   toDate() { return new Date(this.date); }
   toMillis() { return this.date.getTime(); }
 }
+
+class FakeVector {
+  constructor(values) { this.values = [...values]; }
+  toArray() { return [...this.values]; }
+}
+
+const cosineDistance = (a, b) => {
+  let dot = 0; let na = 0; let nb = 0;
+  a.forEach((x, i) => { dot += x * b[i]; na += x * x; nb += b[i] * b[i]; });
+  return na && nb ? 1 - dot / Math.sqrt(na * nb) : 1;
+};
 
 const SERVER_TIMESTAMP = Symbol('serverTimestamp');
 const DELETE = Symbol('delete');
@@ -78,27 +91,67 @@ const docRef = (collection, id) => {
       store.set(ref.path, next);
     },
     delete: async () => { store.delete(ref.path); },
+    collection: (sub) => collectionRef(`${ref.path}/${sub}`),
   };
   return ref;
 };
 
-const db = {
-  collection: (name) => ({
+// Direct children of a collection path (not documents in deeper subcollections).
+const childrenOf = (name) => [...store.entries()]
+  .filter(([key]) => key.startsWith(`${name}/`) && !key.slice(name.length + 1).includes('/'));
+const toSnap = (name) => ([key]) => snapshot(docRef(name, key.slice(name.length + 1)));
+
+function collectionRef(name) {
+  return {
     doc: (id) => docRef(name, id ?? `auto${(autoId += 1)}`),
-    where: (field, op, value) => ({
+    get: async () => {
+      const docs = childrenOf(name).map(toSnap(name));
+      return { docs, size: docs.length };
+    },
+    orderBy: (field, direction = 'asc') => ({
       get: async () => {
-        if (op !== '==') throw new Error(`Unsupported operator ${op}`);
-        const docs = [...store.entries()]
-          .filter(([key, data]) => key.startsWith(`${name}/`) && !key.slice(name.length + 1).includes('/') && data[field] === value)
-          .map(([key]) => snapshot(docRef(name, key.slice(name.length + 1))));
+        const at = (data) => data[field]?.toMillis?.() ?? data[field] ?? 0;
+        const docs = childrenOf(name)
+          .sort(([, a], [, b]) => (direction === 'asc' ? at(a) - at(b) : at(b) - at(a)))
+          .map(toSnap(name));
         return { docs };
       },
     }),
-  }),
+    where: (field, op, value) => {
+      if (op !== '==') throw new Error(`Unsupported operator ${op}`);
+      const matching = () => childrenOf(name).filter(([, data]) => data[field] === value);
+      return {
+        get: async () => ({ docs: matching().map(([key]) => snapshot(docRef(name, key.slice(name.length + 1)))) }),
+        findNearest: ({ vectorField, queryVector, limit, distanceMeasure, distanceResultField }) => ({
+          get: async () => {
+            if (distanceMeasure !== 'COSINE') throw new Error(`Unsupported distance ${distanceMeasure}`);
+            if (failures.some((f) => f.op === 'findNearest')) throw new Error('Injected findNearest failure');
+            const docs = matching()
+              .filter(([, data]) => data[vectorField] instanceof FakeVector)
+              .map(([key, data]) => ({ key, distance: cosineDistance(data[vectorField].toArray(), queryVector) }))
+              .sort((a, b) => a.distance - b.distance)
+              .slice(0, limit)
+              .map(({ key, distance }) => {
+                const snap = snapshot(docRef(name, key.slice(name.length + 1)));
+                const data = { ...snap.data(), [distanceResultField]: distance };
+                return { ...snap, data: () => ({ ...data }), get: (f) => data[f] };
+              });
+            return { docs };
+          },
+        }),
+      };
+    },
+  };
+}
+
+const db = {
+  collection: (name) => collectionRef(name),
   batch: () => {
     const ops = [];
     return {
+      set: (ref, data, options) => ops.push(() => ref.set(data, options)),
       update: (ref, data) => ops.push(() => ref.update(data)),
+      delete: (ref) => ops.push(() => ref.delete()),
       commit: async () => { for (const op of ops) await op(); },
     };
   },
@@ -114,13 +167,22 @@ const admin = {
       return { uid: m[1] };
     },
   }),
-  firestore: { FieldValue: { serverTimestamp: () => SERVER_TIMESTAMP, delete: () => DELETE } },
+  firestore: { FieldValue: { serverTimestamp: () => SERVER_TIMESTAMP, delete: () => DELETE, vector: (values) => new FakeVector(values) } },
 };
 
 // Scripted Gemini: each generate() call takes the next reply. A reply is a function
 // (request → response) or a plain string (returned as JSON/text with no tool calls).
 const geminiScript = [];
 const geminiRequests = [];
+const embedRequests = [];
+// Each group is one dimension: words in a group count as the same meaning.
+const EMBED_VOCABULARY = [
+  ['tired', 'exhausted', 'burnt', 'drained'],
+  ['work', 'office', 'job', 'boss'],
+  ['happy', 'joy', 'glad', 'great'],
+  ['sister', 'brother', 'family', 'mom'],
+  ['run', 'running', 'gym', 'exercise'],
+];
 const textResponse = (text) => ({ text, sources: [], response: { functionCalls: [], candidates: [{ content: { role: 'model', parts: [{ text }] } }] } });
 const callResponse = (calls) => ({
   text: '',
@@ -138,6 +200,14 @@ const vertex = {
     return textResponse(typeof next === 'string' ? next : JSON.stringify(next));
   },
   generateText: async () => '',
+  embed: async (texts, taskType) => {
+    embedRequests.push({ texts, taskType });
+    if (failures.some((f) => f.op === 'embed')) throw new Error('Injected embed failure');
+    return texts.map((text) => {
+      const words = text.toLowerCase().match(/[a-z]+/g) || [];
+      return EMBED_VOCABULARY.map((group) => words.filter((w) => group.includes(w)).length);
+    });
+  },
 };
 
 const stub = (rel, exports) => {
@@ -152,6 +222,7 @@ const reset = () => {
   failures.length = 0;
   geminiScript.length = 0;
   geminiRequests.length = 0;
+  embedRequests.length = 0;
 };
 
 // Starts the Express app on a free port. → { request(method, path, { token, body }), close }
@@ -175,6 +246,7 @@ module.exports = {
   failures,
   geminiScript,
   geminiRequests,
+  embedRequests,
   textResponse,
   callResponse,
   FakeTimestamp,

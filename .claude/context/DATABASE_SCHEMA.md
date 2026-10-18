@@ -18,6 +18,7 @@ Never use `new Date()` or `Date.now()` from the client for persistent records.
   displayName:  string,
   photoURL:     string,
   timezone:     string,    // IANA tz, e.g. "America/New_York"
+  memoryEnabled?: boolean, // conversation memory; missing = on (docs/CONVERSATION_MEMORY.md)
   createdAt:    timestamp,
   updatedAt:    timestamp,
 }
@@ -120,6 +121,51 @@ and keep their original order via strictly increasing `createdAt`.
 ```
 
 Existing browser `localStorage['notes']` is not uploaded automatically (see `docs/DATA_MIGRATION.md`).
+
+---
+
+## conversationMemories
+
+`conversationMemories/{conversationId}` — summaries for past-conversation search (server-only; see `docs/CONVERSATION_MEMORY.md`).
+Derived from `conversations`; rebuilt with `server/scripts/index-memories.js`. Deleted when the conversation is deleted or the user turns memory off.
+
+```js
+{
+  userId:         string,
+  conversationId: string,
+  title:          string,
+  summary:        string,    // ≤ 120 words, written by Gemini
+  messageCount:   number,    // conversation's messageCount when summarized
+  lastMessageAt:  timestamp | null,
+  embedding:      vector,    // EMBEDDING_DIMENSIONS (768) floats
+  updatedAt:      timestamp,
+}
+```
+
+Requires a composite vector index: `userId` ascending + `embedding` vector (768, flat).
+
+---
+
+## noteChunks
+
+`noteChunks/{noteId}_{index}` — journal search passages (server-only; see `docs/JOURNAL_SEARCH.md`).
+Derived from `notes`; safe to delete and rebuild with `server/scripts/index-journal.js`.
+
+```js
+{
+  userId:    string,
+  noteId:    string,
+  index:     number,    // passage position in the entry
+  title:     string,    // entry title at indexing time
+  text:      string,    // plain-text passage (≤ 1500 chars)
+  hash:      string,    // sha256 of title + text of the whole entry
+  createdAt: timestamp | null, // the entry's createdAt
+  embedding: vector,    // EMBEDDING_DIMENSIONS (768) floats
+  updatedAt: timestamp,
+}
+```
+
+Requires a composite vector index: `userId` ascending + `embedding` vector (768, flat).
 
 ---
 
