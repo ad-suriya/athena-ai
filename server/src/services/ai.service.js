@@ -3,10 +3,10 @@
 const { generate, isAvailable, isRateLimit } = require('../config/vertex');
 const env = require('../config/env');
 const { AppError } = require('../utils/errors');
-const { functionDeclarations, runTool, isReadOnly } = require('../agent/tools');
+const { functionDeclarations, runTool, isReadOnly, isDestructive } = require('../agent/tools');
 const { buildAgent } = require('../agent/graph');
 const { buildSnapshot } = require('../agent/snapshot');
-const { isCrisis, SAFETY_NOTE, crisisResources } = require('../agent/safety');
+const { isCrisis, SAFETY_NOTE, crisisResources, confirmsDeletion } = require('../agent/safety');
 
 const SYSTEM_PROMPT = `You are Athena AI — an empathetic and reflective counseling assistant, running on the Gemini model.
 
@@ -18,11 +18,12 @@ const SEARCH_NOTE = 'The user turned on web search for this message: use Google 
 
 const AGENT_NOTE = `You can read and change the user's data in the Athena app with your tools: tasks, journal entries, calendar events and the mind map.
 - The tools are an extra, not a limit. Answer general questions (recommend books, explain ideas, give advice) from your own knowledge as usual.
-- When the user asks you to add, change, complete or delete something, do it with the tools straight away. Do not ask for confirmation, including for deletions.
+- When the user asks you to add, change or complete something, do it with the tools straight away.
+- Deleting is different: first ask the user to confirm, naming exactly what will be deleted (for example: "Delete the task “Dentist appointment”?"). Only call a delete tool after they say yes in their next message. If a delete tool says it needs confirmation, ask; never say something was deleted unless the tool succeeded.
 - Find ids in the snapshot below or with the list/read tools first. Never invent ids.
 - If more than one item could match and the request does not say which, ask which one instead of guessing.
 - Every change needs a tool call in this same reply; nothing changes otherwise. Only say you did something if the tool succeeded; if a tool returns an error, explain it plainly.
-- Do each change once, in the turn it is asked for. Never carry out an earlier request later unless the user asks again.
+- Do each change once, in the turn it is asked for. Never carry out an earlier request later unless the user asks again (a yes to your deletion question counts as asking again).
 - After acting, briefly say what you did. Keep your usual warm, short style.
 - When you create tasks for an idea on the mind map, pass its node id as mindMapNodeId so the tasks are linked to it.
 - For times, use ISO 8601 with the user's UTC offset.
@@ -30,7 +31,7 @@ const AGENT_NOTE = `You can read and change the user's data in the Athena app wi
 
 // The tool-using agent (LangGraph). Loads the today snapshot, then up to 8 model
 // rounds per message; each round may run several tool calls.
-const agent = buildAgent({ generate, runTool, functionDeclarations, isReadOnly, loadContext: buildSnapshot, maxRounds: 8 });
+const agent = buildAgent({ generate, runTool, functionDeclarations, isReadOnly, isDestructive, loadContext: buildSnapshot, maxRounds: 8 });
 
 // Shown if Gemini fails on a crisis turn: the support contacts must always reach the user.
 const CRISIS_FALLBACK = 'I\'m really glad you told me. What you\'re feeling matters, and you deserve support right now.';
@@ -139,7 +140,8 @@ const generateResponse = async (message, history = [], { search = false, attachm
       return { text, model: env.vertex.model, sources, actions: [] };
     }
 
-    const { text, actions } = await agent.run({ contents, userId, timeZone, systemInstruction });
+    const deleteConfirmed = confirmsDeletion(history, message);
+    const { text, actions } = await agent.run({ contents, userId, timeZone, systemInstruction, deleteConfirmed });
     return { text, model: env.vertex.model, sources: [], actions };
   } catch (err) {
     throw handleAIError(err);

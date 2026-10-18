@@ -4,7 +4,8 @@
 // arguments with the same spec as the REST API, then calls the same service, so the
 // AI can do exactly what the user can do in the app — no more.
 //
-// tool: { declaration (Gemini FunctionDeclaration), run(userId, args, options) → { result, action? }, readOnly? }
+// tool: { declaration (Gemini FunctionDeclaration), run(userId, args, options) → { result, action? }, readOnly?, destructive? }
+// destructive tools (deletions) only run after the user confirms (agent/graph, agent/safety).
 // `action` is a one-line description of a change, shown under the reply.
 // options.idempotencyKey (create_task, create_event; set by agent/executor, never by the
 // model): the same key always maps to the same document, so a retried plan cannot
@@ -126,6 +127,7 @@ const tools = {
     },
   },
   delete_task: {
+    destructive: true,
     declaration: { description: 'Delete a task permanently.', parameters: obj({ id: str('Task id from list_tasks') }, ['id']) },
     run: async (userId, args) => {
       const id = requireId(args);
@@ -186,6 +188,7 @@ const tools = {
     },
   },
   delete_journal_entry: {
+    destructive: true,
     declaration: { description: 'Delete a journal entry permanently.', parameters: obj({ id: S }, ['id']) },
     run: async (userId, args) => {
       const id = requireId(args);
@@ -240,6 +243,7 @@ const tools = {
     },
   },
   delete_event: {
+    destructive: true,
     declaration: { description: 'Delete a calendar event permanently.', parameters: obj({ id: S }, ['id']) },
     run: async (userId, args) => {
       const id = requireId(args);
@@ -346,6 +350,7 @@ const tools = {
     },
   },
   delete_mind_map_node: {
+    destructive: true,
     declaration: { description: 'Remove a node (and its connections) from the mind map.', parameters: obj({ id: I }, ['id']) },
     run: async (userId, { id }) => {
       const node = await mindmapService.deleteNode(userId, requireNodeId(id));
@@ -369,6 +374,9 @@ const functionDeclarations = Object.entries(tools).map(([name, t]) => ({ name, .
 // Tools that only read data; calls to them can run in parallel.
 const isReadOnly = (name) => Boolean(tools[name]?.readOnly);
 
+// Tools that delete data; they need the user's confirmation first.
+const isDestructive = (name) => Boolean(tools[name]?.destructive);
+
 // Runs one call. Errors become { error } results so the model can explain or retry.
 // options: see the tool comment at the top (agent/executor only).
 const runTool = async (userId, name, args = {}, options = {}) => {
@@ -386,4 +394,4 @@ const runTool = async (userId, name, args = {}, options = {}) => {
   }
 };
 
-module.exports = { functionDeclarations, runTool, isReadOnly, htmlToText, textToHtml, idFor };
+module.exports = { functionDeclarations, runTool, isReadOnly, isDestructive, htmlToText, textToHtml, idFor };

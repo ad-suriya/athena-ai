@@ -19,6 +19,9 @@ const CHANGE_CLAIM = /\bI(?:'ve|’ve| have)?\s+(?:now\s+|also\s+|just\s+)?(?:ad
 const claimsChange = (text = '') => CHANGE_CLAIM.test(text);
 const UNDONE_NOTE = '(Note from the app, not the user: your last reply describes a change, but no tool was called, so nothing in the app changed. If the user asked for a change, call the tools now to make it. Otherwise, rewrite your reply without claiming any change.)';
 
+// Returned instead of running a deletion the user has not confirmed.
+const CONFIRM_FIRST = 'Not deleted. Deleting needs the user\'s confirmation: ask them to confirm, naming exactly what will be deleted, and delete only after they say yes in their next message. Do not say it was deleted.';
+
 // The model sometimes imitates the history's "(Actions taken: …)" note; the app shows actions itself.
 const stripActionNote = (text = '') => text.replace(/\s*\(Actions taken:[^)]*\)?\s*$/i, '').trim();
 
@@ -44,8 +47,9 @@ const AgentState = Annotation.Root({
 // generate: config/vertex generate. runTool(userId, name, args) → { result, action? }.
 // isReadOnly(name): calls in a round that are all reads run in parallel.
 // loadContext(userId, timeZone) → text added to the system instruction ('' for none).
+// isDestructive(name): deletions; they run only when the run's deleteConfirmed is true.
 // maxRounds: upper bound on model calls per message (each may make several tool calls).
-const buildAgent = ({ generate, runTool, functionDeclarations, isReadOnly = () => false, loadContext = async () => '', maxRounds = 8 }) => {
+const buildAgent = ({ generate, runTool, functionDeclarations, isReadOnly = () => false, isDestructive = () => false, loadContext = async () => '', maxRounds = 8 }) => {
   // A missing snapshot must never stop a reply.
   const context = async (state, config) => {
     const { userId, timeZone } = config.configurable;
@@ -83,8 +87,10 @@ const buildAgent = ({ generate, runTool, functionDeclarations, isReadOnly = () =
   };
 
   const tools = async (state, config) => {
-    const { userId } = config.configurable;
-    const run = (call) => runTool(userId, call.name, call.args);
+    const { userId, deleteConfirmed } = config.configurable;
+    const run = async (call) => (isDestructive(call.name) && !deleteConfirmed
+      ? { result: { error: CONFIRM_FIRST } }
+      : runTool(userId, call.name, call.args));
     let outcomes;
     if (state.calls.every((call) => isReadOnly(call.name))) {
       outcomes = await Promise.all(state.calls.map(run));
@@ -121,12 +127,13 @@ const buildAgent = ({ generate, runTool, functionDeclarations, isReadOnly = () =
     .compile();
 
   // contents: Gemini contents ending with the user's turn.
+  // deleteConfirmed: the user's message confirms a deletion Athena asked about (agent/safety).
   // → { text, actions: [string] }
-  const run = async ({ contents, userId, timeZone, systemInstruction }) => {
+  const run = async ({ contents, userId, timeZone, systemInstruction, deleteConfirmed = false }) => {
     const state = await graph.invoke(
       { contents },
       // Each round is a model step plus a tools step; leave room for context and giveUp.
-      { configurable: { userId, timeZone, systemInstruction }, recursionLimit: maxRounds * 2 + 3 },
+      { configurable: { userId, timeZone, systemInstruction, deleteConfirmed }, recursionLimit: maxRounds * 2 + 3 },
     );
     return { text: state.text, actions: state.actions };
   };

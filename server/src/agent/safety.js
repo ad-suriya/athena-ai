@@ -45,4 +45,19 @@ const crisisResources = (timeZone) => {
   ].join('\n');
 };
 
-module.exports = { isCrisis, SAFETY_NOTE, crisisResources };
+// Deletion check: the agent may only delete when the user's current message says yes
+// to Athena's previous reply, and that reply asked about deleting or removing something.
+// Deliberately strict: a missed "yes" only costs one more question, while a wrong
+// deletion can't be undone.
+const ASKED_TO_DELETE = /\b(?:delete|deleting|remove|removing)\b[^?]*\?/i;
+const AFFIRMATIVE = /^\s*(?:yes|yeah|yep|yup|sure|ok(?:ay)?|confirm(?:ed)?|go ahead|do it|please do|delete (?:it|them|those|both|all)|remove (?:it|them|those|both|all))\b/i;
+const NEGATION = /\b(?:no|not|don'?t|do not|wait|cancel|stop|keep)\b/i;
+
+// history: prior turns [{ role: 'user' | 'assistant', content }]; message: the user's new message.
+const confirmsDeletion = (history = [], message = '') => {
+  const last = Array.isArray(history) ? history[history.length - 1] : null;
+  if (!last || last.role !== 'assistant' || !ASKED_TO_DELETE.test(last.content || '')) return false;
+  return AFFIRMATIVE.test(message) && !NEGATION.test(message);
+};
+
+module.exports = { isCrisis, SAFETY_NOTE, crisisResources, confirmsDeletion };
