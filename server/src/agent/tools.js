@@ -4,7 +4,7 @@
 // arguments with the same spec as the REST API, then calls the same service, so the
 // AI can do exactly what the user can do in the app — no more.
 //
-// tool: { declaration (Gemini FunctionDeclaration), run(userId, args) → { result, action? } }
+// tool: { declaration (Gemini FunctionDeclaration), run(userId, args) → { result, action? }, readOnly? }
 // `action` is a one-line description of a change, shown under the reply.
 
 const taskService = require('../services/task.service');
@@ -59,6 +59,7 @@ const moodView = (w) => ({ id: w.id, recordedAt: w.recordedAt, mood: w.mood, ene
 const tools = {
   // ---------------- Tasks ----------------
   list_tasks: {
+    readOnly: true,
     declaration: {
       description: 'List the user\'s tasks (to-dos). Use to find a task\'s id before changing it.',
       parameters: obj({ status: { ...S, enum: taskService.TASK_STATUSES, description: 'Only tasks with this status' } }),
@@ -113,6 +114,7 @@ const tools = {
 
   // ---------------- Journal (notes collection; the Journal page) ----------------
   list_journal_entries: {
+    readOnly: true,
     declaration: {
       description: 'List the user\'s journal entries (newest first) with a short preview. Optional text search.',
       parameters: obj({ query: str('Only entries whose title or text contains this') }),
@@ -130,6 +132,7 @@ const tools = {
     },
   },
   read_journal_entry: {
+    readOnly: true,
     declaration: { description: 'Read the full text of one journal entry.', parameters: obj({ id: str('Entry id') }, ['id']) },
     run: async (userId, args) => {
       const n = await noteService.getNote(userId, requireId(args));
@@ -171,6 +174,7 @@ const tools = {
 
   // ---------------- Calendar ----------------
   list_events: {
+    readOnly: true,
     declaration: {
       description: 'List calendar events, optionally between two times.',
       parameters: obj({ from: str(`Start of range, ${ISO}`), to: str(`End of range, ${ISO}`) }),
@@ -241,6 +245,7 @@ const tools = {
     },
   },
   list_mood_entries: {
+    readOnly: true,
     declaration: {
       description: 'List recent mood check-ins (newest first).',
       parameters: obj({ days: int('How many days back (default 14)') }),
@@ -262,6 +267,7 @@ const tools = {
 
   // ---------------- Mind map ----------------
   get_mind_map: {
+    readOnly: true,
     declaration: { description: 'Read the user\'s mind map: nodes (id, title, notes) and connections.', parameters: obj({}) },
     run: async (userId) => {
       const map = await mindmapService.getMap(userId);
@@ -317,6 +323,9 @@ const tools = {
 
 const functionDeclarations = Object.entries(tools).map(([name, t]) => ({ name, ...t.declaration }));
 
+// Tools that only read data; calls to them can run in parallel.
+const isReadOnly = (name) => Boolean(tools[name]?.readOnly);
+
 // Runs one call. Errors become { error } results so the model can explain or retry.
 const runTool = async (userId, name, args = {}) => {
   const tool = tools[name];
@@ -333,4 +342,4 @@ const runTool = async (userId, name, args = {}) => {
   }
 };
 
-module.exports = { functionDeclarations, runTool, htmlToText, textToHtml };
+module.exports = { functionDeclarations, runTool, isReadOnly, htmlToText, textToHtml };

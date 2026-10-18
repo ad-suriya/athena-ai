@@ -3,7 +3,8 @@
 const { generate, isAvailable, isRateLimit } = require('../config/vertex');
 const env = require('../config/env');
 const { AppError } = require('../utils/errors');
-const { functionDeclarations, runTool } = require('../agent/tools');
+const { functionDeclarations, runTool, isReadOnly } = require('../agent/tools');
+const { buildAgent } = require('../agent/graph');
 
 const SYSTEM_PROMPT = `You are Athena AI — an empathetic and reflective counseling assistant, running on the Gemini model.
 
@@ -23,8 +24,9 @@ const AGENT_NOTE = `You can read and change the user's data in the Athena app wi
 - For times, use ISO 8601 with the user's UTC offset.
 - Earlier replies may end with "(Actions taken: …)". That note is added by the app; never write it yourself.`;
 
-// Upper bound on tool-call rounds per message (each round may run several calls).
-const MAX_TOOL_ROUNDS = 8;
+// The tool-using agent (LangGraph). Up to 8 model rounds per message; each round may
+// run several tool calls.
+const agent = buildAgent({ generate, runTool, functionDeclarations, isReadOnly, maxRounds: 8 });
 
 // "Friday, 9 October 2026, 15:04 (Asia/Kolkata, UTC+05:30)" — the model's sense of "now".
 const describeNow = (timeZone) => {
@@ -115,61 +117,11 @@ const generateResponse = async (message, history = [], { search = false, attachm
       return { text, model: env.vertex.model, sources, actions: [] };
     }
 
-    const actions = [];
-    let nudged = false;
-    for (let round = 0; round < MAX_TOOL_ROUNDS; round += 1) {
-      let text;
-      let response;
-      try {
-        ({ text, response } = await generate({ contents, systemInstruction, tools: [{ functionDeclarations }] }));
-      } catch (err) {
-        // Changes already made must not be hidden behind an error: report them.
-        if (actions.length) {
-          console.error('Vertex AI error after tool calls:', err);
-          return { text: `${fallbackText(actions)} (I couldn't finish my reply — please ask again if you need more.)`, model: env.vertex.model, sources: [], actions };
-        }
-        throw err;
-      }
-      const calls = response.functionCalls || [];
-      if (calls.length === 0) {
-        // Guard: the reply says something was changed, but no tool ran this turn, so
-        // nothing changed. Tell the model once and let it act or correct itself.
-        if (actions.length === 0 && !nudged && claimsChange(text)) {
-          nudged = true;
-          contents.push(response.candidates?.[0]?.content || { role: 'model', parts: [{ text }] });
-          contents.push({ role: 'user', parts: [{ text: UNDONE_NOTE }] });
-          continue;
-        }
-        return { text: stripActionNote(text) || fallbackText(actions), model: env.vertex.model, sources: [], actions };
-      }
-      // Keep the model's turn as returned (it carries the calls and any thought signatures).
-      contents.push(response.candidates[0].content);
-      const parts = [];
-      for (const call of calls) {
-        const { result, action } = await runTool(userId, call.name, call.args);
-        if (action) actions.push(action);
-        parts.push({ functionResponse: { name: call.name, ...(call.id ? { id: call.id } : {}), response: result } });
-      }
-      contents.push({ role: 'user', parts });
-    }
-    return { text: fallbackText(actions), model: env.vertex.model, sources: [], actions };
+    const { text, actions } = await agent.run({ contents, userId, systemInstruction });
+    return { text, model: env.vertex.model, sources: [], actions };
   } catch (err) {
     throw handleAIError(err);
   }
-};
-
-// "I've added …", "I have deleted …", "I marked …" — a reply that reports a change.
-const CHANGE_CLAIM = /\bI(?:'ve|’ve| have)?\s+(?:now\s+|also\s+|just\s+)?(?:added|deleted|removed|created|updated|moved|renamed|marked|logged|saved|written|wrote|completed|scheduled|connected|changed|cleared|recorded)\b/i;
-const claimsChange = (text = '') => CHANGE_CLAIM.test(text);
-const UNDONE_NOTE = '(Note from the app, not the user: your last reply describes a change, but no tool was called, so nothing in the app changed. If the user asked for a change, call the tools now to make it. Otherwise, rewrite your reply without claiming any change.)';
-
-// The model sometimes imitates the history's "(Actions taken: …)" note; the app shows actions itself.
-const stripActionNote = (text = '') => text.replace(/\s*\(Actions taken:[^)]*\)?\s*$/i, '').trim();
-
-// Used when the model stops without a final sentence.
-const fallbackText = (actions) => {
-  if (!actions.length) throw new Error('Empty response from Vertex AI');
-  return `Done: ${actions.join('; ')}.`;
 };
 
 module.exports = { generateResponse, toContents, handleAIError, assertAvailable, SYSTEM_PROMPT };
