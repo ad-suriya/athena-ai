@@ -189,3 +189,15 @@ test('the approved plan is validated strictly', () => {
   bad({ tasks: [{ key: 't1', title: 'x', priority: 'urgent' }] }, 'tasks[0].priority');
   bad({ events: [{ key: 'e1', title: 'x', startTime: '2026-10-19T10:00:00Z', endTime: '2026-10-19T09:00:00Z' }] }, 'events[0].endTime');
 });
+
+test('a scheduled task with only a start time gets a one-hour session (seen live from Gemini)', () => {
+  const now = new Date('2026-10-18T10:00:00Z');
+  const raw = { tasks: [
+    { key: 'a', title: 'Design the schema', startTime: '2026-10-19T09:00:00+05:30' },
+    { key: 'b', title: 'Write the API', startTime: 'not a time' },
+  ] };
+  const out = validateTaskPlan(raw, { now, schedule: true });
+  assert.deepEqual(out.events.map((e) => [e.taskKey, e.startTime, e.endTime]), [
+    ['a', '2026-10-19T03:30:00.000Z', '2026-10-19T04:30:00.000Z'],
+  ]);
+});

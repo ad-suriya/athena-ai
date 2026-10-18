@@ -25,7 +25,7 @@ const { executePlan: runPlan } = require('../agent/executor');
 const { isCrisis } = require('../agent/safety');
 const { focusSubset, nodeData, nodeContext, linkedProgress, dataBlock, normalizeTitle, buildIndex } = require('../agent/mindmapContext');
 const {
-  MAP_SCHEMA, CONNECTIONS_SCHEMA, PLAN_SCHEMA,
+  MAP_SCHEMA, CONNECTIONS_SCHEMA, PLAN_SCHEMA, SCHEDULE_PLAN_SCHEMA,
   parseModelJson, validateMapProposal, validateConnections, validateTaskPlan, validateExecution,
 } = require('../agent/mindmapProposals');
 
@@ -211,7 +211,7 @@ const planFromNode = (userId, { nodeId, mode = 'tasks', timeZone }) => withAI(as
   const plan = await generateJson({
     system: planRules(mode, describeNow(timeZone)),
     prompt,
-    schema: PLAN_SCHEMA,
+    schema: mode === 'schedule' ? SCHEDULE_PLAN_SCHEMA : PLAN_SCHEMA,
     check: (raw) => validateTaskPlan(raw, {
       existingTitles: new Set(existing.map((t) => normalizeTitle(t.title))),
       busy,

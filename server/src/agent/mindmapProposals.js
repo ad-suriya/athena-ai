@@ -246,6 +246,19 @@ const PLAN_SCHEMA = {
   required: ['tasks'],
 };
 
+// Schedule mode: every task must carry its session. Gemini otherwise tends to give
+// only startTime, and a slot without an end can't be checked for conflicts.
+const SCHEDULE_PLAN_SCHEMA = {
+  ...PLAN_SCHEMA,
+  properties: {
+    tasks: {
+      ...PLAN_SCHEMA.properties.tasks,
+      items: { ...PLAN_SCHEMA.properties.tasks.items, required: ['key', 'title', 'startTime', 'endTime'] },
+    },
+  },
+};
+const DEFAULT_SESSION_MS = 60 * 60000;
+
 const toDate = (value) => {
   if (typeof value !== 'string' || !value) return null;
   const d = new Date(value);
@@ -296,7 +309,8 @@ const validateTaskPlan = (raw, { existingTitles = new Set(), busy = [], now = ne
     });
 
     const start = schedule ? toDate(t.startTime) : null;
-    const end = schedule ? toDate(t.endTime) : null;
+    // A session with a start but no end is assumed to last an hour.
+    const end = schedule ? toDate(t.endTime) || (start && new Date(start.getTime() + DEFAULT_SESSION_MS)) : null;
     if (start && end && start >= now && start <= latest && end > start && end - start <= MAX_EVENT_HOURS * 3600000) {
       events.push({
         key: `ev-${key}`,
@@ -378,6 +392,7 @@ module.exports = {
   MAP_SCHEMA,
   CONNECTIONS_SCHEMA,
   PLAN_SCHEMA,
+  SCHEDULE_PLAN_SCHEMA,
   parseModelJson,
   cleanText,
   validateMapProposal,

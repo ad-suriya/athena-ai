@@ -153,3 +153,16 @@ test('ask runs the agent with read-only tools; a write attempt is refused', asyn
   assert.match(refused.error, /Only reading/);
   assert.equal([...store.keys()].filter((k) => k.startsWith('tasks/')).length, 0);
 });
+
+test('schedule mode requires session times in the schema and still proposes slots when the end is missing', async () => {
+  geminiScript.push({ tasks: [{ key: 'a', title: 'Draft the resume', startTime: new Date(Date.now() + 86400000).toISOString() }] });
+  const res = await app.request('POST', '/api/mindmap/ai/plan', { token: ALICE, body: { nodeId: 3, mode: 'schedule', timeZone: 'Asia/Kolkata' } });
+  assert.equal(res.status, 200);
+  assert.deepEqual(geminiRequests[0].responseSchema.properties.tasks.items.required, ['key', 'title', 'startTime', 'endTime']);
+  assert.equal(res.body.data.events.length, 1);
+  assert.equal(new Date(res.body.data.events[0].endTime) - new Date(res.body.data.events[0].startTime), 3600000);
+
+  geminiScript.push({ tasks: [{ key: 'a', title: 'Draft the cover letter' }] });
+  await app.request('POST', '/api/mindmap/ai/plan', { token: ALICE, body: { nodeId: 3, mode: 'tasks' } });
+  assert.deepEqual(geminiRequests[1].responseSchema.properties.tasks.items.required, ['key', 'title'], 'other modes keep the loose schema');
+});
