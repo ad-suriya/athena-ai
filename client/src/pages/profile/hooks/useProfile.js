@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { auth } from '../../../config/firebase.js';
-import { getMyProfile } from '../../../services/userService';
+import { getMyProfile, updateMySettings } from '../../../services/userService';
 
 const formatMonthYear = (iso) =>
   iso ? new Date(iso).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '—';
@@ -20,6 +20,7 @@ const formatRelative = (iso) => {
 export const useProfile = () => {
   const [profile, setProfile] = useState(null);
   const [error, setError] = useState(null);
+  const [savingMemory, setSavingMemory] = useState(false);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -34,8 +35,25 @@ export const useProfile = () => {
     return () => unsubscribe();
   }, []);
 
+  // Saves the memory switch; the page shows the server's answer, not a guess.
+  const setMemoryEnabled = useCallback(async (memoryEnabled) => {
+    setSavingMemory(true);
+    try {
+      const settings = await updateMySettings({ memoryEnabled });
+      setProfile((current) => (current ? { ...current, settings } : current));
+    } catch (err) {
+      console.error('Error saving memory setting:', err);
+      setError(err);
+    } finally {
+      setSavingMemory(false);
+    }
+  }, []);
+
   return {
     error,
+    memoryEnabled: profile?.settings?.memoryEnabled ?? null,
+    savingMemory,
+    setMemoryEnabled,
     name: profile?.name ?? '—',
     email: profile?.email ?? '—',
     memberSince: formatMonthYear(profile?.createdAt),

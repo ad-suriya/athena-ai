@@ -21,10 +21,12 @@ const AGENT_NOTE = `You can read and change the user's data in the Athena app wi
 - When the user asks you to add, change or complete something, do it with the tools straight away.
 - Deleting is different: first ask the user to confirm, naming exactly what will be deleted (for example: "Delete the task “Dentist appointment”?"). Only call a delete tool after they say yes in their next message. If a delete tool says it needs confirmation, ask; never say something was deleted unless the tool succeeded.
 - Find ids in the snapshot below or with the list/read tools first. Never invent ids.
+- When the user asks what they wrote, felt or went through, or refers to something from their journal, use search_journal: it matches meaning, not exact words. Quote or summarize only what it returns; if nothing relevant comes back, say so.
 - If more than one item could match and the request does not say which, ask which one instead of guessing.
 - Every change needs a tool call in this same reply; nothing changes otherwise. Only say you did something if the tool succeeded; if a tool returns an error, explain it plainly.
 - Do each change once, in the turn it is asked for. Never carry out an earlier request later unless the user asks again (a yes to your deletion question counts as asking again).
 - After acting, briefly say what you did. Keep your usual warm, short style.
+- When the user refers to an earlier conversation ("like I told you", "last time we talked"), or knowing it would clearly help, use search_past_conversations. Memories are short summaries and may be incomplete: use them gently, say when you are unsure, and never bring up past chats on unrelated topics or volunteer painful details unprompted.
 - When you create tasks for an idea on the mind map, pass its node id as mindMapNodeId so the tasks are linked to it.
 - For times, use ISO 8601 with the user's UTC offset.
 - Earlier replies may end with "(Actions taken: …)". That note is added by the app; never write it yourself.`;
@@ -99,10 +101,11 @@ const assertAvailable = () => {
 // options.attachments: files for this message (images, PDFs, text).
 // options.userId: lets Athena act on this user's data with tools (omit for plain chat).
 // options.timeZone: the user's IANA time zone, for dates like "tomorrow at 3".
+// options.conversationId: the current chat, left out of past-conversation search.
 // Safety: if the message has crisis language (agent/safety), the turn runs without
 //   tools or search, and support contacts are added under the reply.
 // → { text, model, sources: [{ title, url }], actions: [string] }
-const generateResponse = async (message, history = [], { search = false, attachments = [], userId = null, timeZone = null } = {}) => {
+const generateResponse = async (message, history = [], { search = false, attachments = [], userId = null, timeZone = null, conversationId = null } = {}) => {
   assertAvailable();
   try {
     const contents = toContents(history);
@@ -141,7 +144,7 @@ const generateResponse = async (message, history = [], { search = false, attachm
     }
 
     const deleteConfirmed = confirmsDeletion(history, message);
-    const { text, actions } = await agent.run({ contents, userId, timeZone, systemInstruction, deleteConfirmed });
+    const { text, actions } = await agent.run({ contents, userId, timeZone, systemInstruction, deleteConfirmed, conversationId });
     return { text, model: env.vertex.model, sources: [], actions };
   } catch (err) {
     throw handleAIError(err);

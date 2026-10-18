@@ -2,6 +2,7 @@
 
 const { requireDb, serverTimestamp, toIso } = require('../utils/firestore');
 const conversationService = require('./conversation.service');
+const memoryService = require('./memory.service');
 
 const COLLECTION = 'users';
 
@@ -43,7 +44,22 @@ const getProfile = async (token) => {
     createdAt: toIso(data.createdAt),
     lastLogin: toIso(data.lastLogin),
     stats: { conversations },
+    // Memory of past conversations is on unless the user turned it off.
+    settings: { memoryEnabled: data.memoryEnabled !== false },
   };
 };
 
-module.exports = { upsertUser, getProfile };
+// settings: { memoryEnabled? } (validated by the controller). Turning memory off
+// deletes everything Athena remembers from past conversations.
+// → { memoryEnabled }
+const updateSettings = async (userId, { memoryEnabled }) => {
+  const ref = requireDb().collection(COLLECTION).doc(userId);
+  if (memoryEnabled !== undefined) {
+    await ref.set({ memoryEnabled }, { merge: true });
+    if (!memoryEnabled) await memoryService.forgetAll(userId);
+  }
+  const snap = await ref.get();
+  return { memoryEnabled: snap.get('memoryEnabled') !== false };
+};
+
+module.exports = { upsertUser, getProfile, updateSettings };

@@ -20,6 +20,9 @@ const env = {
     model: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
     maxTokens: parseInt(process.env.MAX_TOKENS, 10) || 1000,
     temperature: parseFloat(process.env.TEMPERATURE) || 0.7,
+    // Journal search (RAG). Firestore vector fields hold at most 2048 dimensions.
+    embeddingModel: process.env.EMBEDDING_MODEL || 'text-embedding-005',
+    embeddingDimensions: parseInt(process.env.EMBEDDING_DIMENSIONS, 10) || 768,
   },
 
   cors: {

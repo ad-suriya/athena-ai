@@ -64,6 +64,25 @@ const generate = async ({ contents, systemInstruction, tools, responseSchema, ma
   return { text: textOf(response), sources: sourcesOf(response), response };
 };
 
+// One embedding vector per text, for journal search. taskType is 'RETRIEVAL_DOCUMENT'
+// for stored text and 'RETRIEVAL_QUERY' for a search. One request per text, so any
+// embedding model works (some take only one input per request).
+const embed = async (texts, taskType) => {
+  const { embeddingModel, embeddingDimensions } = env.vertex;
+  const vectors = [];
+  for (const text of texts) {
+    const response = await withRetry(() => client.models.embedContent({
+      model: embeddingModel,
+      contents: text,
+      config: { taskType, outputDimensionality: embeddingDimensions },
+    }));
+    const values = response.embeddings?.[0]?.values;
+    if (!values?.length) throw new Error('Empty embedding from Vertex AI');
+    vectors.push(values);
+  }
+  return vectors;
+};
+
 // The reply's text parts (not thoughts or function calls).
 const textOf = (response) => (response.candidates?.[0]?.content?.parts || [])
   .filter((p) => typeof p.text === 'string' && !p.thought)
@@ -86,4 +105,4 @@ const withRetry = async (call) => {
   }
 };
 
-module.exports = { isAvailable, generateText, generate, isRateLimit };
+module.exports = { isAvailable, generateText, generate, embed, isRateLimit };

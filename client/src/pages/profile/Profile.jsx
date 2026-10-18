@@ -5,7 +5,7 @@ import { useProfile } from './hooks/useProfile';
 
 const Profile = ({ onBack }) => {
   const navigate = useNavigate();
-  const { name, email, memberSince, lastActive, totalChats } = useProfile();
+  const { name, email, memberSince, lastActive, totalChats, memoryEnabled, savingMemory, setMemoryEnabled } = useProfile();
   return (
     <div className="flex-1 p-8">
       <button 
@@ -43,6 +43,27 @@ const Profile = ({ onBack }) => {
               <div className="space-y-2">
                 <p className="text-gray-700"><span className="font-medium">Last active:</span> {lastActive}</p>
                 <p className="text-gray-700"><span className="font-medium">Total chats:</span> {totalChats}</p>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-medium mb-2">Memory</h3>
+              <div className="flex items-start justify-between gap-4">
+                <p className="text-gray-700">
+                  Athena remembers short summaries of your past conversations, so you can pick up where you left off.
+                  Turning this off deletes what Athena remembers.
+                </p>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={memoryEnabled === true}
+                  aria-label="Remember past conversations"
+                  disabled={memoryEnabled === null || savingMemory}
+                  onClick={() => setMemoryEnabled(!memoryEnabled)}
+                  className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors disabled:opacity-50 ${memoryEnabled ? 'bg-brand-500' : 'bg-gray-300'}`}
+                >
+                  <span className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${memoryEnabled ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                </button>
               </div>
             </div>
           </div>

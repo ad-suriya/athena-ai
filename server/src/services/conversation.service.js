@@ -12,6 +12,7 @@ const {
   DOC_ID_PATTERN,
 } = require('../utils/firestore');
 const aiService = require('./ai.service');
+const { refreshMemoryLater, forgetConversationLater } = require('./memory.service');
 const { notFoundError, validationFailed } = require('../utils/errors');
 
 const COLLECTION = 'conversations';
@@ -218,6 +219,7 @@ const deleteConversation = async (userId, conversationId) => {
   const db = requireDb();
   await db.recursiveDelete(ref);
   await db.collection('users').doc(userId).collection(COLLECTION).doc(conversationId).delete();
+  forgetConversationLater(userId, conversationId);
 };
 
 // ---------------------------------------------------------------------------
@@ -288,7 +290,7 @@ const sendMessage = async (userId, conversationId, { content, metadata = {}, att
   });
 
   const { text, model, sources, actions } = await aiService.generateResponse(content, history, {
-    search: wantsSearch(metadata), attachments, userId, timeZone,
+    search: wantsSearch(metadata), attachments, userId, timeZone, conversationId,
   });
 
   const assistantMsgRef = await addMessage(convRef, {
@@ -302,6 +304,7 @@ const sendMessage = async (userId, conversationId, { content, metadata = {}, att
     messageCount: increment(1),
     updatedAt: serverTimestamp(),
   });
+  refreshMemoryLater(userId, conversationId);
 
   return {
     userMessage: serializeMessage(await userMsgRef.get()),
@@ -336,6 +339,7 @@ const editMessage = async (userId, conversationId, messageId, { content }) => {
   }
   await msgRef.update({ content, 'metadata.editedAt': serverTimestamp() });
   await convRef.update({ updatedAt: serverTimestamp() });
+  refreshMemoryLater(userId, conversationId, { force: true });
   return serializeMessage(await msgRef.get());
 };
 
@@ -376,6 +380,7 @@ const regenerateMessage = async (userId, conversationId, messageId) => {
     messageCount: index + 1,
     updatedAt: serverTimestamp(),
   });
+  refreshMemoryLater(userId, conversationId, { force: true });
 
   return serializeMessage(await msgRef.get());
 };

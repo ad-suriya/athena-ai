@@ -8,6 +8,7 @@ const {
   listOwnedDocs,
   byTimestamp,
 } = require('../utils/firestore');
+const { indexNoteLater, removeNoteLater } = require('./journalSearch.service');
 
 const COLLECTION = 'notes';
 
@@ -35,18 +36,22 @@ const createNote = async (userId, data) => {
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
+  indexNoteLater(userId, ref.id);
   return serializeDoc(await ref.get());
 };
 
 const updateNote = async (userId, noteId, data) => {
   const { ref } = await getOwnedDoc(COLLECTION, noteId, userId);
   await ref.update({ ...data, updatedAt: serverTimestamp() });
+  // Journal search only covers the title and text.
+  if ('title' in data || 'content' in data) indexNoteLater(userId, noteId);
   return serializeDoc(await ref.get());
 };
 
 const deleteNote = async (userId, noteId) => {
   const { ref } = await getOwnedDoc(COLLECTION, noteId, userId);
   await ref.delete();
+  removeNoteLater(userId, noteId);
 };
 
 module.exports = { getNotes, getNote, createNote, updateNote, deleteNote };
