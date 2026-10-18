@@ -76,10 +76,12 @@ Tooling:
 │   ├── public/
 │   ├── src/
 │   │   ├── assets/
-│   │   ├── components/
-│   │   ├── pages/
+│   │   ├── config/        # Firebase Auth init
+│   │   ├── features/      # conversations, tasks, notes, calendar, mindmap
+│   │   ├── pages/         # login, profile, settings, feedback
+│   │   ├── components/    # shared UI
+│   │   ├── services/      # API clients
 │   │   ├── App.jsx
-│   │   ├── firebase.js
 │   │   ├── main.jsx
 │   │   ├── index.css
 │   │   └── App.css
@@ -89,7 +91,8 @@ Tooling:
 │   └── vite.config.js
 │
 ├── server/
-│   ├── server.js
+│   ├── src/           # app.js, server.js, config, routes, controllers, services, middleware, utils
+│   ├── scripts/
 │   └── server.py
 │
 ├── package.json
@@ -104,7 +107,6 @@ Tooling:
 - Daily task management
 - Calendar scheduling
 - Visual mind mapping
-- Code editor module
 - User authentication and profile system
 - Notification and smart interaction controls
 
@@ -130,7 +132,7 @@ http://localhost:5173
 
 cd server  
 npm install  
-node server.js  
+npm start  
 
 4. Setup Python AI Service
 

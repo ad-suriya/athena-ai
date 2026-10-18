@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Login from './pages/login/login';
-import Chat from './pages/chat/chat';
-import Notes from './pages/notes/notes';
-import NoteEditor from './pages/notes/NoteEditor';
-import Calendar from './pages/Calendar/Calendar';
-import TaskManager from './pages/TaskManager/Task';
-import Profile from './pages/profile/profile.jsx';
-import Settings from './pages/settings/settings.jsx';
-import CodeEditor from "./pages/CodeEditor/CodeEditor.jsx"; // Fixed import path
+import Login from './pages/login/Login';
+import Chat from './features/conversations/Chat';
+import Notes from './features/notes/Notes';
+import NoteEditor from './features/notes/NoteEditor';
+import Calendar from './features/calendar/Calendar';
+import TaskManager from './features/tasks/Task';
+import Profile from './pages/profile/Profile.jsx';
+import Insights from './features/insights/Insights.jsx';
 import './App.css';
-import MindMap from './components/MindMapInterface.JSX';
-import YudleFeedbackForm from './components/YudleFeedbackForm.jsx';
-import { auth } from './firebase.js';
+import MindMap from './features/mindmap/MindMapInterface.jsx';
+import Feedback from './pages/feedback/Feedback.jsx';
+import { auth } from './config/firebase.js';
+import AppShell from './components/layout/AppShell';
+import Home from './features/home/Home';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -41,72 +42,29 @@ function App() {
     <Router>
       <div className="app-container">
         <Routes>
-          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/" element={<Navigate to={isAuthenticated ? '/home' : '/login'} replace />} />
           <Route path="/login" element={
-            isAuthenticated ? 
-              <Navigate to="/chat" replace /> : 
+            isAuthenticated ?
+              <Navigate to="/home" replace /> :
               <Login setIsAuthenticated={setIsAuthenticated} />
           } />
 
-          <Route path="/chat" element={
-            isAuthenticated ? 
-              <Chat /> : 
-              <Navigate to="/login" state={{ from: '/chat' }} replace />
-          } />
+          {/* Signed-in pages share the app shell (sidebar + top bar). */}
+          <Route element={isAuthenticated ? <AppShell /> : <Navigate to="/login" replace />}>
+            <Route path="/home" element={<Home />} />
+            <Route path="/chat" element={<Chat />} />
+            <Route path="/tasks" element={<TaskManager />} />
+            <Route path="/notes" element={<Notes />} />
+            <Route path="/notes/:noteId" element={<NoteEditor />} />
+            <Route path="/calendar" element={<Calendar />} />
+            <Route path="/mindmap" element={<MindMap />} />
+            <Route path="/insights" element={<Insights />} />
+            <Route path="/settings" element={<Navigate to="/insights" replace />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/feedback" element={<Feedback />} />
+          </Route>
 
-          <Route path="/notes" element={
-            isAuthenticated ? 
-              <Notes /> : 
-              <Navigate to="/login" replace />
-          } />
-
-          <Route path="/calendar" element={
-            isAuthenticated ? 
-              <Calendar /> : 
-              <Navigate to="/login" replace />
-          } />
-
-          <Route path="/tasks" element={
-            isAuthenticated ? 
-              <TaskManager /> : 
-              <Navigate to="/login" replace />
-          } />
-
-          <Route path="/notes/:noteId" element={
-            isAuthenticated ? 
-              <NoteEditor /> : 
-              <Navigate to="/login" replace />
-          } />
-
-          {/* Add the Code Editor route */}
-          <Route path="/code-editor" element={
-            isAuthenticated ? 
-              <CodeEditor /> : 
-              <Navigate to="/login" replace />
-          } />
-
-          <Route path="/profile" element={
-            isAuthenticated ? 
-              <Profile /> : 
-              <Navigate to="/login" replace />
-          } />
-
-          <Route path="/settings" element={
-            isAuthenticated ? 
-              <Settings /> : 
-              <Navigate to="/login" replace />
-          } />
-          <Route path="/feedback" element={
-            isAuthenticated ? 
-              <YudleFeedbackForm /> : 
-              <Navigate to="/login" replace />
-          } />
-          <Route path="/mindmap" element={
-            isAuthenticated ? 
-              <MindMap /> : 
-              <Navigate to="/login" replace />
-          } />
-          <Route path="*" element={<Navigate to={isAuthenticated ? "/chat" : "/login"} replace />} />
+          <Route path="*" element={<Navigate to={isAuthenticated ? '/home' : '/login'} replace />} />
         </Routes>
       </div>
     </Router>
